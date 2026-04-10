@@ -1,0 +1,283 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ═══════════════════════════════════════
+   DESIGN SYSTEM — LUMINARY
+   Tema: Deep Cosmos Dark
+   Accent: Indigo → Violet gradient
+═══════════════════════════════════════ */
+
+:root {
+  /* ── Backgrounds ── */
+  --bg-primary:      #07080f;
+  --bg-secondary:    #0d0e1a;
+  --bg-tertiary:     #12142199;
+  --bg-elevated:     #13152099;
+
+  /* ── Text ── */
+  --text-primary:    #eeeeff;
+  --text-secondary:  #8b8db8;
+  --text-muted:      #4a4c72;
+
+  /* ── Accent: Indigo-Violet ── */
+  --accent:          #7c5cfc;
+  --accent-hover:    #9272fd;
+  --accent-rgb:      124, 92, 252;
+  --accent-subtle:   rgba(124, 92, 252, 0.10);
+  --accent-border:   rgba(124, 92, 252, 0.28);
+  --accent-glow:     0 0 32px rgba(124, 92, 252, 0.35);
+
+  /* ── Gradient Accent ── */
+  --gradient-accent: linear-gradient(135deg, #7c5cfc 0%, #c471ed 100%);
+  --gradient-text:   linear-gradient(135deg, #a78bfa 0%, #f0abfc 100%);
+  --gradient-card:   linear-gradient(145deg, rgba(124,92,252,0.06) 0%, rgba(196,113,237,0.03) 100%);
+  --gradient-hero:   linear-gradient(135deg, rgba(124,92,252,0.12) 0%, rgba(196,113,237,0.04) 50%, transparent 100%);
+
+  /* ── Semantic Colors ── */
+  --success:         #34d399;
+  --success-rgb:     52, 211, 153;
+  --success-subtle:  rgba(52, 211, 153, 0.10);
+  --error:           #fb7185;
+  --error-rgb:       251, 113, 133;
+  --error-subtle:    rgba(251, 113, 133, 0.10);
+  --warning:         #fbbf24;
+  --warning-rgb:     251, 191, 36;
+  --warning-subtle:  rgba(251, 191, 36, 0.10);
+
+  /* ── Borders ── */
+  --border:          rgba(124, 92, 252, 0.12);
+  --border-hover:    rgba(124, 92, 252, 0.28);
+  --border-subtle:   rgba(255, 255, 255, 0.04);
+
+  /* ── Shadows ── */
+  --shadow-sm:       0 1px 3px rgba(0,0,0,0.6);
+  --shadow-md:       0 4px 20px rgba(0,0,0,0.5);
+  --shadow-lg:       0 8px 40px rgba(0,0,0,0.7);
+  --shadow-accent:   0 0 32px rgba(124,92,252,0.25);
+  --shadow-card:     0 2px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04);
+
+  /* ── Radii ── */
+  --radius-sm:       8px;
+  --radius-md:       12px;
+  --radius-lg:       16px;
+  --radius-xl:       24px;
+
+  /* ── Transitions ── */
+  --transition-fast:   150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base:   250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow:   400ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-spring: 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ═══════════════════════════════════════
+   BASE RESET & BODY
+═══════════════════════════════════════ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'DM Sans', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Mesh gradient background */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% -10%, rgba(124, 92, 252, 0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 110%, rgba(196, 113, 237, 0.08) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+}
+
+/* ═══════════════════════════════════════
+   COMPONENT UTILITIES
+═══════════════════════════════════════ */
+
+@layer components {
+
+  /* ── Glass Card ── */
+  .glass-card {
+    background: var(--bg-elevated);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    transition: border-color var(--transition-base), box-shadow var(--transition-base);
+  }
+
+  .glass-card:hover {
+    border-color: var(--border-hover);
+    box-shadow: var(--shadow-card), var(--accent-glow);
+  }
+
+  /* ── Gradient Text ── */
+  .gradient-text {
+    background: var(--gradient-text);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ── Gradient Backgrounds ── */
+  .bg-gradient-accent {
+    background: var(--gradient-accent);
+  }
+
+  .bg-gradient-hero {
+    background: var(--gradient-hero);
+  }
+
+  /* ── Glow ── */
+  .glow-accent {
+    box-shadow: var(--accent-glow);
+  }
+
+  .shadow-glow-accent {
+    box-shadow: 0 4px 24px rgba(var(--accent-rgb), 0.35);
+  }
+
+  /* ── Accent Button ── */
+  .btn-accent {
+    background: var(--gradient-accent);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    transition: opacity var(--transition-base), transform var(--transition-fast), box-shadow var(--transition-base);
+    box-shadow: 0 0 0 rgba(124,92,252,0);
+  }
+
+  .btn-accent:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-accent);
+  }
+
+  .btn-accent:active {
+    transform: translateY(0);
+  }
+
+  /* ── Ghost Button ── */
+  .btn-ghost {
+    background: var(--accent-subtle);
+    color: var(--accent);
+    border: 1px solid var(--accent-border);
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    transition: all var(--transition-base);
+  }
+
+  .btn-ghost:hover {
+    background: rgba(124, 92, 252, 0.2);
+    border-color: var(--accent);
+  }
+
+  /* ── Progress Bar Track ── */
+  .progress-track {
+    background: rgba(255,255,255,0.06);
+    border-radius: 100px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    border-radius: 100px;
+    background: var(--gradient-accent);
+    transition: width 800ms cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    animation: shimmer 2.5s infinite;
+  }
+
+  /* ── Scrollbar Styling ── */
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-hover);
+    border-radius: 100px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-border);
+  }
+
+  /* ── Focus Ring ── */
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+}
+
+/* ═══════════════════════════════════════
+   ANIMATIONS
+═══════════════════════════════════════ */
+
+@keyframes shimmer {
+  to { left: 200%; }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes correctPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.5); }
+  70%  { box-shadow: 0 0 0 12px rgba(52, 211, 153, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+}
+
+@keyframes wrongShake {
+  0%, 100% { transform: translateX(0); }
+  20%  { transform: translateX(-6px); }
+  40%  { transform: translateX(6px); }
+  60%  { transform: translateX(-4px); }
+  80%  { transform: translateX(4px); }
+}
+
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50%      { opacity: 1;   transform: scale(1.05); }
+}
