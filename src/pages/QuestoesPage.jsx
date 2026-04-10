@@ -7,6 +7,8 @@ import {
 import * as Icons from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
+import { pageVariants, staggerContainer, staggerItem, scaleIn, expandDown } from '../lib/animations';
+import FavoriteButton from '../components/ui/FavoriteButton';
 
 export default function QuestoesPage() {
   const { user } = useAuth();
@@ -115,94 +117,99 @@ export default function QuestoesPage() {
     if (loadingSubjects) return (
       <div className="flex flex-col items-center justify-center py-36 gap-4">
         <Loader2 className="w-8 h-8 animate-spin text-accent" />
-        <p className="text-sm text-text-muted">Carregando matérias...</p>
+        <p className="text-sm text-muted">Carregando matérias...</p>
       </div>
     );
 
     return (
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pb-20 space-y-8">
-        <section>
-          <div className="flex items-center gap-3 mb-1">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-accent/10 text-accent">
+      <motion.div 
+        variants={pageVariants}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+        className="pb-20 space-y-8"
+      >
+        <motion.section variants={staggerItem}>
+          <div className="flex items-center gap-4 mb-2">
+            <div className="w-10 h-10 rounded-2xl flex items-center justify-center bg-accent/10 text-accent glow-accent">
               <CircleHelp className="w-5 h-5" />
             </div>
-            <h1 className="text-2xl font-bold text-text-primary">Questões</h1>
+            <h1 className="text-3xl font-bold text-primary tracking-tight">Questões</h1>
           </div>
-          <p className="text-sm mt-1 ml-12 text-text-muted">
-            Selecione um tópico e inicie uma bateria de questões.
+          <p className="text-sm text-muted ml-14">
+            Escolha um tópico para praticar e testar seus conhecimentos.
           </p>
-        </section>
+        </motion.section>
 
-        <div className="space-y-3">
+        <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-4">
           {subjects.map(subject => {
             const Icon = Icons[subject.icone] || Icons.BookOpen;
             const isOpen = openSubject === subject.id;
 
             return (
-              <div key={subject.id} className="glass-card overflow-hidden !p-0">
+              <motion.div key={subject.id} variants={staggerItem} className="glass-card overflow-hidden !p-0">
                 <button
                   onClick={() => setOpenSubject(isOpen ? null : subject.id)}
-                  className={`w-full flex items-center gap-4 px-5 py-4 text-left transition-colors ${
-                    isOpen ? 'bg-accent/5' : 'hover:bg-white/[0.03]'
+                  className={`w-full flex items-center gap-4 px-6 py-5 text-left transition-all duration-300 ${
+                    isOpen ? 'bg-accent/5' : 'hover:bg-white/[0.04]'
                   }`}
                 >
-                  <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition-all"
-                    style={{ background: `${subject.cor}15`, color: subject.cor }}>
-                    <Icon className="w-4 h-4" />
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm"
+                    style={{ background: `${subject.cor}15`, color: subject.cor, border: `1px solid ${subject.cor}30` }}>
+                    <Icon className="w-5 h-5" />
                   </div>
-                  <span className={`flex-1 font-semibold text-sm ${isOpen ? 'text-accent' : 'text-text-primary'}`}>
+                  <span className={`flex-1 font-bold text-base ${isOpen ? 'text-accent' : 'text-primary'}`}>
                     {subject.nome}
                   </span>
-                  <ChevronDown className={`w-4 h-4 transition-transform duration-200 text-text-muted ${isOpen ? 'rotate-180 text-accent' : ''}`} />
+                  <div className={`p-1 rounded-lg transition-transform duration-300 ${isOpen ? 'rotate-180 bg-accent/20 text-accent' : 'text-muted'}`}>
+                    <ChevronDown className="w-5 h-5" />
+                  </div>
                 </button>
 
                 <AnimatePresence initial={false}>
                   {isOpen && (
                     <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="overflow-hidden border-t border-border-default"
+                      variants={expandDown}
+                      initial="initial"
+                      animate="animate"
+                      exit="exit"
+                      className="overflow-hidden border-t border-default bg-secondary/30"
                     >
                       {(subject.sub_subjects || []).sort((a,b) => a.ordem - b.ordem).map(ss => (
                         <div key={ss.id}>
-                          <div className="px-5 py-2 bg-white/[0.02]">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted">
+                          <div className="px-6 py-2.5 bg-white/[0.03]">
+                            <span className="text-[11px] font-black uppercase tracking-[0.15em] text-muted">
                               {ss.nome}
                             </span>
                           </div>
                           {(ss.topics || []).sort((a,b) => a.ordem - b.ordem).map(topic => (
                             <div key={topic.id}
-                              className="flex items-center justify-between px-5 py-3 border-t border-border-subtle hover:bg-white/[0.02] transition-colors group"
+                              className="flex items-center justify-between px-6 md:px-14 py-4 border-t border-subtle hover:bg-white/[0.02] transition-colors group"
                             >
-                              <span className="text-sm text-text-primary">{topic.nome}</span>
+                              <span className="text-base font-bold text-primary group-hover:text-accent transition-colors">{topic.nome}</span>
                               <button
                                 onClick={() => startQuiz(topic)}
                                 disabled={loadingQuiz}
-                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-accent-subtle text-accent border border-accent-border hover:bg-accent/20 transition-all"
+                                className="flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl bg-accent-subtle text-accent border border-accent-border hover:bg-accent/20 transition-all shadow-sm"
                               >
-                                {loadingQuiz ? <Loader2 className="w-3 h-3 animate-spin" /> : <>Iniciar <ChevronRight className="w-3 h-3 ml-0.5" /></>}
+                                {loadingQuiz ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Iniciar Prática <ChevronRight className="w-4 h-4" /></>}
                               </button>
                             </div>
                           ))}
                           {(!ss.topics?.length) && (
-                            <div className="px-5 py-3 text-xs text-text-muted border-t border-border-subtle">
-                              Nenhum tópico cadastrado.
+                            <div className="px-14 py-4 text-sm text-muted border-t border-subtle">
+                              Nenhum tópico disponível.
                             </div>
                           )}
                         </div>
                       ))}
-                      {(!subject.sub_subjects?.length) && (
-                        <div className="px-5 py-4 text-sm text-text-muted">Nenhuma submatéria cadastrada.</div>
-                      )}
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </div>
+              </motion.div>
             );
           })}
-        </div>
+        </motion.div>
       </motion.div>
     );
   }
@@ -212,79 +219,104 @@ export default function QuestoesPage() {
     const progress = ((currentIndex + 1) / questions.length) * 100;
 
     return (
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pb-20">
-        <button onClick={resetToList} className="flex items-center gap-2 text-sm mb-6 text-text-secondary hover:text-text-primary transition-colors">
-          <ArrowLeft className="w-4 h-4" /> Abandonar quiz
+      <motion.div 
+        variants={pageVariants}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+        className="pb-20"
+      >
+        <button onClick={resetToList} className="flex items-center gap-2 text-sm mb-8 text-secondary hover:text-primary transition-colors group">
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Abandonar sessão
         </button>
 
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-3xl mx-auto">
           {/* Header */}
-          <div className="flex justify-between items-center text-sm mb-2 text-text-muted">
-            <span className="font-semibold text-text-primary">{selectedTopic?.nome}</span>
-            <span>{currentIndex + 1} / {questions.length}</span>
+          <div className="flex justify-between items-end mb-4 px-1">
+            <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-accent mb-1">Praticando Tópico</p>
+                <h2 className="text-xl font-bold text-primary">{selectedTopic?.nome}</h2>
+            </div>
+            <div className="text-right">
+                <span className="text-2xl font-black text-primary tracking-tighter">{currentIndex + 1}</span>
+                <span className="text-sm font-bold text-muted ml-1">/ {questions.length}</span>
+            </div>
           </div>
-          <div className="progress-track h-1.5 mb-8">
-            <div className="progress-fill h-1.5" style={{ width: `${progress}%` }} />
+          <div className="progress-track h-2 mb-10 overflow-hidden shadow-sm">
+            <motion.div 
+              className="progress-fill h-2" 
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }} 
+              transition={{ duration: 0.5, ease: "easeOut" }}
+            />
           </div>
 
           {/* Questão */}
-          <div className="glass-card p-6 md:p-8 mb-8">
-             <p className="text-lg font-medium leading-relaxed text-text-primary">
+          <motion.div variants={scaleIn} className="glass-card p-8 md:p-12 mb-8 bg-white/[0.015]">
+             <p className="text-xl md:text-2xl font-bold leading-relaxed text-primary tracking-tight">
                {currentQ.enunciado}
              </p>
-          </div>
+          </motion.div>
 
           {/* Opções */}
-          <div className="space-y-3 mb-8">
+          <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-4 mb-10 text-lg">
             {currentQ.opcoes.map(opt => {
               const isActive = selectedAnswer === opt.letra;
               const isCorrect = isAnswered && opt.letra === currentQ.resposta_correta;
               const isWrong = isAnswered && isActive && opt.letra !== currentQ.resposta_correta;
 
               return (
-                <button
+                <motion.button
                   key={opt.letra}
+                  variants={staggerItem}
                   disabled={isAnswered}
                   onClick={() => setSelectedAnswer(opt.letra)}
                   className={`
-                    w-full text-left flex items-start gap-4 p-4 rounded-xl border transition-all duration-200
-                    ${isCorrect ? 'bg-success/10 border-success text-success shadow-[0_0_20px_rgba(52,211,153,0.1)]' : ''}
-                    ${isWrong ? 'bg-error/10 border-error text-error animate-wrongShake' : ''}
+                    w-full text-left flex items-start gap-5 p-5 rounded-2xl border transition-all duration-300
+                    ${isCorrect ? 'bg-success/10 border-success text-success shadow-[0_0_30px_rgba(var(--success-rgb),0.15)] glow-success' : ''}
+                    ${isWrong ? 'bg-error/10 border-error text-error animate-wrongShake shadow-[0_0_30px_rgba(var(--error-rgb),0.15)] glow-error' : ''}
                     ${!isAnswered && isActive ? 'bg-accent/10 border-accent text-accent shadow-accent' : ''}
-                    ${!isAnswered && !isActive ? 'bg-bg-secondary border-border-default text-text-primary hover:bg-white/[0.04]' : ''}
-                    ${isAnswered && !isCorrect && !isWrong ? 'bg-transparent border-border-subtle text-text-muted opacity-50' : ''}
+                    ${!isAnswered && !isActive ? 'bg-secondary border-default text-primary hover:bg-white/[0.04] hover:translate-x-2' : ''}
+                    ${isAnswered && !isCorrect && !isWrong ? 'bg-transparent border-subtle text-muted opacity-40 grayscale' : ''}
                   `}
                 >
                   <span className={`
-                    w-7 h-7 shrink-0 flex items-center justify-center rounded-lg text-xs font-bold transition-colors
-                    ${isActive || isCorrect ? 'bg-current text-white' : 'bg-white/[0.06] text-text-secondary'}
+                    w-8 h-8 shrink-0 flex items-center justify-center rounded-xl text-sm font-black transition-all
+                    ${isActive || isCorrect ? 'bg-current text-white scale-110 shadow-lg' : 'bg-white/[0.06] text-secondary'}
                   `} style={isActive || isCorrect ? { color: 'white' } : {}}>
                     {opt.letra}
                   </span>
-                  <span className="pt-0.5 text-sm leading-relaxed">{opt.texto}</span>
-                </button>
+                  <span className="pt-0.5 font-bold leading-relaxed">{opt.texto}</span>
+                </motion.button>
               );
             })}
-          </div>
+          </motion.div>
 
           {/* Explicação */}
           <AnimatePresence>
             {isAnswered && (
-              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="glass-card p-5 mb-8 border-accent/20">
-                <h4 className="font-semibold text-sm mb-2 flex items-center gap-2 text-accent">
-                  <PenTool className="w-4 h-4" /> Explicação
-                </h4>
-                <p className="text-sm leading-relaxed text-text-secondary">{currentQ.explicacao}</p>
+              <motion.div 
+                initial={{ opacity: 0, y: 20, scale: 0.98 }} 
+                animate={{ opacity: 1, y: 0, scale: 1 }} 
+                className="glass-card p-6 md:p-8 mb-10 border-accent/20 bg-accent/[0.02]"
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <h4 className="font-black text-xs uppercase tracking-[0.2em] flex items-center gap-3 text-accent">
+                    <PenTool className="w-5 h-5" /> Explicação do Professor
+                  </h4>
+                  <FavoriteButton tipo="questao" referenciaId={currentQ.id} />
+                </div>
+                <p className="text-base leading-relaxed text-secondary font-medium italic">"{currentQ.explicacao}"</p>
               </motion.div>
             )}
           </AnimatePresence>
 
-          <div className="flex justify-end gap-3">
+          <div className="flex justify-end gap-3 sticky bottom-8 z-20">
              {isAnswered && (
                 <button onClick={resetToList}
-                  className="px-6 py-2.5 rounded-xl text-sm font-semibold transition-all text-text-muted hover:text-text-primary mr-auto"
+                  className="px-6 py-4 rounded-2xl text-sm font-black uppercase tracking-widest transition-all text-muted hover:text-primary mr-auto"
                 >
-                  Finalizar
+                  Sair
                 </button>
              )}
 
@@ -293,21 +325,21 @@ export default function QuestoesPage() {
                 onClick={handleAnswer}
                 disabled={!selectedAnswer}
                 className={`
-                  px-8 py-2.5 rounded-xl text-sm font-bold transition-all
+                  px-12 py-4 rounded-2xl text-base font-black uppercase tracking-widest transition-all
                   ${selectedAnswer
                     ? 'bg-gradient-accent text-white shadow-glow-accent hover:opacity-90 active:scale-95'
-                    : 'bg-bg-secondary text-text-muted border border-border-default cursor-not-allowed'
+                    : 'bg-secondary text-muted border border-default cursor-not-allowed'
                   }
                 `}
               >
-                Confirmar Resposta
+                Confirmar
               </button>
             ) : (
               <button
                 onClick={handleNext}
-                className="px-8 py-2.5 rounded-xl text-sm font-bold bg-accent-subtle text-accent border border-accent-border hover:bg-accent/20 transition-all flex items-center gap-2"
+                className="px-12 py-4 rounded-2xl text-base font-black uppercase tracking-widest bg-accent-subtle text-accent border border-accent-border hover:bg-accent/20 transition-all flex items-center gap-3 shadow-lg"
               >
-                {currentIndex < questions.length - 1 ? <>Próxima Questão <ChevronRight className="w-4 h-4" /></> : 'Ver Resultado Final'}
+                {currentIndex < questions.length - 1 ? <>Próxima <ChevronRight className="w-5 h-5" /></> : 'Ver Resultado'}
               </button>
             )}
           </div>
@@ -326,63 +358,79 @@ export default function QuestoesPage() {
     const scoreBgClass = isSuccess ? 'bg-success/10 border-success/30' : isAverage ? 'bg-warning/10 border-warning/30' : 'bg-error/10 border-error/30';
 
     return (
-      <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} className="pb-20">
+      <motion.div 
+        variants={pageVariants}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+        className="pb-20 pt-10"
+      >
         <div className="max-w-md mx-auto text-center">
-          <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 border-2 ${scoreBgClass}`}>
-            <Target className={`w-9 h-9 ${scoreColorClass}`} />
-          </div>
-          <h2 className="text-2xl font-bold mb-1 text-text-primary">Sessão Concluída</h2>
-          <p className="text-sm mb-8 text-text-muted">{selectedTopic?.nome}</p>
+          <motion.div 
+            variants={scaleIn}
+            className={`w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-8 border-2 shadow-2xl ${scoreBgClass}`}
+          >
+            <Target className={`w-11 h-11 ${scoreColorClass}`} />
+          </motion.div>
+          
+          <motion.h2 variants={staggerItem} className="text-3xl font-black text-primary tracking-tight mb-1">Sessão Concluída</motion.h2>
+          <motion.p variants={staggerItem} className="text-sm font-bold mb-10 text-muted uppercase tracking-widest">{selectedTopic?.nome}</motion.p>
 
-          <div className="glass-card p-8 mb-8 border-accent/10">
-            <div className={`text-6xl font-bold mb-2 ${scoreColorClass}`}>
-              {scorePercent}<span className="text-2xl text-text-muted font-medium">%</span>
+          <motion.div variants={scaleIn} className="glass-card p-10 mb-10 border-accent/10 shadow-glow-accent">
+            <div className={`text-7xl font-black mb-3 italic tracking-tighter ${scoreColorClass}`}>
+              {scorePercent}<span className="text-2xl text-muted font-black opacity-30">%</span>
             </div>
-            <p className="text-sm text-text-secondary font-medium">
+            <p className="text-base text-secondary font-bold">
               Você acertou {correct} de {total} questões
             </p>
-          </div>
+          </motion.div>
 
           {sessionHistory.length > 1 && (
-            <div className="text-left mb-8">
-              <p className="text-[10px] font-bold uppercase tracking-[0.1em] mb-3 text-text-muted opacity-70">
-                Histórico de tentativas
+            <motion.div variants={staggerContainer} initial="initial" animate="animate" className="text-left mb-10">
+              <p className="text-[10px] font-black uppercase tracking-[0.25em] mb-4 text-muted opacity-60 px-1">
+                Progresso na Matéria
               </p>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {sessionHistory.map((s, i) => {
                   const sColorClass = s.score_percent >= 70 ? 'text-success' : s.score_percent >= 50 ? 'text-warning' : 'text-error';
                   return (
-                    <div key={i} className={`glass-card flex items-center justify-between px-4 py-3 border border-white/[0.03] ${i === 0 ? 'bg-accent/10 border-accent/20' : ''}`}>
-                      <div className="flex items-center gap-3">
-                        {i === 0 && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-accent text-white uppercase tracking-tight">Atual</span>}
-                        <span className="text-xs text-text-muted font-medium">
+                    <motion.div key={i} variants={staggerItem} className={`glass-card flex items-center justify-between px-5 py-4 border-white/[0.03] ${i === 0 ? 'bg-accent/10 border-accent/20' : ''}`}>
+                      <div className="flex items-center gap-4">
+                        {i === 0 && <span className="text-[10px] font-black px-2 py-1 rounded-lg bg-accent text-white uppercase tracking-tighter glow-accent">Atual</span>}
+                        <span className="text-xs text-muted font-bold">
                           {new Date(s.completed_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
-                      <div className="flex items-center gap-4">
-                        <span className="text-[11px] text-text-muted font-medium">{s.questions_correct}/{s.questions_total}</span>
-                        <span className={`text-sm font-bold ${sColorClass}`}>{s.score_percent}%</span>
+                      <div className="flex items-center gap-6">
+                        <span className="text-xs text-muted font-black opacity-40">{s.questions_correct}/{s.questions_total}</span>
+                        <span className={`text-base font-black ${sColorClass}`}>{s.score_percent}%</span>
                       </div>
-                    </div>
+                    </motion.div>
                   );
                 })}
               </div>
-            </div>
+            </motion.div>
           )}
 
-          <div className="space-y-3">
-            <button
+          <div className="space-y-4">
+            <motion.button
+              variants={staggerItem}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => startQuiz(selectedTopic)}
-              className="w-full py-3.5 rounded-xl font-bold text-sm bg-gradient-accent text-white shadow-glow-accent hover:opacity-90 transition-all flex items-center justify-center gap-2"
+              className="w-full py-5 rounded-2xl font-black text-sm uppercase tracking-widest bg-gradient-accent text-white shadow-glow-accent hover:opacity-90 transition-all flex items-center justify-center gap-3"
             >
-              <RotateCcw className="w-4 h-4" /> Refazer este Quiz
-            </button>
-            <button
+              <RotateCcw className="w-5 h-5" /> Refazer esta bateria
+            </motion.button>
+            <motion.button
+              variants={staggerItem}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={resetToList}
-              className="w-full py-3.5 rounded-xl font-bold text-sm bg-accent-subtle text-accent border border-accent-border hover:bg-accent/20 transition-all flex items-center justify-center gap-2"
+              className="w-full py-5 rounded-2xl font-black text-sm uppercase tracking-widest bg-accent-subtle text-accent border border-accent-border hover:bg-accent/20 transition-all flex items-center justify-center gap-3"
             >
-              <ArrowLeft className="w-4 h-4" /> Estudar outro Tópico
-            </button>
+              <ArrowLeft className="w-5 h-5" /> Estudar outro Tópico
+            </motion.button>
           </div>
         </div>
       </motion.div>

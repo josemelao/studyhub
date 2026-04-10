@@ -4,12 +4,7 @@ import { ChevronRight, Loader2, BookOpen } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useSubjectsContext } from '../contexts/SubjectsContext';
-
-const fadeUp = {
-  initial: { opacity: 0, y: 14 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.35 } }
-};
-const stagger = { animate: { transition: { staggerChildren: 0.07 } } };
+import { pageVariants, staggerContainer, staggerItem } from '../lib/animations';
 
 export default function MateriasPage() {
   const { subjects, loading, fetchSubjects } = useSubjectsContext();
@@ -19,25 +14,37 @@ export default function MateriasPage() {
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-36 gap-4">
       <Loader2 className="w-8 h-8 animate-spin text-accent" />
-      <p className="text-sm text-text-muted">Carregando matérias...</p>
+      <p className="text-sm text-muted">Carregando matérias...</p>
     </div>
   );
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pb-20 space-y-8">
-      <section>
-        <div className="flex items-center gap-3 mb-1">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-accent/10 text-accent">
+    <motion.div 
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      className="pb-20 space-y-8"
+    >
+      <motion.section variants={staggerItem}>
+        {/* Header com ícone animável */}
+        <div className="flex items-center gap-4 mb-2">
+          <div className="w-10 h-10 rounded-2xl flex items-center justify-center bg-accent/10 text-accent glow-accent">
             <BookOpen className="w-5 h-5" />
           </div>
-          <h1 className="text-2xl font-bold text-text-primary">Matérias</h1>
+          <h1 className="text-3xl font-bold text-primary tracking-tight">Matérias</h1>
         </div>
-        <p className="text-sm mt-1 ml-12 text-text-muted">
-          Selecione uma matéria para ver os conteúdos e módulos de estudo.
+        <p className="text-sm text-muted ml-14">
+          Selecione uma matéria para acessar os conteúdos e módulos de estudo.
         </p>
-      </section>
+      </motion.section>
 
-      <motion.div variants={stagger} initial="initial" animate="animate" className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <motion.div 
+        variants={staggerContainer}
+        initial="initial" 
+        animate="animate" 
+        className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+      >
         {subjects.map(sub => {
           const Icon = Icons[sub.icone] || Icons.BookOpen;
           const percent = sub.topicsTotal > 0 ? Math.round((sub.topicsDone / sub.topicsTotal) * 100) : 0;
@@ -45,32 +52,37 @@ export default function MateriasPage() {
           return (
             <Link to={`/materia/${sub.id}`} key={sub.id}>
               <motion.div
-                variants={fadeUp}
-                whileHover={{ y: -3 }}
-                className="glass-card p-5 cursor-pointer group"
+                variants={staggerItem}
+                className="glass-card card-interactive p-6 group"
               >
-                <div className="flex items-center gap-4 mb-5">
+                <div className="flex items-center gap-4 mb-6">
                   {/* Cor dinâmica do banco */}
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-sm"
                     style={{ background: `${sub.cor}20`, color: sub.cor, border: `1px solid ${sub.cor}35` }}>
                     <Icon className="w-6 h-6" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-base text-text-primary group-hover:text-accent transition-colors truncate">
+                    <h3 className="font-bold text-lg text-primary group-hover:text-accent transition-colors truncate">
                       {sub.nome}
                     </h3>
-                    <p className="text-xs mt-0.5 text-text-muted">{sub.categoria}</p>
+                    <p className="text-xs font-medium uppercase tracking-wider text-muted">{sub.categoria}</p>
                   </div>
-                  <ChevronRight className="w-4 h-4 shrink-0 text-text-muted group-hover:text-accent transition-colors" />
+                  <ChevronRight className="w-5 h-5 shrink-0 text-muted group-hover:text-accent group-hover:translate-x-1 transition-all" />
                 </div>
 
                 <div>
-                  <div className="flex justify-between text-xs mb-1.5 text-text-muted">
+                  <div className="flex justify-between text-xs mb-2 text-muted font-medium">
                     <span>{sub.topicsDone} de {sub.topicsTotal} módulos lidos</span>
-                    <span style={{ color: sub.cor }} className="font-semibold">{percent}%</span>
+                    <span style={{ color: sub.cor }} className="font-bold">{percent}%</span>
                   </div>
-                  <div className="progress-track h-1.5">
-                    <div className="progress-fill h-1.5" style={{ width: `${percent}%`, background: sub.cor }} />
+                  <div className="progress-track h-2">
+                    <motion.div 
+                      className="progress-fill h-2" 
+                      initial={{ width: 0 }}
+                      animate={{ width: `${percent}%` }}
+                      transition={{ duration: 1, delay: 0.1 }}
+                      style={{ background: sub.cor }} 
+                    />
                   </div>
                 </div>
               </motion.div>
@@ -79,9 +91,9 @@ export default function MateriasPage() {
         })}
 
         {subjects.length === 0 && (
-          <div className="col-span-2 glass-card p-10 text-center text-text-muted">
+          <motion.div variants={staggerItem} className="col-span-2 glass-card p-12 text-center text-muted">
             Nenhuma matéria cadastrada ainda.
-          </div>
+          </motion.div>
         )}
       </motion.div>
     </motion.div>

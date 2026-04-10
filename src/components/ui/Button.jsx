@@ -3,7 +3,7 @@ import { Loader2 } from 'lucide-react';
 const variants = {
   primary:   'bg-gradient-accent text-white border-transparent shadow-glow-accent hover:opacity-90 hover:-translate-y-px',
   secondary: 'bg-accent-subtle text-accent border-accent-border hover:bg-accent/20',
-  ghost:     'bg-transparent text-text-secondary border-border-default hover:bg-white/5 hover:text-text-primary hover:border-border-hover',
+  ghost:     'bg-transparent text-secondary border-default hover:bg-white/5 hover:text-primary hover:border-hover',
   danger:    'bg-error/10 text-error border-error/25 hover:bg-error/20',
 };
 

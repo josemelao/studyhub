@@ -1,0 +1,82 @@
+/* ============================================
+   STUDYHUB — ANIMATION SYSTEM
+   ============================================ */
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulse-accent {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0); }
+  50%       { box-shadow: 0 0 0 6px rgba(var(--accent-rgb), 0.15); }
+}
+
+@keyframes correctPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(var(--success-rgb), 0.5); }
+  70%  { box-shadow: 0 0 0 14px rgba(var(--success-rgb), 0); }
+  100% { box-shadow: 0 0 0 0 rgba(var(--success-rgb), 0); }
+}
+
+@keyframes wrongShake {
+  0%, 100% { transform: translateX(0); }
+  15%      { transform: translateX(-7px); }
+  30%      { transform: translateX(7px); }
+  45%      { transform: translateX(-5px); }
+  60%      { transform: translateX(5px); }
+  75%      { transform: translateX(-3px); }
+  90%      { transform: translateX(3px); }
+}
+
+@keyframes timerPulse {
+  0%, 100% { color: var(--text-primary); }
+  50%      { color: var(--error); }
+}
+
+@keyframes streakBounce {
+  0%, 100% { transform: scale(1); }
+  40%      { transform: scale(1.25); }
+  60%      { transform: scale(0.95); }
+}
+
+/* Classes utilitárias */
+.animate-fade-in {
+  animation: fadeIn var(--transition-base) both;
+}
+
+.animate-fade-in-scale {
+  animation: fadeInScale var(--transition-base) both;
+}
+
+.animate-slide-right {
+  animation: slideInRight var(--transition-base) both;
+}
+
+.card-interactive {
+  transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
+}
+
+.card-interactive:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-hover);
+}
+
+.card-interactive:active {
+  transform: translateY(-1px);
+}

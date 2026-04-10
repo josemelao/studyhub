@@ -15,28 +15,121 @@ import StudyPage from './pages/StudyPage';
 import ProgressPage from './pages/ProgressPage';
 import MateriasPage from './pages/MateriasPage';
 import QuestoesPage from './pages/QuestoesPage';
+import ExamConfigPage from './pages/ExamConfigPage';
+import ExamSessionPage from './pages/ExamSessionPage';
+import ExamResultPage from './pages/ExamResultPage';
+import FavoritesPage from './pages/FavoritesPage';
 
-// Componente helper para o AnimatePresence funcionar com React Router
-function AnimatedRoutes() {
+function AppContent() {
   const location = useLocation();
 
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        {/* Rota pública */}
         <Route path="/login" element={<LoginPage />} />
-
-        {/* Rotas protegidas envelopadas pelo PageWrapper */}
-        <Route element={<ProtectedRoute><PageWrapper /></ProtectedRoute>}>
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/materias" element={<MateriasPage />} />
-          <Route path="/materia/:id" element={<SubjectPage />} />
-          <Route path="/estudo/:id" element={<StudyPage />} />
-          <Route path="/questoes" element={<QuestoesPage />} />
-          <Route path="/progresso" element={<ProgressPage />} />
-        </Route>
-
-        {/* Fallback */}
+        
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <PageWrapper>
+                <DashboardPage />
+              </PageWrapper>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/materias"
+          element={
+            <ProtectedRoute>
+              <PageWrapper>
+                <MateriasPage />
+              </PageWrapper>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/materia/:id"
+          element={
+            <ProtectedRoute>
+              <PageWrapper>
+                <SubjectPage />
+              </PageWrapper>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/estudo/:id"
+          element={
+            <ProtectedRoute>
+              <PageWrapper>
+                <StudyPage />
+              </PageWrapper>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/progresso"
+          element={
+            <ProtectedRoute>
+              <PageWrapper>
+                <ProgressPage />
+              </PageWrapper>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/questoes"
+          element={
+            <ProtectedRoute>
+              <PageWrapper>
+                <QuestoesPage />
+              </PageWrapper>
+            </ProtectedRoute>
+          }
+        />
+        {/* Novas rotas Modo Prova */}
+        <Route
+          path="/modo-prova"
+          element={
+            <ProtectedRoute>
+              <PageWrapper>
+                <ExamConfigPage />
+              </PageWrapper>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/modo-prova/sessao/:id"
+          element={
+            <ProtectedRoute>
+              <PageWrapper>
+                <ExamSessionPage />
+              </PageWrapper>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/modo-prova/resultado/:id"
+          element={
+            <ProtectedRoute>
+              <PageWrapper>
+                <ExamResultPage />
+              </PageWrapper>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/favoritos"
+          element={
+            <ProtectedRoute>
+              <PageWrapper>
+                <FavoritesPage />
+              </PageWrapper>
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </AnimatePresence>
@@ -48,7 +141,7 @@ function App() {
     <AuthProvider>
       <SubjectsProvider>
         <BrowserRouter>
-          <AnimatedRoutes />
+          <AppContent />
         </BrowserRouter>
       </SubjectsProvider>
     </AuthProvider>

@@ -1,12 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ArrowLeft, Check, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowLeft, Check, Loader2, Bookmark } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
 import '../styles/markdown.css';
+import { pageVariants, staggerItem, scaleIn } from '../lib/animations';
+import FavoriteButton from '../components/ui/FavoriteButton';
+import { updateUserStats } from '../lib/gamification';
+import { checkAndUnlockAchievements } from '../lib/achievements';
 
 export default function StudyPage() {
   const { id: topicId } = useParams();
@@ -53,6 +57,11 @@ export default function StudyPage() {
         conteudo_lido: true,
         last_studied_at: new Date().toISOString()
       }, { onConflict: 'user_id,topic_id' });
+      
+      // Atualizar Stats e Streaks
+      const stats = await updateUserStats(supabase, user.id);
+      await checkAndUnlockAchievements(supabase, user.id, stats);
+
       setAlreadyRead(true);
       navigate(`/materia/${topic.subjects?.id}`);
     } catch (err) { console.error(err); }
@@ -62,7 +71,7 @@ export default function StudyPage() {
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-36 gap-4">
       <Loader2 className="w-8 h-8 animate-spin text-accent" />
-      <p className="text-sm text-text-muted">Carregando conteúdo...</p>
+      <p className="text-sm text-muted">Carregando conteúdo...</p>
     </div>
   );
 
@@ -71,45 +80,62 @@ export default function StudyPage() {
   );
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pb-28">
-      <button
+    <motion.div 
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      className="pb-32"
+    >
+      <motion.button
+        variants={staggerItem}
         onClick={() => navigate(`/materia/${topic.subjects?.id}`)}
-        className="flex items-center gap-2 text-sm mb-6 text-text-secondary hover:text-text-primary transition-colors"
+        className="flex items-center gap-2 text-sm mb-6 text-secondary hover:text-primary transition-colors group"
       >
-        <ArrowLeft className="w-4 h-4" /> Voltar para {topic.subjects?.nome}
-      </button>
+        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Voltar para {topic.subjects?.nome}
+      </motion.button>
 
-      <h1 className="text-2xl font-bold mb-8 text-text-primary">{topic.nome}</h1>
+      <motion.div variants={staggerItem} className="flex justify-between items-start mb-8">
+        <h1 className="text-3xl font-bold text-primary tracking-tight">{topic.nome}</h1>
+        <FavoriteButton tipo="conteudo" referenciaId={topicId} />
+      </motion.div>
 
-      <div className="glass-card p-7">
+      <motion.div variants={staggerItem} className="glass-card p-8 md:p-10">
         {content?.conteudo ? (
           <div className="markdown-body">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{content.conteudo}</ReactMarkdown>
           </div>
         ) : (
-          <div className="text-center py-16 text-text-muted">
+          <div className="text-center py-20 text-muted">
             Nenhum resumo cadastrado para este tópico ainda.
           </div>
         )}
-      </div>
+      </motion.div>
 
-      {/* CTA flutuante */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 w-full max-w-sm px-4">
-        {alreadyRead ? (
-          <div className="flex items-center justify-center gap-2 py-3 text-sm rounded-xl bg-success/10 border border-success/25 text-success">
-            <Check className="w-4 h-4" /> Conteúdo marcado como lido
-          </div>
-        ) : (
-          <button
-            onClick={markAsRead}
-            disabled={marking}
-            className="w-full flex items-center justify-center gap-2 py-3 text-sm font-semibold rounded-xl bg-gradient-accent text-white shadow-glow-accent hover:opacity-90 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            {marking ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-            {marking ? 'Salvando...' : 'Marcar como Lido'}
-          </button>
-        )}
-      </div>
+      {/* CTA flutuante com AnimatePresence */}
+      <AnimatePresence>
+        <motion.div 
+          variants={scaleIn}
+          initial="initial"
+          animate="animate"
+          className="fixed bottom-8 left-1/2 -translate-x-1/2 z-30 w-full max-w-sm px-4"
+        >
+          {alreadyRead ? (
+            <div className="flex items-center justify-center gap-2 py-4 text-sm font-bold rounded-2xl bg-success/10 border border-success/25 text-success backdrop-blur-md shadow-lg">
+              <Check className="w-5 h-5" /> Conteúdo lido
+            </div>
+          ) : (
+            <button
+              onClick={markAsRead}
+              disabled={marking}
+              className="w-full flex items-center justify-center gap-3 py-4 text-base font-bold rounded-2xl bg-gradient-accent text-white shadow-glow-accent hover:opacity-90 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {marking ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />}
+              {marking ? 'Salvando...' : 'Concluir Leitura'}
+            </button>
+          )}
+        </motion.div>
+      </AnimatePresence>
     </motion.div>
   );
 }

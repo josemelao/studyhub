@@ -1,60 +1,84 @@
-import { LogOut, Menu, User, Zap } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Sun, Moon, Palette, Bell, User, Flame } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
 
-export default function Navbar({ onMenuToggle }) {
-  const { user, signOut } = useAuth();
-  const username = user?.email?.split('@')[0] ?? '';
+export default function Navbar() {
+  const { user } = useAuth();
+  const [theme, setTheme] = useState(localStorage.getItem('studyhub-theme') || 'luminary');
+  const [streak, setStreak] = useState(0);
+
+  useEffect(() => {
+    document.body.setAttribute('data-theme', theme);
+    localStorage.setItem('studyhub-theme', theme);
+  }, [theme]);
+
+  useEffect(() => {
+    async function fetchStats() {
+      if (!user) return;
+      const { data } = await supabase
+        .from('user_stats')
+        .select('streak_atual')
+        .eq('user_id', user.id)
+        .single();
+      if (data) setStreak(data.streak_atual);
+    }
+    fetchStats();
+  }, [user]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'luminary' ? 'amber' : 'luminary');
+  };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 h-14 bg-bg-primary/80 backdrop-blur-xl border-b border-border-default">
-      <div className="h-full px-4 md:px-6 flex items-center justify-between">
+    <header className="h-20 border-b border-default bg-primary/50 backdrop-blur-xl flex items-center justify-between px-8 sticky top-0 z-10">
+      <div className="flex items-center gap-6">
+         {streak > 0 && (
+           <motion.div 
+             initial={{ opacity: 0, scale: 0.8 }}
+             animate={{ opacity: 1, scale: 1 }}
+             whileHover={{ scale: 1.05 }}
+             className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-500 shadow-sm"
+           >
+             <Flame className="w-4 h-4 fill-current animate-pulse" />
+             <span className="text-xs font-black tracking-tighter uppercase">{streak} {streak === 1 ? 'DIA' : 'DIAS'}</span>
+           </motion.div>
+         )}
+      </div>
 
-        {/* Left */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={onMenuToggle}
-            className="md:hidden p-2 -ml-1 rounded-lg text-text-secondary hover:bg-accent/10 hover:text-accent transition-colors"
+      <div className="flex items-center gap-4">
+        {/* Theme Toggle */}
+        <button
+          onClick={toggleTheme}
+          className="p-2.5 rounded-xl bg-secondary border border-default text-muted hover:text-accent hover:border-accent/30 transition-all group relative"
+          title="Alternar Tema"
+        >
+          <Palette className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+          <div className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-accent animate-pulse" />
+        </button>
+
+        <button className="p-2.5 rounded-xl bg-secondary border border-default text-muted hover:text-primary transition-all">
+          <Bell className="w-5 h-5" />
+        </button>
+
+        <div className="h-8 w-px bg-border-default mx-1" />
+
+        <div className="flex items-center gap-3 pl-2">
+          <div className="text-right hidden sm:block">
+            <p className="text-sm font-bold text-primary leading-none">
+              {user?.email?.split('@')[0]}
+            </p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-muted mt-1">
+              Estudante Premium
+            </p>
+          </div>
+          <motion.div 
+            whileHover={{ scale: 1.1 }}
+            className="w-10 h-10 rounded-xl bg-gradient-accent flex items-center justify-center border-2 border-white/10 shadow-lg glow-accent"
           >
-            <Menu className="w-5 h-5" />
-          </button>
-
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-gradient-accent shadow-accent">
-              <Zap className="w-4 h-4 text-white" />
-            </div>
-            <span className="text-base font-bold hidden sm:block gradient-text">StudyHub</span>
-          </div>
-        </div>
-
-        {/* Right */}
-        <div className="flex items-center gap-3 group relative cursor-pointer">
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-accent-subtle text-accent border border-accent-border">
-            <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-            Banco do Brasil
-          </div>
-
-          <div className="h-5 w-px bg-border-default" />
-
-          <div className="flex items-center gap-2">
-            <div className="hidden md:flex flex-col items-end">
-              <span className="text-xs font-medium text-text-primary">{username}</span>
-              <span className="text-xs text-text-muted">Concurseiro</span>
-            </div>
-            <div className="w-8 h-8 rounded-full flex items-center justify-center bg-accent-subtle border border-accent-border text-accent transition-all">
-              <User className="w-4 h-4" />
-            </div>
-          </div>
-
-          {/* Dropdown */}
-          <div className="absolute right-0 top-full mt-3 w-48 rounded-xl p-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 bg-bg-secondary border border-border-default shadow-lg">
-            <button
-              onClick={signOut}
-              className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors text-error hover:bg-error/10"
-            >
-              <LogOut className="w-4 h-4" />
-              Sair da conta
-            </button>
-          </div>
+            <User className="w-5 h-5 text-white" />
+          </motion.div>
         </div>
       </div>
     </header>
