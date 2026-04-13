@@ -107,16 +107,16 @@ export default function FavoritesPage() {
           ) : (
             favs.conteudo.map(c => (
               <motion.div key={c.id} variants={staggerItem} className="glass-card flex items-center justify-between p-6 group">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-accent/10 text-accent flex items-center justify-center">
+                <div className="flex items-center gap-4 flex-1 min-w-0">
+                  <div className="w-10 h-10 rounded-xl bg-accent/10 text-accent flex items-center justify-center shrink-0">
                     <BookOpen className="w-5 h-5" />
                   </div>
-                  <div>
-                    <h3 className="font-bold text-primary group-hover:text-accent transition-colors">{c.nome}</h3>
-                    <p className="text-xs text-muted">{c.subjects?.nome}</p>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-primary group-hover:text-accent transition-colors truncate">{c.nome}</h3>
+                    <p className="text-xs text-muted truncate">{c.subjects?.nome}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 shrink-0">
                    <button onClick={() => removeFav('conteudo', c.id)} className="p-2 text-muted hover:text-error transition-colors">
                       <Trash2 className="w-4 h-4" />
                    </button>
@@ -138,16 +138,16 @@ export default function FavoritesPage() {
               return (
                 <motion.div key={q.id} variants={staggerItem} className="glass-card !p-0 overflow-hidden">
                   <div className="p-6 flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-orange-500/10 text-orange-500 flex items-center justify-center">
+                    <div className="flex items-center gap-4 flex-1 min-w-0">
+                      <div className="w-10 h-10 rounded-xl bg-orange-500/10 text-orange-500 flex items-center justify-center shrink-0">
                         <CircleHelp className="w-5 h-5" />
                       </div>
                       <div className="flex-1 min-w-0">
                          <h3 className="font-bold text-primary truncate">{q.enunciado}</h3>
-                         <p className="text-xs text-muted">{q.topic_id?.subjects?.nome} · {q.topic_id?.nome}</p>
+                         <p className="text-xs text-muted truncate">{q.topic_id?.subjects?.nome} · {q.topic_id?.nome}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 shrink-0">
                        <button onClick={() => removeFav('questao', q.id)} className="p-2 text-muted hover:text-error transition-colors">
                           <Trash2 className="w-4 h-4" />
                        </button>
