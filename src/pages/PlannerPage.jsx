@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Calendar as CalendarIcon, BookOpen, Plus, Trash2, 
   Zap, Save, ChevronRight, CheckCircle2, Loader2,
-  AlertCircle, ChevronDown, ChevronUp
+  AlertCircle, ChevronDown, ChevronUp, ChevronLeft
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
@@ -18,16 +18,17 @@ export default function PlannerPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [expandedSubject, setExpandedSubject] = useState(null);
+  const [viewDate, setViewDate] = useState(new Date());
 
-  // Get start of current week (Monday)
+  // Get start of week (Monday) based on viewDate
   const weekStart = useMemo(() => {
-    const d = new Date();
+    const d = new Date(viewDate);
     const day = d.getDay();
     const diff = d.getDate() - day + (day === 0 ? -6 : 1);
     d.setDate(diff);
     d.setHours(0,0,0,0);
     return d;
-  }, []);
+  }, [viewDate]);
 
   const weekDays = useMemo(() => {
     const days = [];
@@ -38,6 +39,14 @@ export default function PlannerPage() {
     }
     return days;
   }, [weekStart]);
+
+  const changeWeek = (offset) => {
+    const next = new Date(viewDate);
+    next.setDate(next.getDate() + (offset * 7));
+    setViewDate(next);
+  };
+
+  const currentMonth = viewDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
 
   useEffect(() => {
     async function loadData() {
@@ -139,20 +148,28 @@ export default function PlannerPage() {
       s.topics.filter(t => !t.read).map(t => ({ ...t, subjectId: s.id, cor: s.cor }))
     );
 
-    if (allUnread.length === 0) return;
+    if (allUnread.length === 0) {
+      alert('Parabéns! Você já concluiu todos os tópicos atuais ou não há novos para planejar.');
+      return;
+    }
 
     const newPlans = { ...plannedDays };
-    let topicIdx = 0;
+    // Pegar IDs de tópicos que já estão no cronograma para não duplicar
+    const alreadyPlannedIds = new Set(Object.values(newPlans).flatMap(day => day.map(t => t.id)));
+    const topicsToSchedule = allUnread.filter(t => !alreadyPlannedIds.has(t.id));
 
-    // Distribuir 2 por dia nos próximos 7 dias
+    if (topicsToSchedule.length === 0) {
+      alert('Todos os seus tópicos pendentes já estão distribuídos na semana!');
+      return;
+    }
+
+    let topicIdx = 0;
+    // Distribuir nos 7 dias da semana atual visualizada
     for (const date of weekDays) {
       const current = [...(newPlans[date] || [])];
-      while (current.length < 2 && topicIdx < allUnread.length) {
-        const topic = allUnread[topicIdx];
-        // Evitar duplicados no mesmo dia
-        if (!current.find(t => t.id === topic.id)) {
-          current.push({ id: topic.id, nome: topic.nome, subjectId: topic.subjectId, cor: topic.cor });
-        }
+      while (current.length < 2 && topicIdx < topicsToSchedule.length) {
+        const topic = topicsToSchedule[topicIdx];
+        current.push({ id: topic.id, nome: topic.nome, subjectId: topic.subjectId, cor: topic.cor });
         topicIdx++;
       }
       newPlans[date] = current;
@@ -176,15 +193,34 @@ export default function PlannerPage() {
       className="pb-20 space-y-8"
     >
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <div className="flex items-center gap-4 mb-2">
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-accent/10 text-accent glow-accent">
-              <CalendarIcon className="w-6 h-6" />
-            </div>
-            <h1 className="text-4xl font-black text-primary tracking-tighter italic">Planejador</h1>
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+        <div className="flex items-center gap-6">
+          <div className="w-14 h-14 rounded-3xl flex items-center justify-center bg-accent/10 text-accent glow-accent shrink-0">
+            <CalendarIcon className="w-7 h-7" />
           </div>
-          <p className="text-sm text-muted ml-16 font-medium">Organize os tópicos que deseja dominar nesta semana.</p>
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-4xl font-black text-primary tracking-tighter italic">Planejador</h1>
+              <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl ml-2">
+                <button 
+                  onClick={() => changeWeek(-1)}
+                  className="p-1.5 hover:bg-white/10 rounded-lg transition-all"
+                >
+                  <ChevronLeft size={16} />
+                </button>
+                <span className="text-[10px] font-black uppercase tracking-widest px-3 min-w-[140px] text-center">
+                  {currentMonth}
+                </span>
+                <button 
+                  onClick={() => changeWeek(1)}
+                  className="p-1.5 hover:bg-white/10 rounded-lg transition-all"
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            </div>
+            <p className="text-sm text-muted font-medium mt-1">Organize os tópicos que deseja dominar nesta semana.</p>
+          </div>
         </div>
 
         <div className="flex items-center gap-3">
