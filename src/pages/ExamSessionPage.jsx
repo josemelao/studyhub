@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { pageVariants, scaleIn, staggerItem } from '../lib/animations';
+import FavoriteButton from '../components/ui/FavoriteButton';
 
 export default function ExamSessionPage() {
   const { id } = useParams();
@@ -181,11 +182,14 @@ export default function ExamSessionPage() {
 
         {/* Questão Atual */}
         <motion.div key={currentIndex} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-           <div className="flex items-center gap-3 mb-4 px-1">
-              <span className="px-3 py-1 rounded-full bg-accent text-[10px] text-white font-black uppercase tracking-tighter">
-                Questão {currentIndex + 1}
-              </span>
-              <div className="h-px flex-1 bg-border-subtle opacity-30" />
+           <div className="flex items-center justify-between mb-4 px-1">
+              <div className="flex items-center gap-3 flex-1">
+                <span className="px-3 py-1 rounded-full bg-accent text-[10px] text-white font-black uppercase tracking-tighter">
+                  Questão {currentIndex + 1}
+                </span>
+                <div className="h-px flex-1 bg-border-subtle opacity-30" />
+              </div>
+              <FavoriteButton tipo="questao" referenciaId={currentQ.id} />
            </div>
 
            <div className="glass-card p-8 md:p-12 mb-8 bg-white/[0.015]">
