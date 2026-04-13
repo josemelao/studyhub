@@ -289,8 +289,12 @@ export default function QuestoesPage() {
                 >
                   <span className={`
                     w-8 h-8 shrink-0 flex items-center justify-center rounded-xl text-sm font-black transition-all
-                    ${isActive || isCorrect ? 'bg-current text-white scale-110 shadow-lg' : 'bg-white/[0.06] text-secondary'}
-                  `} style={isActive || isCorrect ? { color: 'white' } : {}}>
+                    ${isCorrect ? 'bg-success text-white shadow-lg scale-110' : ''}
+                    ${isWrong ? 'bg-error text-white shadow-lg scale-110' : ''}
+                    ${isActive && !isAnswered ? 'bg-accent text-white shadow-lg scale-110' : ''}
+                    ${!isActive && !isAnswered ? 'bg-white/[0.06] text-secondary' : ''}
+                    ${isAnswered && !isActive && !isCorrect ? 'bg-white/[0.02] text-muted' : ''}
+                  `}>
                     {opt.letra}
                   </span>
                   <span className="pt-0.5 font-bold leading-relaxed">{opt.texto}</span>
@@ -350,6 +354,9 @@ export default function QuestoesPage() {
               </button>
             )}
           </div>
+
+          {/* Spacer para evitar que o botão sticky cubra a última opção */}
+          <div className="h-32" />
         </div>
       </motion.div>
     );
