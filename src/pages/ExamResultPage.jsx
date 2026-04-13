@@ -91,6 +91,12 @@ export default function ExamResultPage() {
     if (respostas[q.id] === q.resposta_correta) statsBySubject[subName].correct++;
   });
 
+  const formatDateTime = (isoString) => {
+    if (!isoString) return '';
+    const date = new Date(isoString);
+    return `${date.toLocaleDateString()} às ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+  };
+
   return (
     <motion.div variants={pageVariants} initial="initial" animate="animate" exit="exit" className="pb-24">
       <div className="max-w-4xl mx-auto">
@@ -104,7 +110,10 @@ export default function ExamResultPage() {
             <Trophy className="w-12 h-12 text-accent" />
           </motion.div>
           <motion.h1 variants={staggerItem} className="text-4xl font-black text-primary tracking-tighter mb-2 italic">Desempenho Final</motion.h1>
-          <motion.p variants={staggerItem} className="text-sm font-bold text-muted uppercase tracking-[0.25em]">Simulado Simulado Banco do Brasil</motion.p>
+          <motion.p variants={staggerItem} className="text-sm font-bold text-muted uppercase tracking-[0.25em] mb-2">Simulado Banco do Brasil</motion.p>
+          <motion.p variants={staggerItem} className="text-xs font-semibold text-muted/50 tracking-wider">
+            Iniciado em {formatDateTime(session.iniciada_em)} · Finalizado em {formatDateTime(session.finalizada_em || new Date().toISOString())}
+          </motion.p>
         </div>
 
         {/* Stats Grid */}

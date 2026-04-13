@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { BarChart3, TrendingUp, Crosshair, Award, Clock, Loader2, Flame, Trophy } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
+import { Link } from 'react-router-dom';
 import { pageVariants, staggerContainer, staggerItem, scaleIn } from '../lib/animations';
 
 export default function ProgressPage() {
@@ -10,6 +11,7 @@ export default function ProgressPage() {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ topicsRead: 0, totalQ: 0, totalC: 0, accuracy: 0, sessions: 0, streakMax: 0, conquistas: [] });
   const [sessions, setSessions] = useState([]);
+  const [examSessions, setExamSessions] = useState([]);
 
   useEffect(() => {
     async function fetchData() {
@@ -38,6 +40,15 @@ export default function ProgressPage() {
           .eq('user_id', user.id)
           .single();
 
+        // 4. Buscar histórico de simulados (Modo Prova)
+        const { data: examData } = await supabase
+          .from('exam_sessions')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('status', 'finalizada')
+          .order('finalizada_em', { ascending: false })
+          .limit(10);
+
         const allSessions = sessionsData || [];
         
         setStats({ 
@@ -51,6 +62,7 @@ export default function ProgressPage() {
           conquistas: userStats?.conquistas || []
         });
         setSessions(allSessions);
+        setExamSessions(examData || []);
       } catch (err) {
         console.error(err);
       } finally {
@@ -139,9 +151,45 @@ export default function ProgressPage() {
                 <div className="text-base font-bold text-primary">{s.topics?.nome || 'Questões'}</div>
                 <div className="text-xs font-medium text-muted">{s.topics?.subjects?.nome} · {new Date(s.completed_at).toLocaleDateString()}</div>
               </div>
-              <div className={`text-xl font-black ${s.score_percent >= 70 ? 'text-success' : 'text-accent'}`}>{s.score_percent}%</div>
+              <div className="text-right">
+                <div className={`text-xl font-black ${s.score_percent >= 70 ? 'text-success' : 'text-accent'}`}>{s.score_percent}%</div>
+                <div className="text-[10px] font-bold text-muted mt-0.5 tracking-tight">{s.questions_correct}/{s.questions_total} certas</div>
+              </div>
             </div>
           ))}
+        </div>
+      </motion.section>
+
+      {/* Histórico de Simulados */}
+      <motion.section variants={staggerItem}>
+        <div className="flex items-center gap-3 mb-6 px-1">
+          <Trophy className="w-5 h-5 text-accent" />
+          <h2 className="text-xl font-bold text-primary">Simulados Resolvidos</h2>
+        </div>
+        <div className="space-y-3">
+          {examSessions.length === 0 ? (
+            <div className="glass-card p-8 text-center text-muted border-dashed border-2">
+              Nenhum simulado finalizado. Vá para o Modo Prova!
+            </div>
+          ) : (
+            examSessions.map((exam) => {
+              const date = new Date(exam.finalizada_em).toLocaleDateString();
+              const time = exam.tempo_gasto_segundos ? `${Math.floor(exam.tempo_gasto_segundos/60)}m ${exam.tempo_gasto_segundos%60}s` : '--';
+              const questions = exam.questoes?.length || 0;
+              
+              return (
+                <Link key={exam.id} to={`/modo-prova/resultado/${exam.id}`} className="glass-card flex items-center justify-between p-5 border-l-4 border-accent hover:bg-white/[0.04] transition-all group">
+                  <div>
+                    <div className="text-base font-bold text-primary group-hover:text-accent transition-colors">Simulado Padrão</div>
+                    <div className="text-xs font-medium text-muted mt-0.5">{date} · {questions} questões · ⏱ {time}</div>
+                  </div>
+                  <div className="text-[10px] uppercase tracking-widest font-bold text-accent opacity-0 group-hover:opacity-100 transition-opacity">
+                    Abrir Resultado &rarr;
+                  </div>
+                </Link>
+              );
+            })
+          )}
         </div>
       </motion.section>
     </motion.div>
