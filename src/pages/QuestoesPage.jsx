@@ -312,7 +312,6 @@ export default function QuestoesPage() {
                   <h4 className="font-black text-xs uppercase tracking-[0.2em] flex items-center gap-3 text-accent">
                     <PenTool className="w-5 h-5" /> Explicação do Professor
                   </h4>
-                  <FavoriteButton tipo="questao" referenciaId={currentQ.id} />
                 </div>
                 <p className="text-base leading-relaxed text-secondary font-medium italic">"{currentQ.explicacao}"</p>
               </motion.div>
