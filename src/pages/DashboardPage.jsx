@@ -124,13 +124,13 @@ export default function DashboardPage() {
 
       {/* ── Matérias ── */}
       <section className="pt-4">
-        <div className="flex items-center justify-between mb-6 px-1">
+        <div className="flex items-center justify-between mb-8 px-1">
           <div className="flex items-center gap-3">
-             <div className="w-1 h-6 bg-accent rounded-full" />
-             <h2 className="text-2xl font-black text-primary tracking-tighter italic">Suas Matérias</h2>
+             <div className="w-1.5 h-8 bg-accent rounded-full shadow-accent" />
+             <h2 className="text-3xl font-black text-primary tracking-tighter italic">Suas Matérias</h2>
           </div>
-          <Link to="/materias" className="text-sm font-bold flex items-center gap-2 text-accent hover:opacity-80 transition-opacity">
-            Gerenciar Matérias <ChevronRight className="w-4 h-4" />
+          <Link to="/materias" className="text-xs font-black uppercase tracking-widest flex items-center gap-2 text-accent hover:opacity-80 transition-opacity">
+            Ver Biblioteca <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
 
@@ -138,45 +138,42 @@ export default function DashboardPage() {
           variants={staggerContainer}
           initial="initial" 
           animate="animate" 
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
         >
           {subjects.map(sub => {
-            const percent = sub.topicsTotal > 0 ? Math.round((sub.topicsDone / sub.topicsTotal) * 100) : 0;
             const Icon = Icons[sub.icone] || Icons.BookOpen;
+            const percent = sub.topicsTotal > 0 ? Math.round((sub.topicsDone / sub.topicsTotal) * 100) : 0;
 
             return (
               <Link to={`/materia/${sub.id}`} key={sub.id}>
-                <motion.div variants={staggerItem} className="glass-card card-interactive !p-0 group overflow-hidden border-white/5">
-                  <div className="p-6">
-                    <div className="flex items-start justify-between mb-6">
-                      <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 duration-500"
-                        style={{ background: `${sub.cor}15`, color: sub.cor, border: `1px solid ${sub.cor}30` }}>
-                        <Icon className="w-6 h-6" />
-                      </div>
-                      {percent === 100 && sub.topicsTotal > 0 && (
-                        <CheckCircle2 className="w-5 h-5 shrink-0 text-success" />
-                      )}
+                <motion.div
+                  variants={staggerItem}
+                  className="glass-card card-interactive p-5 group flex flex-col h-full border-white/5"
+                >
+                  <div className="flex items-start justify-between gap-4 mb-4">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm transition-all group-hover:scale-110"
+                      style={{ background: `${sub.cor}15`, color: sub.cor, border: `1px solid ${sub.cor}30` }}>
+                      <Icon className="w-5 h-5" />
                     </div>
-                    
-                    <h3 className="font-black text-lg text-primary group-hover:text-accent transition-colors tracking-tight mb-1">
-                      {sub.nome}
-                    </h3>
-                    <p className="text-xs text-muted font-medium">
-                      {sub.topicsDone} de {sub.topicsTotal} módulos concluídos
-                    </p>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-muted mb-0.5">{sub.categoria}</p>
+                      <h3 className="font-bold text-sm text-primary group-hover:text-accent transition-colors truncate leading-tight tracking-tight">
+                        {sub.nome}
+                      </h3>
+                    </div>
                   </div>
 
-                  <div className="px-6 pb-6 mt-auto">
-                    <div className="flex justify-between text-[10px] mb-2 text-muted font-black uppercase tracking-widest">
-                      <span>Progresso</span>
+                  <div className="mt-auto">
+                    <div className="flex justify-between text-[10px] mb-2 text-muted font-bold uppercase tracking-tight">
+                      <span>{sub.topicsDone}/{sub.topicsTotal} módulos</span>
                       <span style={{ color: sub.cor }}>{percent}%</span>
                     </div>
-                    <div className="progress-track h-2 bg-white/5">
+                    <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
                       <motion.div 
-                        className="progress-fill h-2" 
+                        className="h-full rounded-full" 
                         initial={{ width: 0 }}
                         animate={{ width: `${percent}%` }}
-                        transition={{ duration: 1.2, delay: 0.2 }}
+                        transition={{ duration: 1, delay: 0.1 }}
                         style={{ background: sub.cor, boxShadow: `0 0 10px ${sub.cor}40` }} 
                       />
                     </div>

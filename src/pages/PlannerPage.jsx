@@ -3,11 +3,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Calendar as CalendarIcon, BookOpen, Plus, Trash2, 
   Zap, Save, ChevronRight, CheckCircle2, Loader2,
-  AlertCircle, ChevronDown, ChevronUp, ChevronLeft
+  AlertCircle, ChevronDown, ChevronUp, ChevronLeft,
+  RotateCcw
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
 import { pageVariants, staggerContainer, staggerItem, expandDown } from '../lib/animations';
+import ConfirmModal from '../components/ui/ConfirmModal';
 
 export default function PlannerPage() {
   const { user } = useAuth();
@@ -17,8 +19,10 @@ export default function PlannerPage() {
   const [plannedDays, setPlannedDays] = useState({}); // { 'yyyy-mm-dd': [topicIds] }
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [expanding, setExpanding] = useState(false);
   const [expandedSubject, setExpandedSubject] = useState(null);
   const [viewDate, setViewDate] = useState(new Date());
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   // Get start of week (Monday) based on viewDate
   const weekStart = useMemo(() => {
@@ -177,6 +181,29 @@ export default function PlannerPage() {
     setPlannedDays(newPlans);
   };
 
+  const handleClearWeek = async () => {
+    try {
+      setSaving(true);
+      // Deletar todos os planos dentro do intervalo da semana atual no Supabase
+      const { error } = await supabase
+        .from('study_plans')
+        .delete()
+        .eq('user_id', user.id)
+        .gte('data', weekDays[0])
+        .lte('data', weekDays[6]);
+
+      if (error) throw error;
+      
+      setPlannedDays({});
+      setShowClearConfirm(false);
+    } catch (err) {
+      console.error(err);
+      alert('Erro ao limpar a semana.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-40 gap-4">
       <Loader2 className="w-8 h-8 animate-spin text-accent" />
@@ -190,7 +217,7 @@ export default function PlannerPage() {
       initial="initial"
       animate="animate"
       exit="exit"
-      className="pb-20 space-y-8"
+      className="pb-20 space-y-10"
     >
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
@@ -201,7 +228,7 @@ export default function PlannerPage() {
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-4xl font-black text-primary tracking-tighter italic">Planejador</h1>
-              <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl ml-2">
+              <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl ml-2 border border-white/5">
                 <button 
                   onClick={() => changeWeek(-1)}
                   className="p-1.5 hover:bg-white/10 rounded-lg transition-all"
@@ -224,6 +251,12 @@ export default function PlannerPage() {
         </div>
 
         <div className="flex items-center gap-3">
+           <button 
+             onClick={() => setShowClearConfirm(true)}
+             className="flex items-center gap-2 px-4 py-3 bg-white/5 border border-white/5 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-error/10 hover:text-error transition-all text-muted"
+           >
+              <RotateCcw className="w-4 h-4" /> Limpar
+           </button>
            <button 
              onClick={autoPlan}
              className="flex items-center gap-2 px-6 py-3 bg-white/5 border border-white/5 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-white/10 transition-all text-muted hover:text-primary"
@@ -370,6 +403,16 @@ export default function PlannerPage() {
         </div>
 
       </div>
+
+      <ConfirmModal 
+        isOpen={showClearConfirm}
+        onClose={() => setShowClearConfirm(false)}
+        onConfirm={handleClearWeek}
+        loading={saving}
+        title="Limpar Cronograma?"
+        message="Isso removerá todos os tópicos planejados para esta semana no banco de dados. Esta ação não pode ser desfeita."
+        confirmText="Sim, limpar tudo"
+      />
     </motion.div>
   );
 }

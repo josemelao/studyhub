@@ -113,14 +113,20 @@ export default function HistoryPage() {
         <div className="text-sm font-bold text-primary truncate mb-1">{s.topics?.nome || 'Questões'}</div>
         <div className="text-[9px] font-black text-secondary uppercase tracking-widest">{s.topics?.subjects?.nome}</div>
         
-        <div className="mt-3 pt-3 border-t border-white/5 flex justify-between items-center">
-           <span className="text-[10px] text-muted font-bold">{s.questions_correct}/{s.questions_total} certas</span>
-           <div className="flex gap-1">
-              {[1,2,3,4,5].map(i => (
-                 <div key={i} className={`w-1.5 h-1.5 rounded-full ${i <= (s.score_percent/20) ? 'bg-accent' : 'bg-white/5'}`} />
-              ))}
+           <div className="flex flex-col items-end gap-1.5 min-w-[60px]">
+              <span className="text-[10px] text-muted font-bold tracking-tight">{s.questions_correct}/{s.questions_total} certas</span>
+              <div className="w-16 h-1 bg-white/5 rounded-full overflow-hidden">
+                 <motion.div 
+                   initial={{ width: 0 }}
+                   animate={{ width: `${Math.min(s.score_percent, 100)}%` }}
+                   className="h-full rounded-full"
+                   style={{ 
+                     background: s.score_percent >= 80 ? 'var(--success)' : s.score_percent >= 50 ? 'var(--accent)' : 'var(--error)',
+                     boxShadow: `0 0 8px ${s.score_percent >= 80 ? 'var(--success)' : 'var(--accent)'}40`
+                   }}
+                 />
+              </div>
            </div>
-        </div>
       </motion.div>
     );
   };

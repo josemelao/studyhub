@@ -102,37 +102,108 @@ export default function ProgressPage() {
         <p className="text-sm text-muted ml-14">Acompanhe seu desempenho e conquistas desbloqueadas.</p>
       </motion.section>
 
-      {/* KPIs */}
-      <motion.div variants={staggerContainer} initial="initial" animate="animate" className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {kpis.map((k, i) => (
-          <motion.div key={i} variants={staggerItem} className="glass-card p-6 flex flex-col gap-4">
-            <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${k.colorClass}`}>
-              <k.icon className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-primary tracking-tight">{k.value}</div>
-              <div className="text-xs font-semibold text-muted uppercase tracking-wider">{k.label}</div>
-            </div>
-          </motion.div>
-        ))}
+      {/* Bento Grid de KPIs */}
+      <motion.div variants={staggerContainer} initial="initial" animate="animate" className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-6">
+        {/* KPI Principal: Taxa de Acertos (2x2) */}
+        <motion.div 
+          variants={staggerItem} 
+          className="md:col-span-2 md:row-span-2 glass-card p-8 flex flex-col justify-between bg-accent/5 border-accent/20 relative overflow-hidden group"
+        >
+          <div className="absolute -right-10 -bottom-10 opacity-5 group-hover:opacity-10 transition-opacity">
+            <Crosshair size={160} />
+          </div>
+          <div className="w-12 h-12 rounded-2xl bg-accent text-white flex items-center justify-center shadow-glow-accent mb-auto">
+            <Crosshair className="w-6 h-6" />
+          </div>
+          <div>
+            <div className="text-6xl font-black text-primary tracking-tighter mb-1">{stats.accuracy}%</div>
+            <div className="text-xs font-black text-muted uppercase tracking-widest">Taxa de Acertos Geral</div>
+          </div>
+        </motion.div>
+
+        {/* KPI: Streak Atual (2x1) */}
+        <motion.div 
+          variants={staggerItem} 
+          className="md:col-span-2 lg:col-span-2 glass-card p-6 flex items-center gap-6 border-orange-500/20 bg-orange-500/5"
+        >
+          <div className="w-12 h-12 rounded-2xl bg-orange-500 text-white flex items-center justify-center shadow-glow-orange shrink-0">
+            <Flame className="w-6 h-6" />
+          </div>
+          <div>
+            <div className="text-3xl font-black text-primary tracking-tight">{stats.streakAtual} dias</div>
+            <div className="text-[10px] font-black text-muted uppercase tracking-widest">Streak Atual</div>
+          </div>
+        </motion.div>
+
+        {/* KPI: Questões Respondidas (2x1) */}
+        <motion.div 
+          variants={staggerItem} 
+          className="md:col-span-2 lg:col-span-2 glass-card p-6 flex items-center gap-6 border-blue-500/20 bg-blue-500/5"
+        >
+          <div className="w-12 h-12 rounded-2xl bg-blue-500 text-white flex items-center justify-center shadow-glow-blue shrink-0">
+            <TrendingUp className="w-6 h-6" />
+          </div>
+          <div>
+            <div className="text-3xl font-black text-primary tracking-tight">{stats.totalQ}</div>
+            <div className="text-[10px] font-black text-muted uppercase tracking-widest">Questões Respondidas</div>
+          </div>
+        </motion.div>
+
+        {/* KPI: Módulos Lidos (2x1) */}
+        <motion.div 
+          variants={staggerItem} 
+          className="md:col-span-2 lg:col-span-2 glass-card p-6 flex items-center gap-6 border-success/20 bg-success/5"
+        >
+          <div className="w-12 h-12 rounded-2xl bg-success text-white flex items-center justify-center shadow-glow-success shrink-0">
+            <Award className="w-6 h-6" />
+          </div>
+          <div>
+            <div className="text-3xl font-black text-primary tracking-tight">{stats.topicsRead}</div>
+            <div className="text-[10px] font-black text-muted uppercase tracking-widest">Módulos Lidos</div>
+          </div>
+        </motion.div>
+
+        {/* KPI: Recorde de Streak (2x1) */}
+        <motion.div 
+          variants={staggerItem} 
+          className="md:col-span-2 lg:col-span-2 glass-card p-6 flex items-center gap-6 border-white/5 bg-white/[0.02]"
+        >
+          <div className="w-12 h-12 rounded-2xl bg-white/10 text-primary flex items-center justify-center shrink-0">
+            <Trophy className="w-6 h-6" />
+          </div>
+          <div>
+            <div className="text-3xl font-black text-primary tracking-tight">{stats.streakMax}</div>
+            <div className="text-[10px] font-black text-muted uppercase tracking-widest">Recorde de Streak</div>
+          </div>
+        </motion.div>
       </motion.div>
 
-      {/* Conquistas (Achievements) */}
+      {/* Seção de Conquistas (Bento Gallery) */}
       <motion.section variants={staggerItem}>
-        <div className="flex items-center gap-3 mb-6 px-1">
-          <Trophy className="w-5 h-5 text-accent" />
-          <h2 className="text-xl font-bold text-primary">Suas Conquistas</h2>
+        <div className="flex items-center justify-between mb-6 px-1">
+          <div className="flex items-center gap-3">
+            <Award className="w-5 h-5 text-accent" />
+            <h2 className="text-xl font-black text-primary tracking-tight uppercase tracking-widest text-sm">Suas Conquistas</h2>
+          </div>
+          <span className="text-[10px] font-black text-muted bg-white/5 px-2 py-1 rounded-md">{stats.conquistas.length} DESBLOQUEADAS</span>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
            {stats.conquistas.length === 0 ? (
-             <div className="col-span-full glass-card p-10 text-center text-muted">Ainda não há conquistas. Continue estudando para desbloqueá-las!</div>
+             <div className="col-span-full glass-card p-12 text-center text-muted border-dashed border-2">
+               Ainda não há conquistas. Continue estudando para desbloqueá-las!
+             </div>
            ) : (
              stats.conquistas.map((c, i) => (
-               <motion.div key={i} variants={scaleIn} className="glass-card p-5 flex items-center gap-4 border-accent/20 bg-accent/[0.02]">
-                 <div className="text-3xl">{c.icone}</div>
+               <motion.div 
+                 key={i} 
+                 variants={scaleIn} 
+                 className="glass-card p-4 flex flex-col items-center text-center gap-3 border-white/5 bg-white/[0.01] hover:bg-accent/5 hover:border-accent/20 transition-all group"
+               >
+                 <div className="text-4xl filter drop-shadow-sm group-hover:scale-110 transition-transform">{c.icone}</div>
                  <div>
-                   <div className="text-sm font-black text-primary uppercase tracking-tight">{c.titulo}</div>
-                   <div className="text-[10px] text-muted font-bold mt-0.5">Desbloqueado em {new Date(c.unlocked_at).toLocaleDateString()}</div>
+                   <div className="text-[9px] font-black text-primary uppercase tracking-tighter leading-none mb-1">{c.titulo}</div>
+                   <div className="text-[7px] text-muted font-bold uppercase">{new Date(c.unlocked_at).toLocaleDateString(undefined, { month: 'short', year: '2-digit' })}</div>
                  </div>
                </motion.div>
              ))
