@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
 import { pageVariants, staggerContainer, staggerItem, expandDown } from '../lib/animations';
+import ConfirmModal from '../components/ui/ConfirmModal';
 
 export default function FavoritesPage() {
   const { user } = useAuth();
@@ -13,6 +14,9 @@ export default function FavoritesPage() {
   const [tab, setTab] = useState('conteudo'); // 'conteudo' | 'questao'
   const [favs, setFavs] = useState({ conteudo: [], questao: [] });
   const [openQ, setOpenQ] = useState(null);
+  const [showGabarito, setShowGabarito] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null); // { tipo, id }
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -41,7 +45,7 @@ export default function FavoritesPage() {
         if (quesIds.length > 0) {
           const { data: d } = await supabase
             .from('questions')
-            .select('id, enunciado, resposta_correta, explicacao, topic_id(nome, subjects(nome, cor))')
+            .select('id, enunciado, opcoes, resposta_correta, explicacao, topic_id(nome, subjects(nome, cor))')
             .in('id', quesIds);
           quesData = d || [];
         }
@@ -53,14 +57,20 @@ export default function FavoritesPage() {
     load();
   }, [user]);
 
-  const removeFav = async (tipo, id) => {
+  const removeFav = async () => {
+    if (!itemToDelete) return;
+    const { tipo, id } = itemToDelete;
+    
     try {
+      setIsDeleting(true);
       await supabase.from('favorites').delete().eq('user_id', user.id).eq('tipo', tipo).eq('referencia_id', id);
       setFavs(prev => ({
         ...prev,
         [tipo]: prev[tipo].filter(f => f.id !== id)
       }));
+      setItemToDelete(null);
     } catch (err) { console.error(err); }
+    finally { setIsDeleting(false); }
   };
 
   if (loading) return (
@@ -117,7 +127,7 @@ export default function FavoritesPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                   <button onClick={() => removeFav('conteudo', c.id)} className="p-2 text-muted hover:text-error transition-colors">
+                   <button onClick={() => setItemToDelete({ tipo: 'conteudo', id: c.id })} className="p-2 text-muted hover:text-error transition-colors">
                       <Trash2 className="w-4 h-4" />
                    </button>
                    <button onClick={() => navigate(`/estudo/${c.id}`)} className="flex items-center gap-2 px-5 py-2.5 bg-accent-subtle text-accent rounded-xl text-xs font-black uppercase tracking-widest hover:bg-accent/20 transition-all">
@@ -148,10 +158,21 @@ export default function FavoritesPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                       <button onClick={() => removeFav('questao', q.id)} className="p-2 text-muted hover:text-error transition-colors">
+                       <button onClick={() => setItemToDelete({ tipo: 'questao', id: q.id })} className="p-2 text-muted hover:text-error transition-colors">
                           <Trash2 className="w-4 h-4" />
                        </button>
-                       <button onClick={() => setOpenQ(isOpen ? null : q.id)} className={`p-2 rounded-lg transition-all ${isOpen ? 'bg-accent text-white' : 'bg-secondary text-muted'}`}>
+                       <button 
+                         onClick={() => {
+                           if (isOpen) {
+                             setOpenQ(null);
+                             setShowGabarito(false);
+                           } else {
+                             setOpenQ(q.id);
+                             setShowGabarito(false);
+                           }
+                         }} 
+                         className={`p-2 rounded-lg transition-all ${isOpen ? 'bg-accent text-white' : 'bg-secondary text-muted'}`}
+                       >
                           <ChevronRight className={`w-5 h-5 transition-transform ${isOpen ? 'rotate-90' : ''}`} />
                        </button>
                     </div>
@@ -159,13 +180,44 @@ export default function FavoritesPage() {
 
                   <AnimatePresence>
                     {isOpen && (
-                      <motion.div variants={expandDown} initial="initial" animate="animate" exit="exit" className="p-8 border-t border-default bg-secondary/30">
-                         <p className="text-base font-bold text-primary mb-6 italic leading-relaxed">"{q.enunciado}"</p>
-                         <div className="p-4 rounded-xl bg-accent/10 border border-accent/20">
-                            <h4 className="text-[10px] font-black uppercase text-accent mb-2">Gabarito</h4>
-                            <p className="text-sm font-bold text-primary">Resposta: {q.resposta_correta}</p>
-                            <p className="text-xs text-secondary mt-2 leading-relaxed">"{q.explicacao}"</p>
+                      <motion.div variants={expandDown} initial="initial" animate="animate" exit="exit" className="p-8 border-t border-default bg-secondary/30 space-y-8">
+                         <div className="space-y-4">
+                            <p className="text-base font-bold text-primary italic leading-relaxed">"{q.enunciado}"</p>
+                            
+                            {/* Opções */}
+                            <div className="space-y-2 mt-4">
+                               {q.opcoes?.map(opt => (
+                                  <div key={opt.letra} className="flex items-start gap-4 p-4 rounded-xl bg-white/[0.02] border border-white/[0.05]">
+                                     <span className="w-7 h-7 shrink-0 flex items-center justify-center rounded-lg bg-white/[0.06] text-secondary text-[10px] font-black">{opt.letra}</span>
+                                     <span className="pt-0.5 text-sm font-medium text-primary/80">{opt.texto}</span>
+                                  </div>
+                               ))}
+                            </div>
                          </div>
+
+                         {/* Toggle Gabarito */}
+                         {!showGabarito ? (
+                           <div className="flex justify-center pt-4 border-t border-white/[0.05]">
+                              <button 
+                                onClick={() => setShowGabarito(true)}
+                                className="px-6 py-2.5 bg-accent/10 text-accent border border-accent/20 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-accent/20 transition-all"
+                              >
+                                Ver Gabarito & Resposta
+                              </button>
+                           </div>
+                         ) : (
+                           <motion.div 
+                             initial={{ opacity: 0, scale: 0.95 }}
+                             animate={{ opacity: 1, scale: 1 }}
+                             className="p-4 rounded-xl bg-accent/10 border border-accent/20"
+                           >
+                              <h4 className="text-[10px] font-black uppercase text-accent mb-2">Gabarito Oficial</h4>
+                              <p className="text-sm font-bold text-primary">Resposta Correta: {q.resposta_correta}</p>
+                              {q.explicacao && (
+                                <p className="text-xs text-secondary mt-2 leading-relaxed italic">"{q.explicacao}"</p>
+                              )}
+                           </motion.div>
+                         )}
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -175,6 +227,16 @@ export default function FavoritesPage() {
           )
         )}
       </motion.div>
+
+      <ConfirmModal
+        isOpen={!!itemToDelete}
+        onClose={() => setItemToDelete(null)}
+        onConfirm={removeFav}
+        loading={isDeleting}
+        title="Remover Favorito?"
+        message="Deseja realmente remover este item da sua lista de favoritos? Esta ação não pode ser desfeita."
+        confirmText="Sim, remover"
+      />
     </motion.div>
   );
 }
