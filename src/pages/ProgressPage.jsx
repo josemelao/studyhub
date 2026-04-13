@@ -33,7 +33,7 @@ export default function ProgressPage() {
           .select('questions_total, questions_correct, score_percent, completed_at, topics(nome, subjects(nome, cor))')
           .eq('user_id', user.id)
           .order('completed_at', { ascending: false })
-          .limit(20);
+          .limit(5);
 
         // 3. Buscar stats de gamificação
         const { data: userStats } = await supabase
@@ -49,7 +49,7 @@ export default function ProgressPage() {
           .eq('user_id', user.id)
           .eq('status', 'finalizada')
           .order('finalizada_em', { ascending: false })
-          .limit(10);
+          .limit(5);
 
         const allSessions = sessionsData || [];
         
@@ -178,6 +178,12 @@ export default function ProgressPage() {
                     </div>
                   ))
                 )}
+                
+                {sessions.length > 0 && (
+                  <Link to="/historico" className="block text-center py-3 mt-2 text-xs font-black uppercase tracking-widest text-accent hover:text-accent-hover transition-colors">
+                    Ver Histórico Completo &rarr;
+                  </Link>
+                )}
               </div>
             </motion.div>
           )}
@@ -228,6 +234,12 @@ export default function ProgressPage() {
                       </Link>
                     );
                   })
+                )}
+                
+                {examSessions.length > 0 && (
+                  <Link to="/historico" className="block text-center py-3 mt-2 text-xs font-black uppercase tracking-widest text-accent hover:text-accent-hover transition-colors">
+                    Ver Histórico Completo &rarr;
+                  </Link>
                 )}
               </div>
             </motion.div>

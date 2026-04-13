@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, BookOpen, Target, 
-  BarChart3, Star, LogOut, Trophy 
+  BarChart3, Star, LogOut, Trophy, History 
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { motion } from 'framer-motion';
@@ -13,6 +13,7 @@ const navItems = [
   { path: '/modo-prova', label: 'Modo Prova', icon: Trophy },
   { path: '/questoes', label: 'Praticar', icon: Target },
   { path: '/progresso', label: 'Meu Progresso', icon: BarChart3 },
+  { path: '/historico', label: 'Histórico', icon: History },
   { path: '/favoritos', label: 'Favoritos', icon: Star },
 ];
 

@@ -19,6 +19,7 @@ import ExamConfigPage from './pages/ExamConfigPage';
 import ExamSessionPage from './pages/ExamSessionPage';
 import ExamResultPage from './pages/ExamResultPage';
 import FavoritesPage from './pages/FavoritesPage';
+import HistoryPage from './pages/HistoryPage';
 import AchievementToast from './components/ui/AchievementToast';
 
 function AppContent() {
@@ -126,6 +127,16 @@ function AppContent() {
             <ProtectedRoute>
               <PageWrapper>
                 <FavoritesPage />
+              </PageWrapper>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/historico"
+          element={
+            <ProtectedRoute>
+              <PageWrapper>
+                <HistoryPage />
               </PageWrapper>
             </ProtectedRoute>
           }
