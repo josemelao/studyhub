@@ -43,7 +43,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-4 h-auto md:h-[600px]">
         
         {/* LADO ESQUERDO: Hero + Stats (2x2 total) */}
-        <div className="md:col-span-2 md:row-span-2 grid grid-rows-2 gap-4">
+        <div className="md:col-span-2 md:row-span-2 grid grid-rows-[1.3fr_0.7fr] gap-4">
           {/* Card 1: Hero & Progress */}
           <motion.section 
             variants={staggerItem}
@@ -61,7 +61,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="mt-4 bg-white/[0.03] p-4 rounded-2xl border border-white/5 backdrop-blur-sm">
+            <div className="mt-4 bg-white/[0.03] p-5 rounded-2xl border border-white/5 backdrop-blur-sm">
               <div className="flex justify-between items-end mb-2">
                 <span className="text-[9px] font-black uppercase tracking-widest text-muted">Progresso Atual</span>
                 <span className="text-xs text-accent font-bold">{doneTopics}/{totalTopics} módulos</span>
@@ -88,13 +88,13 @@ export default function DashboardPage() {
               <motion.div 
                 key={i} 
                 variants={staggerItem}
-                className="glass-card p-4 flex flex-col justify-center border-white/5 bg-white/[0.01]"
+                className="glass-card p-4 flex items-center gap-4 border-white/5 bg-white/[0.01]"
               >
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center bg-white/5 ${stat.color} mb-2`}>
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center bg-white/5 ${stat.color} shrink-0`}>
                   <stat.icon className="w-4 h-4" />
                 </div>
                 <div>
-                  <div className="text-xl font-black text-primary leading-none">{stat.value}</div>
+                  <div className="text-lg font-black text-primary leading-none">{stat.value}</div>
                   <div className="text-[9px] text-muted font-bold uppercase tracking-wider mt-1">{stat.label}</div>
                 </div>
               </motion.div>
@@ -103,11 +103,11 @@ export default function DashboardPage() {
         </div>
 
         {/* LADO DIREITO: Calendar + Note + Tasks */}
-        <div className="md:col-span-2 md:row-span-2 grid grid-rows-2 gap-4">
-          <motion.div variants={staggerItem} className="row-span-1">
+        <div className="md:col-span-2 md:row-span-2 grid grid-rows-[0.7fr_1.3fr] gap-4">
+          <motion.div variants={staggerItem} className="h-full overflow-hidden">
              <SmartCalendar />
           </motion.div>
-          <div className="grid grid-cols-2 gap-4 row-span-1">
+          <div className="grid grid-cols-2 gap-4 h-full">
             <motion.div variants={staggerItem} className="h-full">
                <QuickNotes />
             </motion.div>
