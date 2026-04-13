@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import * as Icons from 'lucide-react';
 
 export default function SmartCalendar() {
   const [viewDate, setViewDate] = useState(new Date());
@@ -136,9 +137,32 @@ export default function SmartCalendar() {
               <>Plano para <span className="text-primary font-bold">{selectedDate.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}</span></>
             )}
          </div>
-         <div className="flex -space-x-2 opacity-60 group-hover/cal:opacity-100 transition-opacity">
-            <div className="w-5 h-5 rounded-full border-2 border-secondary bg-accent/20" />
-            <div className="w-5 h-5 rounded-full border-2 border-secondary bg-orange-500/20" />
+         <div className="flex gap-2 opacity-60 group-hover/cal:opacity-100 transition-opacity">
+            {[
+              { name: 'Português', icon: 'BookOpen', color: '#a855f7' },
+              { name: 'Matemática', icon: 'Calculator', color: '#f59e0b' }
+            ].map((sub, i) => {
+              const IconComp = Icons[sub.icon];
+              return (
+                <motion.div
+                  key={i}
+                  whileHover={{ y: -2, scale: 1.1 }}
+                  className="group/icon relative w-6 h-6 rounded-lg flex items-center justify-center border border-white/5 transition-all"
+                  style={{ backgroundColor: `${sub.color}15`, color: sub.color }}
+                >
+                  {IconComp ? (
+                    <IconComp className="w-3.5 h-3.5" />
+                  ) : (
+                    <span className="text-[10px] font-black">{sub.name.charAt(0)}</span>
+                  )}
+                  
+                  {/* Tooltip simples */}
+                  <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-1 bg-secondary border border-white/10 rounded-md text-[8px] font-black uppercase text-white opacity-0 group-hover/icon:opacity-100 pointer-events-none transition-opacity whitespace-nowrap shadow-xl z-20">
+                    {sub.name}
+                  </div>
+                </motion.div>
+              );
+            })}
          </div>
       </div>
     </div>
