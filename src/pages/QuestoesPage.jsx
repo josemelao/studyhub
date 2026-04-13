@@ -338,7 +338,7 @@ export default function QuestoesPage() {
                 className={`
                   px-12 py-4 rounded-2xl text-base font-black uppercase tracking-widest transition-all
                   ${selectedAnswer
-                    ? 'bg-gradient-accent text-white shadow-glow-accent hover:opacity-90 active:scale-95'
+                    ? 'bg-gradient-accent text-white border border-white/20 shadow-glow-accent hover:opacity-90 active:scale-95'
                     : 'bg-secondary text-muted border border-default cursor-not-allowed'
                   }
                 `}
