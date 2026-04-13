@@ -11,7 +11,6 @@ import { pageVariants, staggerContainer, staggerItem, scaleIn } from '../lib/ani
 
 export default function HistoryPage() {
   const { user } = useAuth();
-  console.log("DEBUG: Renderizando HistoryPage v3.1");
 
   
   // States
@@ -178,7 +177,7 @@ export default function HistoryPage() {
   };
 
   return (
-    <motion.div id="history-page-v3" variants={pageVariants} initial="initial" animate="animate" exit="exit" className="pb-24 space-y-8">
+    <motion.div variants={pageVariants} initial="initial" animate="animate" exit="exit" className="pb-24 space-y-8">
       {/* Header section */}
       <motion.section variants={staggerItem} className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
