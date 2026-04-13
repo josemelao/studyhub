@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Trophy, Target, Clock, ArrowLeft, Loader2, 
   ChevronDown, CheckCircle2, XCircle, RotateCcw,
@@ -16,6 +16,7 @@ import { useAuth } from '../hooks/useAuth';
 export default function ExamResultPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [session, setSession] = useState(null);
   const [questions, setQuestions] = useState([]);
@@ -27,7 +28,7 @@ export default function ExamResultPage() {
     async function load() {
       try {
         setLoading(true);
-        const { data: s, error: sE } = await supabase.from('exam_sessions').select('*, subjects(nome)').eq('id', id).single();
+        const { data: s, error: sE } = await supabase.from('exam_sessions').select('*').eq('id', id).single();
         if (sE) throw sE;
         setSession(s);
 
@@ -37,12 +38,12 @@ export default function ExamResultPage() {
           .in('id', s.questoes);
         if (qE) throw qE;
         
-        // Manter ordem do simulado
-        const ordered = s.questoes.map(qid => qData.find(q => q.id === qid));
+        // Manter ordem do simulado; filtrar entradas undefined caso alguma questão não seja encontrada
+        const ordered = s.questoes.map(qid => qData.find(q => q.id === qid)).filter(Boolean);
         setQuestions(ordered);
 
         // ── ATUALIZAR GAMIFICAÇÃO ──
-        if (s.status === 'finalizada' && s.questoes.length > 0) {
+        if (s.status === 'finalizada' && s.questoes.length > 0 && user) {
           const totalQ = s.questoes.length;
           const totalC = ordered.filter(q => s.respostas[q.id] === q.resposta_correta).length;
           
@@ -52,11 +53,14 @@ export default function ExamResultPage() {
           });
           await checkAndUnlockAchievements(supabase, user.id, stats);
         }
-      } catch (err) { setError(err.message); }
+      } catch (err) { 
+        console.error('[ExamResultPage] Erro:', err);
+        setError(err?.message || err?.details || JSON.stringify(err) || 'Erro desconhecido'); 
+      }
       finally { setLoading(false); }
     }
     load();
-  }, [id, user]);
+  }, [id]); // user não precisa ser dep — só usamos dentro do bloco gamificação que já guarda com && user
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-36 gap-4">
@@ -65,11 +69,15 @@ export default function ExamResultPage() {
     </div>
   );
 
-  if (error) return <div className="p-8 text-center text-error">Erro: {error}</div>;
+  if (error) return <div className="p-8 text-center text-error font-bold">Erro: {error}</div>;
+  
+  if (!session) return <div className="p-8 text-center text-muted">Sessão não encontrada.</div>;
 
+
+  const respostas = session.respostas || {}; // guard contra respostas null
   const total = questions.length;
-  const correct = questions.filter(q => session.respostas[q.id] === q.resposta_correta).length;
-  const score = Math.round((correct / total) * 100);
+  const correct = questions.filter(q => respostas[q.id] === q.resposta_correta).length;
+  const score = total > 0 ? Math.round((correct / total) * 100) : 0;
   const timeStr = session.tempo_gasto_segundos 
     ? `${Math.floor(session.tempo_gasto_segundos / 60)}min ${session.tempo_gasto_segundos % 60}s` 
     : 'N/A';
@@ -80,7 +88,7 @@ export default function ExamResultPage() {
     const subName = q.topic_id?.subjects?.nome || 'Geral';
     if (!statsBySubject[subName]) statsBySubject[subName] = { total: 0, correct: 0, color: q.topic_id?.subjects?.cor };
     statsBySubject[subName].total++;
-    if (session.respostas[q.id] === q.resposta_correta) statsBySubject[subName].correct++;
+    if (respostas[q.id] === q.resposta_correta) statsBySubject[subName].correct++;
   });
 
   return (
@@ -161,7 +169,7 @@ export default function ExamResultPage() {
            </h2>
            
            {questions.map((q, i) => {
-             const userAns = session.respostas[q.id];
+             const userAns = respostas[q.id];
              const isCorrect = userAns === q.resposta_correta;
              const isOpen = openQ === q.id;
 
