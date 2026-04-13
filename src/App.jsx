@@ -22,129 +22,55 @@ import FavoritesPage from './pages/FavoritesPage';
 import HistoryPage from './pages/HistoryPage';
 import AchievementToast from './components/ui/AchievementToast';
 
+/**
+ * Componente que gerencia apenas as rotas que precisam do Sidebar/Navbar persistente.
+ * O AnimatePresence aqui garante que apenas o CONTEÚDO da página mude, 
+ * enquanto o PageWrapper (Sidebar) permanece montado.
+ */
+function AuthenticatedApp() {
+  const location = useLocation();
+
+  return (
+    <ProtectedRoute>
+      <PageWrapper>
+        <AnimatePresence mode="wait">
+          <Routes location={location} key={location.pathname}>
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/materias" element={<MateriasPage />} />
+            <Route path="/materia/:id" element={<SubjectPage />} />
+            <Route path="/estudo/:id" element={<StudyPage />} />
+            <Route path="/progresso" element={<ProgressPage />} />
+            <Route path="/questoes" element={<QuestoesPage />} />
+            <Route path="/modo-prova" element={<ExamConfigPage />} />
+            <Route path="/modo-prova/sessao/:id" element={<ExamSessionPage />} />
+            <Route path="/modo-prova/resultado/:id" element={<ExamResultPage />} />
+            <Route path="/favoritos" element={<FavoritesPage />} />
+            <Route path="/historico" element={<HistoryPage />} />
+            
+            {/* Redirecionamentos internos se necessário */}
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          </Routes>
+        </AnimatePresence>
+      </PageWrapper>
+    </ProtectedRoute>
+  );
+}
+
 function AppContent() {
   const location = useLocation();
 
   return (
-    <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        <Route path="/login" element={<LoginPage />} />
-        
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <PageWrapper>
-                <DashboardPage />
-              </PageWrapper>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/materias"
-          element={
-            <ProtectedRoute>
-              <PageWrapper>
-                <MateriasPage />
-              </PageWrapper>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/materia/:id"
-          element={
-            <ProtectedRoute>
-              <PageWrapper>
-                <SubjectPage />
-              </PageWrapper>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/estudo/:id"
-          element={
-            <ProtectedRoute>
-              <PageWrapper>
-                <StudyPage />
-              </PageWrapper>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/progresso"
-          element={
-            <ProtectedRoute>
-              <PageWrapper>
-                <ProgressPage />
-              </PageWrapper>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/questoes"
-          element={
-            <ProtectedRoute>
-              <PageWrapper>
-                <QuestoesPage />
-              </PageWrapper>
-            </ProtectedRoute>
-          }
-        />
-        {/* Novas rotas Modo Prova */}
-        <Route
-          path="/modo-prova"
-          element={
-            <ProtectedRoute>
-              <PageWrapper>
-                <ExamConfigPage />
-              </PageWrapper>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/modo-prova/sessao/:id"
-          element={
-            <ProtectedRoute>
-              <PageWrapper>
-                <ExamSessionPage />
-              </PageWrapper>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/modo-prova/resultado/:id"
-          element={
-            <ProtectedRoute>
-              <PageWrapper>
-                <ExamResultPage />
-              </PageWrapper>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/favoritos"
-          element={
-            <ProtectedRoute>
-              <PageWrapper>
-                <FavoritesPage />
-              </PageWrapper>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/historico"
-          element={
-            <ProtectedRoute>
-              <PageWrapper>
-                <HistoryPage />
-              </PageWrapper>
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
-      </Routes>
-    </AnimatePresence>
+    <Routes location={location}>
+      {/* Rota de Login: Independente e sem Sidebar */}
+      <Route path="/login" element={
+        <AnimatePresence mode="wait">
+          <LoginPage />
+        </AnimatePresence>
+      } />
+
+      {/* Todas as outras rotas: Usam o layout persistente */}
+      <Route path="/*" element={<AuthenticatedApp />} />
+    </Routes>
   );
 }
 
