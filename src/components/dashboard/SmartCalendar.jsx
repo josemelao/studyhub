@@ -1,19 +1,24 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import * as Icons from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
+import { supabase } from '../../lib/supabase';
 
-export default function SmartCalendar() {
+export default function SmartCalendar({ selectedDate, onSelectDate }) {
+  const { user } = useAuth();
   const [viewDate, setViewDate] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [plans, setPlans] = useState({}); // { 'yyyy-mm-dd': topics[] }
+  const [loading, setLoading] = useState(false);
   
   // Gerar os 7 dias da semana baseada na data de visualização
   const weekDays = useMemo(() => {
     const days = [];
-    // Encontrar o início da semana (domingo ou segunda)
+    // Encontrar o início da semana (segunda-feira)
     const start = new Date(viewDate);
     const dayOfWeek = start.getDay();
-    start.setDate(start.getDate() - dayOfWeek); // Ajusta para o domingo da semana atual
+    const diff = start.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+    start.setDate(diff);
     
     for (let i = 0; i < 7; i++) {
         const d = new Date(start);
@@ -22,6 +27,36 @@ export default function SmartCalendar() {
     }
     return days;
   }, [viewDate]);
+
+  // Carregar planos reais do Supabase
+  useEffect(() => {
+    async function fetchPlans() {
+      if (!user) return;
+      try {
+        setLoading(true);
+        const start = weekDays[0].toISOString().split('T')[0];
+        const end = weekDays[6].toISOString().split('T')[0];
+
+        const { data } = await supabase
+          .from('study_plans')
+          .select('data, topicos')
+          .eq('user_id', user.id)
+          .gte('data', start)
+          .lte('data', end);
+
+        const planMap = {};
+        (data || []).forEach(p => {
+          planMap[p.data] = p.topicos || [];
+        });
+        setPlans(planMap);
+      } catch (err) {
+        console.error('Erro ao carregar planos:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchPlans();
+  }, [user, viewDate, weekDays]);
 
   const changeWeek = (offset) => {
     const next = new Date(viewDate);
@@ -47,14 +82,16 @@ export default function SmartCalendar() {
   };
 
   const monthName = viewDate.toLocaleDateString('pt-BR', { month: 'long' });
+  const selectedDateStr = selectedDate.toISOString().split('T')[0];
+  const currentPlan = plans[selectedDateStr] || [];
 
   return (
     <div className="glass-card p-5 h-full flex flex-col justify-between group/cal">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2 text-accent">
           <motion.div
-            animate={{ rotate: [0, 10, -10, 0] }}
-            transition={{ repeat: Infinity, duration: 5, ease: "linear" }}
+            animate={{ rotate: loading ? 360 : [0, 10, -10, 0] }}
+            transition={loading ? { repeat: Infinity, duration: 1, ease: "linear" } : { repeat: Infinity, duration: 5, ease: "linear" }}
           >
             <CalendarIcon className="w-4 h-4" />
           </motion.div>
@@ -91,11 +128,13 @@ export default function SmartCalendar() {
         {weekDays.map((day, idx) => {
           const selected = isSelected(day);
           const today = isToday(day);
+          const dayStr = day.toISOString().split('T')[0];
+          const hasPlan = (plans[dayStr] || []).length > 0;
           
           return (
             <motion.button
               key={day.toISOString()}
-              onClick={() => setSelectedDate(day)}
+              onClick={() => onSelectDate(day)}
               whileHover={{ y: -2 }}
               whileTap={{ scale: 0.95 }}
               className={`relative flex flex-col items-center gap-1.5 flex-1 py-3 rounded-2xl transition-all ${
@@ -119,10 +158,11 @@ export default function SmartCalendar() {
                 {day.getDate()}
               </span>
               
-              {/* Indicador de Tópicos (mock dinâmico) */}
+              {/* Indicador de Tópicos Real */}
               <div className="relative z-10 flex gap-0.5">
-                {idx % 3 === 0 && <div className={`w-1 h-1 rounded-full ${selected ? 'bg-white' : 'bg-accent/40'}`} />}
-                {idx % 4 === 0 && <div className={`w-1 h-1 rounded-full ${selected ? 'bg-white/60' : 'bg-orange-500/40'}`} />}
+                {hasPlan && (
+                  <div className={`w-1 h-1 rounded-full ${selected ? 'bg-white' : 'bg-accent'}`} />
+                )}
               </div>
             </motion.button>
           );
@@ -132,33 +172,24 @@ export default function SmartCalendar() {
       <div className="mt-4 pt-4 border-t border-default flex items-center justify-between">
          <div className="text-[10px] text-muted font-medium">
             {isToday(selectedDate) ? (
-              <>Você tem <span className="text-primary font-bold">2 tópicos</span> planejados para hoje.</>
+              <>Você tem <span className="text-primary font-bold">{currentPlan.length} tópicos</span> planejados para hoje.</>
             ) : (
-              <>Plano para <span className="text-primary font-bold">{selectedDate.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}</span></>
+              <>Plano para <span className="text-primary font-bold">{selectedDate.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}</span> ({currentPlan.length})</>
             )}
          </div>
          <div className="flex gap-2 opacity-60 group-hover/cal:opacity-100 transition-opacity">
-            {[
-              { name: 'Português', icon: 'BookOpen', color: '#a855f7' },
-              { name: 'Matemática', icon: 'Calculator', color: '#f59e0b' }
-            ].map((sub, i) => {
-              const IconComp = Icons[sub.icon];
+            {currentPlan.slice(0, 3).map((topic, i) => {
+              const IconComp = Icons[topic.icon] || Icons.BookOpen;
               return (
                 <motion.div
                   key={i}
                   whileHover={{ y: -2, scale: 1.1 }}
                   className="group/icon relative w-6 h-6 rounded-lg flex items-center justify-center border border-white/5 transition-all"
-                  style={{ backgroundColor: `${sub.color}15`, color: sub.color }}
+                  style={{ backgroundColor: `${topic.cor}15`, color: topic.cor }}
                 >
-                  {IconComp ? (
-                    <IconComp className="w-3.5 h-3.5" />
-                  ) : (
-                    <span className="text-[10px] font-black">{sub.name.charAt(0)}</span>
-                  )}
-                  
-                  {/* Tooltip simples */}
+                  <IconComp className="w-3.5 h-3.5" />
                   <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-1 bg-secondary border border-white/10 rounded-md text-[8px] font-black uppercase text-white opacity-0 group-hover/icon:opacity-100 pointer-events-none transition-opacity whitespace-nowrap shadow-xl z-20">
-                    {sub.name}
+                    {topic.nome}
                   </div>
                 </motion.div>
               );

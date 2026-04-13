@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, BookOpen, Target, 
-  BarChart3, Star, LogOut, Trophy, History 
+  BarChart3, Star, LogOut, Trophy, History, Calendar
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { motion } from 'framer-motion';
@@ -10,6 +10,7 @@ import StreakWidget from '../ui/StreakWidget';
 const navItems = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/materias', label: 'Matérias', icon: BookOpen },
+  { path: '/planejador', label: 'Planejador', icon: Calendar },
   { path: '/modo-prova', label: 'Modo Prova', icon: Trophy },
   { path: '/questoes', label: 'Praticar', icon: Target },
   { path: '/progresso', label: 'Meu Progresso', icon: BarChart3 },

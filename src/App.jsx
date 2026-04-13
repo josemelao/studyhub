@@ -21,6 +21,7 @@ import ExamResultPage from './pages/ExamResultPage';
 import FavoritesPage from './pages/FavoritesPage';
 import HistoryPage from './pages/HistoryPage';
 import AchievementToast from './components/ui/AchievementToast';
+import PlannerPage from './pages/PlannerPage';
 
 /**
  * Componente que gerencia apenas as rotas que precisam do Sidebar/Navbar persistente.
@@ -37,6 +38,7 @@ function AuthenticatedApp() {
           <Routes location={location} key={location.pathname}>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/materias" element={<MateriasPage />} />
+            <Route path="/planejador" element={<PlannerPage />} />
             <Route path="/materia/:id" element={<SubjectPage />} />
             <Route path="/estudo/:id" element={<StudyPage />} />
             <Route path="/progresso" element={<ProgressPage />} />

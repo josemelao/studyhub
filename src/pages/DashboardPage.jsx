@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight, Clock, CheckCircle2, Loader2, TrendingUp, BookOpen } from 'lucide-react';
 import * as Icons from 'lucide-react';
@@ -15,6 +15,7 @@ import DailyTopics from '../components/dashboard/DailyTopics';
 export default function DashboardPage() {
   const { user } = useAuth();
   const { subjects, loading, fetchSubjects } = useSubjectsContext();
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
   useEffect(() => { fetchSubjects(); }, [fetchSubjects]);
 
@@ -105,14 +106,14 @@ export default function DashboardPage() {
         {/* LADO DIREITO: Calendar + Note + Tasks */}
         <div className="md:col-span-2 md:row-span-2 grid grid-rows-[0.7fr_1.3fr] gap-4">
           <motion.div variants={staggerItem} className="h-full overflow-hidden">
-             <SmartCalendar />
+             <SmartCalendar selectedDate={selectedDate} onSelectDate={setSelectedDate} />
           </motion.div>
           <div className="grid grid-cols-2 gap-4 h-full">
             <motion.div variants={staggerItem} className="h-full">
                <QuickNotes />
             </motion.div>
             <motion.div variants={staggerItem} className="h-full">
-               <DailyTopics />
+               <DailyTopics selectedDate={selectedDate} />
             </motion.div>
           </div>
         </div>
