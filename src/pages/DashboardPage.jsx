@@ -7,6 +7,11 @@ import { useSubjectsContext } from '../contexts/SubjectsContext';
 import { Link } from 'react-router-dom';
 import { pageVariants, staggerContainer, staggerItem } from '../lib/animations';
 
+// Bento Components
+import SmartCalendar from '../components/dashboard/SmartCalendar';
+import QuickNotes from '../components/dashboard/QuickNotes';
+import DailyTopics from '../components/dashboard/DailyTopics';
+
 export default function DashboardPage() {
   const { user } = useAuth();
   const { subjects, loading, fetchSubjects } = useSubjectsContext();
@@ -32,69 +37,102 @@ export default function DashboardPage() {
       initial="initial"
       animate="animate"
       exit="exit"
-      className="pb-16 space-y-10"
+      className="pb-16 space-y-8"
     >
-      {/* ── Hero ── */}
-      <motion.section 
-        variants={staggerItem}
-        className="rounded-2xl p-7 relative overflow-hidden bg-gradient-hero border border-default"
-      >
-        <div className="absolute -right-12 -top-12 w-48 h-48 rounded-full bg-accent/15 blur-3xl pointer-events-none" />
-        <h1 className="text-3xl font-bold mb-1 text-primary tracking-tight">
-          Bom dia, {user?.email?.split('@')[0]}! 👋
-        </h1>
-        <div className="flex items-center gap-2 text-sm mt-1 text-secondary">
-          <Clock className="w-4 h-4 text-accent" />
-          <span>Banco do Brasil — <strong className="text-primary">{daysToExam} dias</strong> para a prova</span>
-        </div>
-
-        <div className="mt-6">
-          <div className="flex justify-between text-xs mb-2 text-muted font-medium">
-            <span>Progresso de leitura</span>
-            <span className="text-accent font-bold">{doneTopics}/{totalTopics} módulos</span>
+      {/* ── BENTO GRID ── */}
+      <div className="grid grid-cols-1 md:grid-cols-4 grid-rows-none md:grid-rows-2 gap-4 h-auto md:h-[480px]">
+        
+        {/* Card 1: Hero & Progress (2x2) */}
+        <motion.section 
+          variants={staggerItem}
+          className="md:col-span-2 md:row-span-2 rounded-3xl p-8 relative overflow-hidden bg-gradient-to-br from-accent/20 to-primary border border-accent/10 flex flex-col justify-between"
+        >
+          <div className="absolute -right-12 -top-12 w-64 h-64 rounded-full bg-accent/10 blur-3xl pointer-events-none" />
+          
+          <div>
+            <h1 className="text-4xl font-black mb-2 text-primary tracking-tighter italic">
+              Bom dia, {user?.email?.split('@')[0]}! 👋
+            </h1>
+            <div className="flex items-center gap-3 text-sm mt-2 text-secondary font-medium">
+              <div className="p-2 rounded-lg bg-white/5 border border-white/5">
+                <Clock className="w-4 h-4 text-accent" />
+              </div>
+              <span className="opacity-80">Banco do Brasil — <strong className="text-primary">{daysToExam} dias</strong> para a prova</span>
+            </div>
           </div>
-          <div className="progress-track h-2">
-            <motion.div 
-              className="progress-fill h-2" 
-              initial={{ width: 0 }}
-              animate={{ width: `${progress}%` }}
-              transition={{ duration: 1, ease: "easeOut" }}
-            />
-          </div>
-        </div>
-      </motion.section>
 
-      {/* ── Stats ── */}
+          <div className="mt-8 bg-white/[0.03] p-6 rounded-2xl border border-white/5 backdrop-blur-sm">
+            <div className="flex justify-between items-end mb-3">
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted block mb-1">Seu Progresso Atual</span>
+                <span className="text-2xl font-black text-primary">{progress}%</span>
+              </div>
+              <span className="text-xs text-accent font-bold">{doneTopics}/{totalTopics} módulos</span>
+            </div>
+            <div className="progress-track h-3 bg-white/5">
+              <motion.div 
+                className="progress-fill h-3 shadow-glow-accent" 
+                initial={{ width: 0 }}
+                animate={{ width: `${progress}%` }}
+                transition={{ duration: 1.5, ease: "easeOut" }}
+              />
+            </div>
+          </div>
+        </motion.section>
+
+        {/* Card 2: Smart Calendar (2x1) */}
+        <motion.div variants={staggerItem} className="md:col-span-2 md:row-span-1">
+           <SmartCalendar />
+        </motion.div>
+
+        {/* Card 3: Quick Notes (1x1) */}
+        <motion.div variants={staggerItem} className="md:col-span-1 md:row-span-1">
+           <QuickNotes />
+        </motion.div>
+
+        {/* Card 4: Daily Topics (1x1) */}
+        <motion.div variants={staggerItem} className="md:col-span-1 md:row-span-1">
+           <DailyTopics />
+        </motion.div>
+
+      </div>
+
+      {/* ── Stats Adicionais ── */}
       <motion.section 
         variants={staggerContainer}
-        className="grid grid-cols-2 gap-4"
+        className="grid grid-cols-2 md:grid-cols-4 gap-4"
       >
         {[
-          { label: 'Módulos lidos', value: doneTopics, total: totalTopics, icon: BookOpen },
-          { label: 'Conclusão geral', value: `${progress}%`, icon: TrendingUp },
+          { label: 'Módulos lidos', value: doneTopics, icon: BookOpen, color: 'text-accent' },
+          { label: 'Conclusão geral', value: `${progress}%`, icon: TrendingUp, color: 'text-success' },
+          { label: 'Questões Feitas', value: '342', icon: Icons.Target, color: 'text-orange-500' },
+          { label: 'Semanas Ativo', value: '4', icon: Icons.Zap, color: 'text-yellow-500' },
         ].map((stat, i) => (
           <motion.div 
             key={i} 
             variants={staggerItem}
-            className="glass-card card-interactive p-5 flex items-center gap-4"
+            className="glass-card card-interactive p-4 flex items-center gap-4 border-white/5"
           >
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-accent/10 text-accent">
-              <stat.icon className="w-5 h-5" />
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-white/5 ${stat.color}`}>
+              <stat.icon className="w-4 h-4" />
             </div>
             <div>
-              <div className="text-2xl font-bold text-primary">{stat.value}</div>
-              <div className="text-xs text-muted font-medium">{stat.label}</div>
+              <div className="text-lg font-black text-primary leading-none">{stat.value}</div>
+              <div className="text-[10px] text-muted font-bold uppercase tracking-wider mt-1">{stat.label}</div>
             </div>
           </motion.div>
         ))}
       </motion.section>
 
       {/* ── Matérias ── */}
-      <section>
-        <div className="flex items-center justify-between mb-5 px-1">
-          <h2 className="text-xl font-bold text-primary tracking-tight">Suas Matérias</h2>
-          <Link to="/materias" className="text-sm font-semibold flex items-center gap-1 text-accent hover:text-accent/80 transition-colors">
-            Ver todas <ChevronRight className="w-3.5 h-3.5" />
+      <section className="pt-4">
+        <div className="flex items-center justify-between mb-6 px-1">
+          <div className="flex items-center gap-3">
+             <div className="w-1 h-6 bg-accent rounded-full" />
+             <h2 className="text-2xl font-black text-primary tracking-tighter italic">Suas Matérias</h2>
+          </div>
+          <Link to="/materias" className="text-sm font-bold flex items-center gap-2 text-accent hover:opacity-80 transition-opacity">
+            Gerenciar Matérias <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
 
@@ -102,7 +140,7 @@ export default function DashboardPage() {
           variants={staggerContainer}
           initial="initial" 
           animate="animate" 
-          className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           {subjects.map(sub => {
             const percent = sub.topicsTotal > 0 ? Math.round((sub.topicsDone / sub.topicsTotal) * 100) : 0;
@@ -110,37 +148,38 @@ export default function DashboardPage() {
 
             return (
               <Link to={`/materia/${sub.id}`} key={sub.id}>
-                <motion.div variants={staggerItem} className="glass-card card-interactive p-5 group">
-                  <div className="flex items-start gap-4 mb-5">
-                    <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-all"
-                      style={{ background: `${sub.cor}18`, color: sub.cor, border: `1px solid ${sub.cor}30` }}>
-                      <Icon className="w-5 h-5" />
+                <motion.div variants={staggerItem} className="glass-card card-interactive !p-0 group overflow-hidden border-white/5">
+                  <div className="p-6">
+                    <div className="flex items-start justify-between mb-6">
+                      <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 duration-500"
+                        style={{ background: `${sub.cor}15`, color: sub.cor, border: `1px solid ${sub.cor}30` }}>
+                        <Icon className="w-6 h-6" />
+                      </div>
+                      {percent === 100 && sub.topicsTotal > 0 && (
+                        <CheckCircle2 className="w-5 h-5 shrink-0 text-success" />
+                      )}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-base truncate text-primary group-hover:text-accent transition-colors">
-                        {sub.nome}
-                      </h3>
-                      <p className="text-xs mt-0.5 text-muted">
-                        {sub.topicsDone}/{sub.topicsTotal} módulos lidos
-                      </p>
-                    </div>
-                    {percent === 100 && sub.topicsTotal > 0 && (
-                      <CheckCircle2 className="w-5 h-5 shrink-0 text-success" />
-                    )}
+                    
+                    <h3 className="font-black text-lg text-primary group-hover:text-accent transition-colors tracking-tight mb-1">
+                      {sub.nome}
+                    </h3>
+                    <p className="text-xs text-muted font-medium">
+                      {sub.topicsDone} de {sub.topicsTotal} módulos concluídos
+                    </p>
                   </div>
 
-                  <div>
-                    <div className="flex justify-between text-xs mb-2 text-muted font-medium">
-                      <span>Leitura</span>
-                      <span style={{ color: sub.cor }} className="font-bold">{percent}%</span>
+                  <div className="px-6 pb-6 mt-auto">
+                    <div className="flex justify-between text-[10px] mb-2 text-muted font-black uppercase tracking-widest">
+                      <span>Progresso</span>
+                      <span style={{ color: sub.cor }}>{percent}%</span>
                     </div>
-                    <div className="progress-track h-1.5">
+                    <div className="progress-track h-2 bg-white/5">
                       <motion.div 
-                        className="progress-fill h-1.5" 
+                        className="progress-fill h-2" 
                         initial={{ width: 0 }}
                         animate={{ width: `${percent}%` }}
-                        transition={{ duration: 1, delay: 0.2 }}
-                        style={{ background: sub.cor }} 
+                        transition={{ duration: 1.2, delay: 0.2 }}
+                        style={{ background: sub.cor, boxShadow: `0 0 10px ${sub.cor}40` }} 
                       />
                     </div>
                   </div>

@@ -7,135 +7,88 @@ import {
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
-import { pageVariants, staggerContainer, staggerItem, scaleIn } from '../lib/animations';
+import { pageVariants, staggerContainer, staggerItem } from '../lib/animations';
 
 export default function HistoryPage() {
   const { user } = useAuth();
 
-  
   // States
-  const [tab, setTab] = useState('simulados'); // 'simulados' | 'questoes'
-  const [items, setItems] = useState([]);
+  const [activities, setActivities] = useState({ simulados: [], questoes: [] });
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-  const [page, setPage] = useState(0);
-  const PAGE_SIZE = 15;
-
+  
   // Filters
-  const [period, setPeriod] = useState('all'); // 'all' | 'today' | 'week' | 'month'
-  const [performance, setPerformance] = useState('all'); // 'all' | 'high' | 'low'
+  const [period, setPeriod] = useState('all'); 
   const [showFilters, setShowFilters] = useState(false);
 
-  const fetchHistory = useCallback(async (isLoadMore = false) => {
+  const fetchHistory = useCallback(async () => {
     if (!user) return;
     
     try {
-      if (!isLoadMore) setLoading(true);
-      else setLoadingMore(true);
+      setLoading(true);
 
-      const from = isLoadMore ? page * PAGE_SIZE : 0;
-      const to = from + PAGE_SIZE - 1;
+      // Query Simulados
+      let simQuery = supabase
+        .from('exam_sessions')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('status', 'finalizada')
+        .order('finalizada_em', { ascending: false })
+        .limit(10);
 
-      let query;
-      
-      if (tab === 'simulados') {
-        query = supabase
-          .from('exam_sessions')
-          .select('*', { count: 'exact' })
-          .eq('user_id', user.id)
-          .eq('status', 'finalizada');
+      // Query Questões (Praticar)
+      let quesQuery = supabase
+        .from('quiz_sessions')
+        .select('*, topics(nome, subjects(nome, cor))')
+        .eq('user_id', user.id)
+        .order('completed_at', { ascending: false })
+        .limit(10);
 
-        // Apply filters
-        if (period === 'today') {
-           const today = new Date(); today.setHours(0,0,0,0);
-           query = query.gte('finalizada_em', today.toISOString());
-        } else if (period === 'week') {
-           const week = new Date(); week.setDate(week.getDate() - 7);
-           query = query.gte('finalizada_em', week.toISOString());
-        } else if (period === 'month') {
-           const month = new Date(); month.setMonth(month.getMonth() - 1);
-           query = query.gte('finalizada_em', month.toISOString());
-        }
-        
-        // Sorting and Pagination
-        query = query.order('finalizada_em', { ascending: false }).range(from, to);
-
-      } else {
-        query = supabase
-          .from('quiz_sessions')
-          .select('*, topics(nome, subjects(nome, cor))', { count: 'exact' })
-          .eq('user_id', user.id);
-
-        // Apply filters
-        if (performance === 'high') query = query.gte('score_percent', 80);
-        if (performance === 'low') query = query.lt('score_percent', 50);
-
-        if (period === 'today') {
-           const today = new Date(); today.setHours(0,0,0,0);
-           query = query.gte('completed_at', today.toISOString());
-        } else if (period === 'week') {
-           const week = new Date(); week.setDate(week.getDate() - 7);
-           query = query.gte('completed_at', week.toISOString());
-        } else if (period === 'month') {
-           const month = new Date(); month.setMonth(month.getMonth() - 1);
-           query = query.gte('completed_at', month.toISOString());
-        }
-
-        query = query.order('completed_at', { ascending: false }).range(from, to);
+      // Aplicação de filtros de período se necessário
+      if (period !== 'all') {
+         const dateLimit = new Date();
+         if (period === 'today') dateLimit.setHours(0,0,0,0);
+         else if (period === 'week') dateLimit.setDate(dateLimit.getDate() - 7);
+         else if (period === 'month') dateLimit.setMonth(dateLimit.getMonth() - 1);
+         
+         simQuery = simQuery.gte('finalizada_em', dateLimit.toISOString());
+         quesQuery = quesQuery.gte('completed_at', dateLimit.toISOString());
       }
 
-      const { data, count, error } = await query;
+      const [simRes, quesRes] = await Promise.all([simQuery, quesQuery]);
       
-      if (error) throw error;
-      
-      if (tab === 'simulados' && performance !== 'all') {
-         // App-level filtering for simulado performance since score is calculated
-         // In exam_sessions, score isn't stored directly, but maybe we can just ignore performance filter for simulados or calculate it
-      }
-
-      setItems(prev => isLoadMore ? [...prev, ...(data || [])] : (data || []));
-      setHasMore((from + PAGE_SIZE) < count);
+      setActivities({
+        simulados: simRes.data || [],
+        questoes: quesRes.data || []
+      });
       
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
-      setLoadingMore(false);
     }
-  }, [user, tab, period, performance, page]);
+  }, [user, period]);
 
   useEffect(() => {
-    setPage(0);
-    fetchHistory(false);
-  }, [tab, period, performance]); // Trigger fetch when filters change
-
-  useEffect(() => {
-    if (page > 0) fetchHistory(true);
-  }, [page]);
+    fetchHistory();
+  }, [fetchHistory]);
 
   const renderSimuladoCard = (exam) => {
-    const date = new Date(exam.finalizada_em).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
-    const time = exam.tempo_gasto_segundos ? `${Math.floor(exam.tempo_gasto_segundos/60)}m ${exam.tempo_gasto_segundos%60}s` : '--';
+    const date = new Date(exam.finalizada_em).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
     const questions = exam.questoes?.length || 0;
     
     return (
       <Link key={exam.id} to={`/modo-prova/resultado/${exam.id}`} className="block">
-        <motion.div variants={staggerItem} className="glass-card flex items-center justify-between p-5 md:p-6 border-l-4 border-accent hover:bg-white/[0.04] transition-all group">
-          <div>
-            <div className="flex items-center gap-3 mb-1">
-              <Trophy className="w-4 h-4 text-accent" />
-              <div className="text-base font-bold text-primary group-hover:text-accent transition-colors">Simulado</div>
+        <motion.div variants={staggerItem} className="glass-card flex items-center justify-between p-4 border-l-4 border-accent hover:bg-white/[0.04] transition-all group border-white/5">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-accent/10 text-accent flex items-center justify-center shrink-0">
+               <Trophy className="w-5 h-5" />
             </div>
-            <div className="text-sm font-medium text-muted mt-1">{date}</div>
-            <div className="flex items-center gap-4 mt-3">
-              <span className="text-xs font-bold px-2 py-1 bg-white/[0.05] rounded-md text-secondary">{questions} questões</span>
-              <span className="text-xs font-bold px-2 py-1 bg-white/[0.05] rounded-md text-secondary">⏱ {time}</span>
+            <div>
+              <div className="text-sm font-black text-primary group-hover:text-accent transition-colors">Simulado BB</div>
+              <div className="text-[10px] font-bold text-muted uppercase tracking-widest">{date} · {questions} questões</div>
             </div>
           </div>
-          <div className="w-10 h-10 rounded-full bg-accent/10 text-accent flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all transform group-hover:translate-x-0 -translate-x-4">
-            <ArrowRight className="w-5 h-5" />
-          </div>
+          <ArrowRight className="w-4 h-4 text-muted opacity-0 group-hover:opacity-100 transition-all transform translate-x-0 group-hover:translate-x-1" />
         </motion.div>
       </Link>
     );
@@ -145,74 +98,53 @@ export default function HistoryPage() {
     const isHigh = s.score_percent >= 80;
     const isMedium = s.score_percent >= 50 && s.score_percent < 80;
     const scoreColor = isHigh ? 'text-success' : isMedium ? 'text-warning' : 'text-error';
-    const barColor = isHigh ? 'bg-success' : isMedium ? 'bg-warning' : 'bg-error';
+    const date = new Date(s.completed_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
     
     return (
-      <motion.div key={s.id} variants={staggerItem} className="glass-card flex flex-col md:flex-row md:items-center justify-between p-5 md:p-6 hover:bg-white/[0.02] transition-colors relative overflow-hidden">
-        {/* Color Accent Bar */}
-        <div className={`absolute left-0 top-0 bottom-0 w-1 ${barColor} opacity-50`} />
-        
-        <div className="mb-4 md:mb-0 pl-2">
-          <div className="flex items-center gap-2 mb-1">
-            <Clock className="w-4 h-4 text-muted" />
-            <span className="text-xs font-medium text-muted">{new Date(s.completed_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
-          </div>
-          <div className="text-base md:text-lg font-bold text-primary mt-1">{s.topics?.nome || 'Tópico de Bateria'}</div>
-          <div className="text-xs font-bold text-secondary uppercase tracking-widest mt-1">{s.topics?.subjects?.nome}</div>
+      <motion.div key={s.id} variants={staggerItem} className="glass-card p-4 border-white/5 hover:bg-white/[0.02] transition-colors relative overflow-hidden">
+        <div className="flex justify-between items-start mb-2">
+           <div className="flex items-center gap-2">
+              <Clock className="w-3 h-3 text-muted" />
+              <span className="text-[10px] font-bold text-muted uppercase tracking-tight">{date}</span>
+           </div>
+           <div className={`text-sm font-black ${scoreColor}`}>{s.score_percent}%</div>
         </div>
         
-        <div className="flex items-center gap-6 pl-2 md:pl-0">
-          <div className="text-right">
-            <div className="text-[10px] font-black uppercase tracking-widest text-muted mb-1">Acertos</div>
-            <div className="text-lg font-black text-primary">{s.questions_correct}<span className="text-muted text-sm">/{s.questions_total}</span></div>
-          </div>
-          <div className="h-10 w-px bg-border-default" />
-          <div className="text-right w-16">
-            <div className="text-[10px] font-black uppercase tracking-widest text-muted mb-1">Score</div>
-            <div className={`text-2xl font-black ${scoreColor}`}>{s.score_percent}%</div>
-          </div>
+        <div className="text-sm font-bold text-primary truncate mb-1">{s.topics?.nome || 'Questões'}</div>
+        <div className="text-[9px] font-black text-secondary uppercase tracking-widest">{s.topics?.subjects?.nome}</div>
+        
+        <div className="mt-3 pt-3 border-t border-white/5 flex justify-between items-center">
+           <span className="text-[10px] text-muted font-bold">{s.questions_correct}/{s.questions_total} certas</span>
+           <div className="flex gap-1">
+              {[1,2,3,4,5].map(i => (
+                 <div key={i} className={`w-1.5 h-1.5 rounded-full ${i <= (s.score_percent/20) ? 'bg-accent' : 'bg-white/5'}`} />
+              ))}
+           </div>
         </div>
       </motion.div>
     );
   };
 
   return (
-    <motion.div variants={pageVariants} initial="initial" animate="animate" exit="exit" className="pb-24 space-y-8">
-      {/* Header section */}
+    <motion.div variants={pageVariants} initial="initial" animate="animate" exit="exit" className="pb-24 space-y-10">
       <motion.section variants={staggerItem} className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <div className="flex items-center gap-4 mb-2">
-            <div className="w-10 h-10 rounded-2xl flex items-center justify-center bg-accent/10 text-accent glow-accent">
-              <History className="w-5 h-5" />
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-accent/10 text-accent glow-accent">
+              <History className="w-6 h-6" />
             </div>
-            <h1 className="text-3xl font-bold text-primary tracking-tight">Histórico</h1>
+            <h1 className="text-4xl font-black text-primary tracking-tighter italic">Histórico</h1>
           </div>
-          <p className="text-sm text-muted ml-14">Revise detalhadamente seus testes e simulados passados.</p>
+          <p className="text-sm text-muted ml-16 font-medium">Sua jornada de estudos em uma linha do tempo detalhada.</p>
         </div>
         
         <button 
           onClick={() => setShowFilters(!showFilters)}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all text-sm font-bold ${showFilters ? 'bg-accent/10 border-accent/30 text-accent' : 'bg-secondary border-default text-muted hover:text-primary'}`}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl border transition-all text-xs font-black uppercase tracking-widest ${showFilters ? 'bg-accent/10 border-accent/30 text-accent' : 'bg-secondary border-default text-muted hover:text-primary'}`}
         >
-          <Filter className="w-4 h-4" /> Filtros {period !== 'all' || performance !== 'all' ? '(Ativos)' : ''}
+          <Filter className="w-4 h-4" /> Filtros {period !== 'all' ? '(Ativos)' : ''}
         </button>
       </motion.section>
-
-      {/* Tabs */}
-      <div className="flex gap-2 p-1.5 bg-secondary border border-default rounded-2xl w-full max-w-md">
-        <button
-          onClick={() => setTab('simulados')}
-          className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${tab === 'simulados' ? 'bg-gradient-accent text-white shadow-glow-accent' : 'text-muted hover:text-secondary'}`}
-        >
-          <Trophy className="w-4 h-4" /> Simulados
-        </button>
-        <button
-          onClick={() => setTab('questoes')}
-          className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${tab === 'questoes' ? 'bg-gradient-accent text-white shadow-glow-accent' : 'text-muted hover:text-secondary'}`}
-        >
-          <Clock className="w-4 h-4" /> Questões
-        </button>
-      </div>
 
       {/* Filters (Collapsible) */}
       <AnimatePresence>
@@ -223,69 +155,67 @@ export default function HistoryPage() {
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >
-            <div className="glass-card p-6 border-accent/20 bg-accent/[0.02] grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-3xl">
-              <div>
-                <label className="block text-xs font-black uppercase tracking-widest text-muted mb-3">Período</label>
-                <div className="flex flex-wrap gap-2">
-                  {['all', 'today', 'week', 'month'].map(p => (
-                    <button 
-                      key={p} onClick={() => setPeriod(p)}
-                      className={`px-4 py-2 rounded-lg text-xs font-bold transition-all border ${period === p ? 'bg-accent border-accent text-white shadow-accent' : 'bg-secondary border-transparent text-muted hover:bg-white/[0.05]'}`}
-                    >
-                      {p === 'all' ? 'Todo tempo' : p === 'today' ? 'Hoje' : p === 'week' ? 'Últimos 7 dias' : 'Último Mês'}
-                    </button>
-                  ))}
-                </div>
+            <div className="glass-card p-6 border-accent/20 bg-accent/[0.02] w-full max-w-3xl">
+              <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-4">Período de Visualização</label>
+              <div className="flex flex-wrap gap-2">
+                {['all', 'today', 'week', 'month'].map(p => (
+                  <button 
+                    key={p} onClick={() => setPeriod(p)}
+                    className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all border ${period === p ? 'bg-accent border-accent text-white shadow-glow-accent' : 'bg-secondary border-default text-muted hover:bg-white/[0.05]'}`}
+                  >
+                    {p === 'all' ? 'Todo tempo' : p === 'today' ? 'Hoje' : p === 'week' ? '7 dias' : '30 dias'}
+                  </button>
+                ))}
               </div>
-
-              {tab === 'questoes' && (
-                <div>
-                  <label className="block text-xs font-black uppercase tracking-widest text-muted mb-3">Performance</label>
-                  <div className="flex flex-wrap gap-2">
-                    {['all', 'high', 'low'].map(p => (
-                      <button 
-                        key={p} onClick={() => setPerformance(p)}
-                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all border ${performance === p ? 'bg-accent border-accent text-white shadow-accent' : 'bg-secondary border-transparent text-muted hover:bg-white/[0.05]'}`}
-                      >
-                        {p === 'all' ? 'Todos' : p === 'high' ? 'Acima de 80%' : 'Abaixo de 50%'}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Listing */}
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20 gap-4">
           <Loader2 className="w-8 h-8 animate-spin text-accent" />
-          <p className="text-sm text-muted">Carregando histórico...</p>
-        </div>
-      ) : items.length === 0 ? (
-        <div className="glass-card flex flex-col items-center justify-center py-20 text-center px-4">
-          <Search className="w-12 h-12 text-muted opacity-30 mb-4" />
-          <h3 className="text-lg font-bold text-primary mb-2">Nenhum resultado encontrado</h3>
-          <p className="text-sm text-muted">Ajuste os filtros ou conclua testes para ver seus resultados aqui.</p>
+          <p className="text-sm text-muted font-medium">Sincronizando atividades...</p>
         </div>
       ) : (
-        <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-3">
-          {items.map(item => tab === 'simulados' ? renderSimuladoCard(item) : renderQuestaoCard(item))}
-          
-          {hasMore && (
-            <motion.div variants={staggerItem} className="pt-8 flex justify-center">
-              <button 
-                onClick={() => setPage(p => p + 1)}
-                disabled={loadingMore}
-                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-accent-subtle text-accent border border-accent-border hover:bg-accent/20 transition-all font-bold text-sm shadow-sm"
-              >
-                {loadingMore ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Carregar mais históricos'}
-              </button>
-            </motion.div>
-          )}
-        </motion.div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+           
+           {/* Coluna 1: Simulados */}
+           <div className="space-y-6">
+              <div className="flex items-center gap-3 px-2">
+                 <Trophy className="w-5 h-5 text-accent" />
+                 <h2 className="text-xl font-black text-primary tracking-tight uppercase tracking-widest text-sm">Simulados Completos</h2>
+                 <div className="h-px flex-1 bg-white/5 ml-2" />
+                 <span className="text-[10px] font-black text-muted bg-white/5 px-2 py-1 rounded-md">{activities.simulados.length}</span>
+              </div>
+
+              <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-3">
+                 {activities.simulados.length === 0 ? (
+                    <div className="glass-card p-12 text-center text-muted border-dashed border-white/5">Nenhum simulado finalizado neste período.</div>
+                 ) : (
+                    activities.simulados.map(item => renderSimuladoCard(item))
+                 )}
+              </motion.div>
+           </div>
+
+           {/* Coluna 2: Questões */}
+           <div className="space-y-6">
+              <div className="flex items-center gap-3 px-2">
+                 <Clock className="w-5 h-5 text-success" />
+                 <h2 className="text-xl font-black text-primary tracking-tight uppercase tracking-widest text-sm">Baterias de Prática</h2>
+                 <div className="h-px flex-1 bg-white/5 ml-2" />
+                 <span className="text-[10px] font-black text-muted bg-white/5 px-2 py-1 rounded-md">{activities.questoes.length}</span>
+              </div>
+
+              <motion.div variants={staggerContainer} initial="initial" animate="animate" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4">
+                 {activities.questoes.length === 0 ? (
+                    <div className="glass-card lg:col-span-full p-12 text-center text-muted border-dashed border-white/5">Nenhuma prática registrada.</div>
+                 ) : (
+                    activities.questoes.map(item => renderQuestaoCard(item))
+                 )}
+              </motion.div>
+           </div>
+        </div>
       )}
     </motion.div>
   );
