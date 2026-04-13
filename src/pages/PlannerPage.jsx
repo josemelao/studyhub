@@ -244,17 +244,20 @@ export default function PlannerPage() {
                           <div className="flex items-center gap-1 shrink-0">
                             {/* Inserir nos próximos dias */}
                             <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                               {weekDays.slice(0, 3).map(date => (
-                                 <button
-                                   key={date}
-                                   onClick={() => toggleTopicInDay(date, { ...topic, subjectId: sub.id, cor: sub.cor })}
-                                   className={`w-6 h-6 rounded-lg flex items-center justify-center text-[8px] font-black border border-white/10 hover:bg-accent hover:text-white transition-all ${
-                                     (plannedDays[date] || []).find(t => t.id === topic.id) ? 'bg-accent text-white' : 'bg-white/5 text-muted'
-                                   }`}
-                                 >
-                                   {new Date(date).toLocaleDateString('pt-BR', { weekday: 'short' }).charAt(0).toUpperCase()}
-                                 </button>
-                               ))}
+                               {weekDays.map((date, idx) => {
+                                 const dayLabels = ['S', 'T', 'Q', 'Q', 'S', 'S', 'D'];
+                                 return (
+                                   <button
+                                     key={date}
+                                     onClick={() => toggleTopicInDay(date, { ...topic, subjectId: sub.id, cor: sub.cor })}
+                                     className={`w-6 h-6 rounded-lg flex items-center justify-center text-[8px] font-black border border-white/10 hover:bg-accent hover:text-white transition-all ${
+                                       (plannedDays[date] || []).find(t => t.id === topic.id) ? 'bg-accent text-white' : 'bg-white/5 text-muted'
+                                     }`}
+                                   >
+                                     {dayLabels[idx]}
+                                   </button>
+                                 );
+                               })}
                             </div>
                           </div>
                         </div>
@@ -270,7 +273,7 @@ export default function PlannerPage() {
         {/* GRADE SEMANAL (Col 8) */}
         <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-7 gap-4">
           {weekDays.map((date, i) => {
-            const dateObj = new Date(date);
+            const dateObj = new Date(date + 'T12:00:00');
             const isToday = new Date().toISOString().split('T')[0] === date;
             const plans = plannedDays[date] || [];
 
