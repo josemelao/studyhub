@@ -81,10 +81,7 @@ export default function QuestoesPage() {
   };
 
   const finishQuiz = async () => {
-    const answers = [...sessionAnswers, {
-      questionId: questions[currentIndex].id,
-      isCorrect: selectedAnswer === questions[currentIndex].resposta_correta
-    }];
+    const answers = sessionAnswers;
     const total = questions.length;
     const correct = answers.filter(a => a.isCorrect).length;
     const scorePercent = Math.round((correct / total) * 100);
