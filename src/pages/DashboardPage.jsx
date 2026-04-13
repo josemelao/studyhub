@@ -39,13 +39,6 @@ export default function DashboardPage() {
       exit="exit"
       className="pb-16 space-y-8"
     >
-    <motion.div 
-      variants={pageVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      className="pb-16 space-y-8"
-    >
       {/* ── BENTO GRID ── */}
       <div className="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-4 h-auto md:h-[600px]">
         
