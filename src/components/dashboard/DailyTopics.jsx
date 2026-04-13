@@ -17,14 +17,15 @@ export default function DailyTopics({ selectedDate }) {
         setLoading(true);
         const dateStr = selectedDate.toISOString().split('T')[0];
 
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from('study_plans')
           .select('topicos')
           .eq('user_id', user.id)
           .eq('data', dateStr)
-          .single();
+          .limit(1);
 
-        setTopics(data?.topicos || []);
+        if (error) throw error;
+        setTopics(data?.[0]?.topicos || []);
       } catch (err) {
         console.error('Erro ao carregar tópicos do dia:', err);
         setTopics([]);
