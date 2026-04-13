@@ -224,7 +224,7 @@ export default function QuestoesPage() {
         initial="initial"
         animate="animate"
         exit="exit"
-        className="pb-20"
+        className="pb-32"
       >
         <button onClick={resetToList} className="flex items-center gap-2 text-sm mb-8 text-secondary hover:text-primary transition-colors group">
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Abandonar sessão
@@ -233,9 +233,16 @@ export default function QuestoesPage() {
         <div className="max-w-3xl mx-auto">
           {/* Header */}
           <div className="flex justify-between items-end mb-4 px-1">
-            <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-accent mb-1">Praticando Tópico</p>
-                <h2 className="text-xl font-bold text-primary">{selectedTopic?.nome}</h2>
+            <div className="flex items-center gap-4">
+               <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-accent mb-1">Praticando Tópico</p>
+                  <h2 className="text-xl font-bold text-primary">{selectedTopic?.nome}</h2>
+               </div>
+               {currentQ && (
+                 <div className="mb-0.5">
+                   <FavoriteButton tipo="questao" referenciaId={currentQ.id} />
+                 </div>
+               )}
             </div>
             <div className="text-right">
                 <span className="text-2xl font-black text-primary tracking-tighter">{currentIndex + 1}</span>
@@ -311,7 +318,7 @@ export default function QuestoesPage() {
             )}
           </AnimatePresence>
 
-          <div className="flex justify-end gap-3 sticky bottom-8 z-20">
+          <div className="flex justify-end gap-3 sticky bottom-8 z-20 pb-4">
              {isAnswered && (
                 <button onClick={resetToList}
                   className="px-6 py-4 rounded-2xl text-sm font-black uppercase tracking-widest transition-all text-muted hover:text-primary mr-auto"
