@@ -33,7 +33,7 @@ export default function ConfirmModal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-[100] bg-primary/40 backdrop-blur-md"
+            className="fixed inset-0 z-[100] bg-primary/80 backdrop-blur-md"
           />
 
           {/* Modal Container */}
@@ -42,7 +42,7 @@ export default function ConfirmModal({
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="w-full max-w-sm glass-card border-accent/20 bg-secondary/90 shadow-2xl pointer-events-auto overflow-hidden"
+              className="w-full max-w-sm bg-secondary border border-accent/20 shadow-[0_0_50px_rgba(0,0,0,0.5)] pointer-events-auto overflow-hidden rounded-2xl"
             >
               {/* Header com Ícone de Alerta */}
               <div className="p-6 pb-0 flex flex-col items-center text-center">
