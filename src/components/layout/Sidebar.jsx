@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { motion } from 'framer-motion';
+import StreakWidget from '../ui/StreakWidget';
 
 const navItems = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -28,6 +29,10 @@ export default function Sidebar() {
           <Trophy className="w-5 h-5 text-white" />
         </motion.div>
         <span className="text-xl font-black italic tracking-tighter gradient-text">StudyHub</span>
+      </div>
+
+      <div className="mb-4">
+        <StreakWidget />
       </div>
 
       <nav className="flex-1 px-4 space-y-1.5 pt-4">

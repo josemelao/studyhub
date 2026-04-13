@@ -19,6 +19,7 @@ import ExamConfigPage from './pages/ExamConfigPage';
 import ExamSessionPage from './pages/ExamSessionPage';
 import ExamResultPage from './pages/ExamResultPage';
 import FavoritesPage from './pages/FavoritesPage';
+import AchievementToast from './components/ui/AchievementToast';
 
 function AppContent() {
   const location = useLocation();
@@ -142,6 +143,7 @@ function App() {
       <SubjectsProvider>
         <BrowserRouter>
           <AppContent />
+          <AchievementToast />
         </BrowserRouter>
       </SubjectsProvider>
     </AuthProvider>

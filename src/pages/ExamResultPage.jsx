@@ -51,7 +51,13 @@ export default function ExamResultPage() {
             questoes: totalQ, 
             acertos: totalC 
           });
-          await checkAndUnlockAchievements(supabase, user.id, stats);
+          
+          window.dispatchEvent(new CustomEvent('update_streak'));
+          
+          const unlocked = await checkAndUnlockAchievements(supabase, user.id, stats);
+          if (unlocked && unlocked.length > 0) {
+            window.dispatchEvent(new CustomEvent('show_achievement', { detail: unlocked }));
+          }
         }
       } catch (err) { 
         console.error('[ExamResultPage] Erro:', err);
