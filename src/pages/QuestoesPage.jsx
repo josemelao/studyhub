@@ -322,7 +322,7 @@ export default function QuestoesPage() {
             )}
           </AnimatePresence>
 
-          <div className="flex justify-end gap-3 sticky bottom-8 z-20 pb-4">
+          <div className="flex justify-end gap-3 mt-12 pb-8">
              {isAnswered && (
                 <button onClick={resetToList}
                   className="px-6 py-4 rounded-2xl text-sm font-black uppercase tracking-widest transition-all text-muted hover:text-primary mr-auto"
@@ -354,9 +354,6 @@ export default function QuestoesPage() {
               </button>
             )}
           </div>
-
-          {/* Spacer para evitar que o botão sticky cubra a última opção */}
-          <div className="h-32" />
         </div>
       </motion.div>
     );
