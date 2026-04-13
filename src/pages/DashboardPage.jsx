@@ -39,90 +39,94 @@ export default function DashboardPage() {
       exit="exit"
       className="pb-16 space-y-8"
     >
+    <motion.div 
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      className="pb-16 space-y-8"
+    >
       {/* ── BENTO GRID ── */}
-      <div className="grid grid-cols-1 md:grid-cols-4 grid-rows-none md:grid-rows-2 gap-4 h-auto md:h-[480px]">
+      <div className="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-4 h-auto md:h-[600px]">
         
-        {/* Card 1: Hero & Progress (2x2) */}
-        <motion.section 
-          variants={staggerItem}
-          className="md:col-span-2 md:row-span-2 rounded-3xl p-8 relative overflow-hidden bg-gradient-to-br from-accent/20 to-primary border border-accent/10 flex flex-col justify-between"
-        >
-          <div className="absolute -right-12 -top-12 w-64 h-64 rounded-full bg-accent/10 blur-3xl pointer-events-none" />
-          
-          <div>
-            <h1 className="text-4xl font-black mb-2 text-primary tracking-tighter italic">
-              Bom dia, {user?.email?.split('@')[0]}! 👋
-            </h1>
-            <div className="flex items-center gap-3 text-sm mt-2 text-secondary font-medium">
-              <div className="p-2 rounded-lg bg-white/5 border border-white/5">
+        {/* LADO ESQUERDO: Hero + Stats (2x2 total) */}
+        <div className="md:col-span-2 md:row-span-2 grid grid-rows-2 gap-4">
+          {/* Card 1: Hero & Progress */}
+          <motion.section 
+            variants={staggerItem}
+            className="rounded-3xl p-6 relative overflow-hidden bg-gradient-to-br from-accent/20 to-primary border border-accent/10 flex flex-col justify-between"
+          >
+            <div className="absolute -right-12 -top-12 w-64 h-64 rounded-full bg-accent/10 blur-3xl pointer-events-none" />
+            
+            <div>
+              <h1 className="text-3xl font-black mb-1 text-primary tracking-tighter italic">
+                Bom dia, {user?.email?.split('@')[0]}! 👋
+              </h1>
+              <div className="flex items-center gap-3 text-xs mt-1 text-secondary font-medium">
                 <Clock className="w-4 h-4 text-accent" />
+                <span className="opacity-80">Banco do Brasil — <strong className="text-primary">{daysToExam} dias</strong> para a prova</span>
               </div>
-              <span className="opacity-80">Banco do Brasil — <strong className="text-primary">{daysToExam} dias</strong> para a prova</span>
             </div>
-          </div>
 
-          <div className="mt-8 bg-white/[0.03] p-6 rounded-2xl border border-white/5 backdrop-blur-sm">
-            <div className="flex justify-between items-end mb-3">
-              <div>
-                <span className="text-[10px] font-black uppercase tracking-widest text-muted block mb-1">Seu Progresso Atual</span>
-                <span className="text-2xl font-black text-primary">{progress}%</span>
+            <div className="mt-4 bg-white/[0.03] p-4 rounded-2xl border border-white/5 backdrop-blur-sm">
+              <div className="flex justify-between items-end mb-2">
+                <span className="text-[9px] font-black uppercase tracking-widest text-muted">Progresso Atual</span>
+                <span className="text-xs text-accent font-bold">{doneTopics}/{totalTopics} módulos</span>
               </div>
-              <span className="text-xs text-accent font-bold">{doneTopics}/{totalTopics} módulos</span>
+              <div className="progress-track h-2.5 bg-white/5">
+                <motion.div 
+                  className="progress-fill h-2.5 shadow-glow-accent" 
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progress}%` }}
+                  transition={{ duration: 1.5, ease: "easeOut" }}
+                />
+              </div>
             </div>
-            <div className="progress-track h-3 bg-white/5">
+          </motion.section>
+
+          {/* Card 2: Stats Grid 2x2 */}
+          <div className="grid grid-cols-2 gap-4">
+            {[
+              { label: 'Módulos lidos', value: doneTopics, icon: BookOpen, color: 'text-accent' },
+              { label: 'Conclusão geral', value: `${progress}%`, icon: TrendingUp, color: 'text-success' },
+              { label: 'Questões Feitas', value: '342', icon: Icons.Target, color: 'text-orange-500' },
+              { label: 'Semanas Ativo', value: '4', icon: Icons.Zap, color: 'text-yellow-500' },
+            ].map((stat, i) => (
               <motion.div 
-                className="progress-fill h-3 shadow-glow-accent" 
-                initial={{ width: 0 }}
-                animate={{ width: `${progress}%` }}
-                transition={{ duration: 1.5, ease: "easeOut" }}
-              />
-            </div>
+                key={i} 
+                variants={staggerItem}
+                className="glass-card p-4 flex flex-col justify-center border-white/5 bg-white/[0.01]"
+              >
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center bg-white/5 ${stat.color} mb-2`}>
+                  <stat.icon className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="text-xl font-black text-primary leading-none">{stat.value}</div>
+                  <div className="text-[9px] text-muted font-bold uppercase tracking-wider mt-1">{stat.label}</div>
+                </div>
+              </motion.div>
+            ))}
           </div>
-        </motion.section>
+        </div>
 
-        {/* Card 2: Smart Calendar (2x1) */}
-        <motion.div variants={staggerItem} className="md:col-span-2 md:row-span-1">
-           <SmartCalendar />
-        </motion.div>
-
-        {/* Card 3: Quick Notes (1x1) */}
-        <motion.div variants={staggerItem} className="md:col-span-1 md:row-span-1">
-           <QuickNotes />
-        </motion.div>
-
-        {/* Card 4: Daily Topics (1x1) */}
-        <motion.div variants={staggerItem} className="md:col-span-1 md:row-span-1">
-           <DailyTopics />
-        </motion.div>
+        {/* LADO DIREITO: Calendar + Note + Tasks */}
+        <div className="md:col-span-2 md:row-span-2 grid grid-rows-2 gap-4">
+          <motion.div variants={staggerItem} className="row-span-1">
+             <SmartCalendar />
+          </motion.div>
+          <div className="grid grid-cols-2 gap-4 row-span-1">
+            <motion.div variants={staggerItem} className="h-full">
+               <QuickNotes />
+            </motion.div>
+            <motion.div variants={staggerItem} className="h-full">
+               <DailyTopics />
+            </motion.div>
+          </div>
+        </div>
 
       </div>
 
-      {/* ── Stats Adicionais ── */}
-      <motion.section 
-        variants={staggerContainer}
-        className="grid grid-cols-2 md:grid-cols-4 gap-4"
-      >
-        {[
-          { label: 'Módulos lidos', value: doneTopics, icon: BookOpen, color: 'text-accent' },
-          { label: 'Conclusão geral', value: `${progress}%`, icon: TrendingUp, color: 'text-success' },
-          { label: 'Questões Feitas', value: '342', icon: Icons.Target, color: 'text-orange-500' },
-          { label: 'Semanas Ativo', value: '4', icon: Icons.Zap, color: 'text-yellow-500' },
-        ].map((stat, i) => (
-          <motion.div 
-            key={i} 
-            variants={staggerItem}
-            className="glass-card card-interactive p-4 flex items-center gap-4 border-white/5"
-          >
-            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-white/5 ${stat.color}`}>
-              <stat.icon className="w-4 h-4" />
-            </div>
-            <div>
-              <div className="text-lg font-black text-primary leading-none">{stat.value}</div>
-              <div className="text-[10px] text-muted font-bold uppercase tracking-wider mt-1">{stat.label}</div>
-            </div>
-          </motion.div>
-        ))}
-      </motion.section>
+      {/* ── Matérias ── */}
 
       {/* ── Matérias ── */}
       <section className="pt-4">
