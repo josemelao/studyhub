@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sun, Moon, Palette, Bell, User, Flame, Zap } from 'lucide-react';
+import { Palette, Bell, User, Flame, Zap } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { calculateLevel, calculateProgress } from '../../lib/levels';
+import ThemePicker from '../ui/ThemePicker';
 
 export default function Navbar() {
   const { user } = useAuth();
   const [theme, setTheme] = useState(localStorage.getItem('studyhub-theme') || 'luminary');
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [streak, setStreak] = useState(0);
   const [xp, setXp] = useState(0);
 
@@ -32,7 +34,6 @@ export default function Navbar() {
     }
     fetchStats();
 
-    // Ouvir atualizações em tempo real do sistema de gamificação
     const handleStatsUpdate = (event) => {
       const { streak_atual, pontos_xp } = event.detail;
       setStreak(streak_atual);
@@ -42,10 +43,6 @@ export default function Navbar() {
     window.addEventListener('stats_updated', handleStatsUpdate);
     return () => window.removeEventListener('stats_updated', handleStatsUpdate);
   }, [user]);
-
-  const toggleTheme = () => {
-    setTheme(prev => prev === 'luminary' ? 'amber' : 'luminary');
-  };
 
   return (
     <header className="h-20 border-b border-default bg-primary/50 backdrop-blur-xl flex items-center justify-between px-12 sticky top-0 z-10 md:pl-80">
@@ -76,7 +73,6 @@ export default function Navbar() {
                  <Zap className="w-3 h-3 text-accent fill-current" />
                  <span className="text-[10px] font-black uppercase tracking-widest text-primary">Nível {calculateLevel(xp)}</span>
                </div>
-               {/* Progress Bar Container */}
                <div className="w-24 h-1.5 bg-white/5 rounded-full overflow-hidden border border-white/5 relative">
                  <motion.div 
                    className="absolute top-0 left-0 h-full bg-gradient-to-r from-accent to-accent-light shadow-glow-accent"
@@ -87,7 +83,6 @@ export default function Navbar() {
                </div>
              </div>
              
-             {/* XP Tooltip-like value */}
              <div className="flex flex-col border-l border-white/10 pl-3">
                <span className="text-[9px] font-black uppercase tracking-widest text-muted leading-tight">XP TOTAL</span>
                <span className="text-xs font-black text-primary tracking-tighter">{xp.toLocaleString()}</span>
@@ -96,15 +91,24 @@ export default function Navbar() {
          </div>
 
       <div className="flex items-center gap-4">
-        {/* Theme Toggle */}
-        <button
-          onClick={toggleTheme}
-          className="p-2.5 rounded-xl bg-secondary border border-default text-muted hover:text-accent hover:border-accent/30 transition-all group relative"
-          title="Alternar Tema"
-        >
-          <Palette className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-          <div className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-accent animate-pulse" />
-        </button>
+        {/* Theme Selector Popover */}
+        <div className="relative">
+          <button
+            onClick={() => setIsPickerOpen(!isPickerOpen)}
+            className={`p-2.5 rounded-xl border transition-all group relative ${isPickerOpen ? 'bg-accent text-white border-accent shadow-glow-accent' : 'bg-secondary border-default text-muted hover:text-accent hover:border-accent/30'}`}
+            title="Personalizar Apariência"
+          >
+            <Palette className={`w-5 h-5 group-hover:rotate-12 transition-transform ${isPickerOpen ? 'rotate-12' : ''}`} />
+            {!isPickerOpen && <div className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-accent animate-pulse" />}
+          </button>
+
+          <ThemePicker 
+            currentTheme={theme}
+            onThemeChange={setTheme}
+            isOpen={isPickerOpen}
+            onClose={() => setIsPickerOpen(false)}
+          />
+        </div>
 
         <button className="p-2.5 rounded-xl bg-secondary border border-default text-muted hover:text-primary transition-all">
           <Bell className="w-5 h-5" />

@@ -3,38 +3,34 @@
 @tailwind utilities;
 
 :root {
-  /* ── Backgrounds ── */
-  --bg-primary:   #07080f;
-  --bg-secondary: #0c0d16;
-  --bg-tertiary:  #12131f;
-  --bg-elevated:  #181a2b;
-
-  /* ── Text ── */
-  --text-primary:   #f0eff4;
-  --text-secondary: #9e9da8;
-  --text-muted:     #5c5b66;
-
-  /* ── Shadows ── */
+  /* ── Layout & Constants ── */
   --shadow-sm:     0 1px 3px rgba(0,0,0,0.4);
   --shadow-md:     0 4px 16px rgba(0,0,0,0.5);
   --shadow-lg:     0 8px 32px rgba(0,0,0,0.6);
   --shadow-card:   0 0 0 1px rgba(255, 255, 255, 0.05), 0 4px 24px rgba(0, 0, 0, 0.4);
 
-  /* ── Radii ── */
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 16px;
   --radius-xl: 24px;
 
-  /* ── Transitions ── */
   --transition-fast:   150ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-base:   250ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow:   400ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-spring: 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* ── Theme: Luminary (Violet) ── */
+/* ── Theme: Luminary (Violet/Dark) ── */
 [data-theme='luminary'] {
+  --bg-primary:     #07080f;
+  --bg-secondary:   #0c0d16;
+  --bg-tertiary:    #12131f;
+  --bg-elevated:    #181a2b;
+
+  --text-primary:   #f0eff4;
+  --text-secondary: #9e9da8;
+  --text-muted:     #5c5b66;
+
   --accent:          #7c5cfc;
   --accent-hover:    #9272fd;
   --accent-rgb:      124, 92, 252;
@@ -57,10 +53,21 @@
   --border-hover:    rgba(124, 92, 252, 0.28);
   --border-subtle:   rgba(255, 255, 255, 0.04);
   --shadow-accent:   0 0 24px rgba(124, 92, 252, 0.15);
+  --card-bg:         rgba(255, 255, 255, 0.025);
+  --scroll-track:    rgba(255, 255, 255, 0.02);
 }
 
-/* ── Theme: Amber (Plan V2) ── */
+/* ── Theme: Amber (Orange/Dark) ── */
 [data-theme='amber'] {
+  --bg-primary:     #0a0805;
+  --bg-secondary:   #0f0c08;
+  --bg-tertiary:    #15110c;
+  --bg-elevated:    #1d1811;
+
+  --text-primary:   #fdf8f0;
+  --text-secondary: #b0a89a;
+  --text-muted:     #666056;
+
   --accent:          #f5a623;
   --accent-hover:    #f7b84a;
   --accent-rgb:      245, 166, 35;
@@ -83,6 +90,88 @@
   --border-hover:    rgba(245, 166, 35, 0.28);
   --border-subtle:   rgba(255, 255, 255, 0.04);
   --shadow-accent:   0 0 24px rgba(245, 166, 35, 0.15);
+  --card-bg:         rgba(255, 255, 255, 0.025);
+  --scroll-track:    rgba(255, 255, 255, 0.02);
+}
+
+/* ── Theme: Gravity (Graphite CLI/Slate) ── */
+[data-theme='gravity'] {
+  --bg-primary:     #0f1117;
+  --bg-secondary:   #161922;
+  --bg-tertiary:    #1e232d;
+  --bg-elevated:    #252b37;
+
+  --text-primary:   #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-muted:     #64748b;
+
+  --accent:          #38bdf8;
+  --accent-hover:    #7dd3fc;
+  --accent-rgb:      56, 189, 248;
+  --accent-subtle:   rgba(56, 189, 248, 0.10);
+  --accent-border:   rgba(56, 189, 248, 0.25);
+  --accent-glow:     0 0 32px rgba(56, 189, 248, 0.30);
+
+  --gradient-accent: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+  --gradient-text:   linear-gradient(135deg, #38bdf8 0%, #bae6fd 100%);
+  --gradient-hero:   linear-gradient(135deg, rgba(56,189,248,0.12) 0%, rgba(129,140,248,0.04) 50%, transparent 100%);
+
+  --success:         #22d3ee;
+  --success-rgb:     34, 211, 238;
+  --error:           #f43f5e;
+  --error-rgb:       244, 63, 94;
+  --warning:         #fde047;
+  --warning-rgb:     253, 224, 71;
+
+  --border:          rgba(56, 189, 248, 0.12);
+  --border-hover:    rgba(56, 189, 248, 0.28);
+  --border-subtle:   rgba(255, 255, 255, 0.04);
+  --shadow-accent:   0 0 24px rgba(56, 189, 248, 0.15);
+  --card-bg:         rgba(255, 255, 255, 0.025);
+  --scroll-track:    rgba(255, 255, 255, 0.02);
+}
+
+/* ── Theme: Clean (Light/Indigo) ── */
+[data-theme='clean'] {
+  --bg-primary:     #e2e8f0;
+  --bg-secondary:   #ffffff;
+  --bg-tertiary:    #cbd5e1;
+  --bg-elevated:    #94a3b8;
+
+  --text-primary:   #0f172a;
+  --text-secondary: #334155;
+  --text-muted:     #64748b;
+
+  --accent:          #6366f1;
+  --accent-hover:    #4f46e5;
+  --accent-rgb:      99, 102, 241;
+  --accent-subtle:   rgba(99, 102, 241, 0.08);
+  --accent-border:   rgba(99, 102, 241, 0.20);
+  --accent-glow:     0 0 32px rgba(99, 102, 241, 0.15);
+
+  --gradient-accent: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  --gradient-text:   linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  --gradient-hero:   linear-gradient(135deg, rgba(99,102,241,0.06) 0%, rgba(168,85,247,0.02) 50%, transparent 100%);
+
+  --success:         #059669;
+  --success-rgb:     5, 150, 105;
+  --error:           #dc2626;
+  --error-rgb:       220, 38, 38;
+  --warning:         #d97706;
+  --warning-rgb:     217, 119, 6;
+
+  --border:          rgba(0, 0, 0, 0.18);
+  --border-hover:    rgba(0, 0, 0, 0.25);
+  --border-subtle:   rgba(0, 0, 0, 0.08);
+  --shadow-accent:   0 0 24px rgba(99, 102, 241, 0.10);
+  --card-bg:         #ffffff;
+  --scroll-track:    rgba(0, 0, 0, 0.1);
+  
+  /* Sobrescrever sombras para o tema claro - Elevação Padrão como Borda */
+  --shadow-sm:       0 1px 2px rgba(0,0,0,0.1);
+  --shadow-md:       0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+  --shadow-lg:       0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+  --shadow-card:     0 0 0 1px rgba(0,0,0,0.08), 0 4px 14px 0 rgba(0,0,0,0.12);
 }
 
 @layer base {
@@ -113,7 +202,7 @@
   }
   
   ::-webkit-scrollbar-track { 
-    background: rgba(255, 255, 255, 0.02); 
+    background: var(--scroll-track); 
   }
   
   ::-webkit-scrollbar-thumb {
@@ -137,7 +226,7 @@
 
 @layer components {
   .glass-card {
-    background: rgba(255, 255, 255, 0.025);
+    background: var(--card-bg);
     backdrop-filter: blur(12px);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
