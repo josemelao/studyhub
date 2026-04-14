@@ -190,16 +190,25 @@ export default function ContentAdminPage() {
           if (rows.length === 0) return;
 
           let mdTable = '\n\n';
-          rows.forEach((row, i) => {
-            let cells = Array.from(row.querySelectorAll('td, th')).map(c => 
-              c.textContent.replace(/\s+/g, ' ').trim()
-            );
-            if (cells.join('').trim() === '') return;
-            mdTable += `| ${cells.join(' | ')} |\n`;
-            if (i === 0) mdTable += `| ${cells.map(() => ' --- ').join(' | ')} |\n`;
-          });
-          mdTable += '\n';
           
+          // Lógica Especial: Se for uma tabela de uma linha só, converter para DESTAQUE (>)
+          if (rows.length === 1) {
+            const firstRowCells = Array.from(rows[0].querySelectorAll('td, th'));
+            const content = firstRowCells.map(c => c.textContent.replace(/\s+/g, ' ').trim()).join(' - ');
+            mdTable = `\n\n> **DESTAQUE:** ${content}\n\n`;
+          } else {
+            // Tabela real com mais de uma linha
+            rows.forEach((row, i) => {
+              let cells = Array.from(row.querySelectorAll('td, th')).map(c => 
+                c.textContent.replace(/\s+/g, ' ').trim()
+              );
+              if (cells.join('').trim() === '') return;
+              mdTable += `| ${cells.join(' | ')} |\n`;
+              if (i === 0) mdTable += `| ${cells.map(() => ' --- ').join(' | ')} |\n`;
+            });
+          }
+          
+          mdTable += '\n';
           tableCache.push(mdTable);
           table.outerHTML = `TABLEXP${index}XP`; 
         });
@@ -214,7 +223,7 @@ export default function ContentAdminPage() {
 
         turndownService.addRule('forceHighlight', {
           filter: 'blockquote',
-          replacement: (content) => `\n\n>> **DESTAQUE:** ${content.trim()}\n\n`
+          replacement: (content) => `\n\n> **DESTAQUE:** ${content.trim()}\n\n`
         });
 
         // 3. Converter Restante do Documento
