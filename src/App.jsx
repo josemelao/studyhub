@@ -78,6 +78,8 @@ function AppContent() {
   );
 }
 
+import { Toaster } from 'react-hot-toast';
+
 function App() {
   return (
     <AuthProvider>
@@ -85,6 +87,41 @@ function App() {
         <BrowserRouter>
           <AppContent />
           <AchievementToast />
+          <Toaster 
+            position="top-center"
+            toastOptions={{
+              className: '',
+              style: {
+                background: 'rgba(12, 13, 22, 0.8)',
+                backdropFilter: 'blur(16px)',
+                border: '1px solid rgba(124, 92, 252, 0.2)',
+                color: '#f0eff4',
+                borderRadius: '16px',
+                fontSize: '14px',
+                fontWeight: '700',
+                padding: '12px 20px',
+                boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+              },
+              success: {
+                iconTheme: {
+                  primary: '#34d399',
+                  secondary: '#0c0d16',
+                },
+                style: {
+                  border: '1px solid rgba(52, 211, 153, 0.3)',
+                }
+              },
+              error: {
+                iconTheme: {
+                  primary: '#fb7185',
+                  secondary: '#0c0d16',
+                },
+                style: {
+                  border: '1px solid rgba(251, 113, 133, 0.3)',
+                }
+              }
+            }}
+          />
         </BrowserRouter>
       </SubjectsProvider>
     </AuthProvider>

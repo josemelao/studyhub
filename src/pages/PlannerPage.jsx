@@ -11,6 +11,8 @@ import { useAuth } from '../hooks/useAuth';
 import { pageVariants, staggerContainer, staggerItem, expandDown } from '../lib/animations';
 import ConfirmModal from '../components/ui/ConfirmModal';
 
+import { toast } from 'react-hot-toast';
+
 export default function PlannerPage() {
   const { user } = useAuth();
   
@@ -113,7 +115,10 @@ export default function PlannerPage() {
         return { ...prev, [date]: current.filter(t => t.id !== topic.id) };
       } else {
         // Limite de 4 tópicos por dia para não poluir
-        if (current.length >= 4) return prev;
+        if (current.length >= 4) {
+          toast.error('O limite é de 4 tópicos por dia para manter o foco.');
+          return prev;
+        }
         return { 
           ...prev, 
           [date]: [...current, { id: topic.id, nome: topic.nome, subjectId: topic.subjectId, cor: topic.cor }] 
@@ -123,6 +128,7 @@ export default function PlannerPage() {
   };
 
   const handleSavePlan = async () => {
+    const loadingToast = toast.loading('Sincronizando cronograma...');
     setSaving(true);
     try {
       const payloads = Object.entries(plannedDays).map(([date, topics]) => ({
@@ -137,10 +143,10 @@ export default function PlannerPage() {
         .upsert(payloads, { onConflict: 'user_id,data' });
 
       if (error) throw error;
-      alert('Plano salvo com sucesso!');
+      toast.success('Plano salvo com sucesso!', { id: loadingToast });
     } catch (err) {
       console.error(err);
-      alert('Erro ao salvar o plano. Verifique se o banco de dados foi atualizado.');
+      toast.error('Erro ao salvar o plano.', { id: loadingToast });
     } finally {
       setSaving(false);
     }
@@ -153,22 +159,20 @@ export default function PlannerPage() {
     );
 
     if (allUnread.length === 0) {
-      alert('Parabéns! Você já concluiu todos os tópicos atuais ou não há novos para planejar.');
+      toast.success('Parabéns! Você já concluiu todos os tópicos.', { icon: '✨' });
       return;
     }
 
     const newPlans = { ...plannedDays };
-    // Pegar IDs de tópicos que já estão no cronograma para não duplicar
     const alreadyPlannedIds = new Set(Object.values(newPlans).flatMap(day => day.map(t => t.id)));
     const topicsToSchedule = allUnread.filter(t => !alreadyPlannedIds.has(t.id));
 
     if (topicsToSchedule.length === 0) {
-      alert('Todos os seus tópicos pendentes já estão distribuídos na semana!');
+      toast.success('Todos os tópicos pendentes já estão no cronograma!');
       return;
     }
 
     let topicIdx = 0;
-    // Distribuir nos 7 dias da semana atual visualizada
     for (const date of weekDays) {
       const current = [...(newPlans[date] || [])];
       while (current.length < 2 && topicIdx < topicsToSchedule.length) {
@@ -179,12 +183,13 @@ export default function PlannerPage() {
       newPlans[date] = current;
     }
     setPlannedDays(newPlans);
+    toast.success('Configuramos uma sugestão de estudos para você!');
   };
 
   const handleClearWeek = async () => {
+    const loadingToast = toast.loading('Limpando cronograma...');
     try {
       setSaving(true);
-      // Deletar todos os planos dentro do intervalo da semana atual no Supabase
       const { error } = await supabase
         .from('study_plans')
         .delete()
@@ -196,9 +201,10 @@ export default function PlannerPage() {
       
       setPlannedDays({});
       setShowClearConfirm(false);
+      toast.success('Semana limpa!', { id: loadingToast });
     } catch (err) {
       console.error(err);
-      alert('Erro ao limpar a semana.');
+      toast.error('Erro ao limpar a semana.', { id: loadingToast });
     } finally {
       setSaving(false);
     }

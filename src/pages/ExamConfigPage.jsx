@@ -39,9 +39,11 @@ export default function ExamConfigPage() {
     );
   };
 
+import { toast } from 'react-hot-toast';
+
   const startExam = async () => {
     if (selectedSubjects.length === 0) {
-      alert('Selecione pelo menos uma matéria para o simulado.');
+      toast.error('Selecione pelo menos uma matéria para o simulado.', { icon: '📚' });
       return;
     }
 
@@ -53,11 +55,11 @@ export default function ExamConfigPage() {
         .from('questions')
         .select('id, topic_id(subject_id)')
         .filter('topic_id.subject_id', 'in', `(${selectedSubjects.join(',')})`)
-        .limit(numQuestions * 2); // pegar um pouco mais para garantir diversidade
+        .limit(numQuestions * 2);
 
       if (qError) throw qError;
       if (!questionsData?.length) {
-        alert('Nenhuma questão encontrada para as matérias selecionadas.');
+        toast.error('Nenhuma questão encontrada para as matérias selecionadas.', { icon: '🔍' });
         return;
       }
 
@@ -88,7 +90,7 @@ export default function ExamConfigPage() {
       navigate(`/modo-prova/sessao/${session.id}`);
     } catch (err) {
       console.error(err);
-      alert('Erro ao criar simulado. Tente novamente.');
+      toast.error('Erro ao criar simulado. Tente novamente.');
     } finally {
       setCreating(false);
     }

@@ -13,6 +13,7 @@ import {
   FileText, UploadCloud
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'react-hot-toast';
 import '../styles/markdown.css';
 
 export default function ContentAdminPage() {
@@ -29,7 +30,6 @@ export default function ContentAdminPage() {
   const [loading, setLoading] = useState(false);
   const [importing, setImporting] = useState(false);
   const [fetching, setFetching] = useState(false);
-  const [message, setMessage] = useState(null);
 
   // States para criação dinâmica
   const [isAddingSubject, setIsAddingSubject] = useState(false);
@@ -97,12 +97,10 @@ export default function ContentAdminPage() {
       }, { onConflict: 'topic_id,tipo' });
 
       if (error) throw error;
-      setMessage({ type: 'success', text: 'Alterações salvas com sucesso!' });
-      setTimeout(() => setMessage(null), 3000);
+      toast.success('Alterações salvas com sucesso!');
       invalidateCache();
     } catch (err) {
-      setMessage({ type: 'error', text: 'Falha ao salvar: ' + err.message });
-      setTimeout(() => setMessage(null), 5000);
+      toast.error('Falha ao salvar: ' + err.message);
     } finally {
       setLoading(false);
     }
@@ -126,11 +124,10 @@ export default function ContentAdminPage() {
       setSelectedSubject(data.id);
       setIsAddingSubject(false);
       setNewSubject({ nome: '', categoria: 'Geral' });
-      setMessage({ type: 'success', text: 'Matéria criada!' });
-      setTimeout(() => setMessage(null), 3000);
+      toast.success('Matéria criada!');
       invalidateCache();
     } catch (err) {
-      setMessage({ type: 'error', text: err.message });
+      toast.error(err.message);
     } finally {
       setLoading(false);
     }
@@ -152,11 +149,10 @@ export default function ContentAdminPage() {
       setSelectedTopic(data.id);
       setIsAddingTopic(false);
       setNewTopicName('');
-      setMessage({ type: 'success', text: 'Tópico criado!' });
-      setTimeout(() => setMessage(null), 3000);
+      toast.success('Tópico criado!');
       invalidateCache();
     } catch (err) {
-      setMessage({ type: 'error', text: err.message });
+      toast.error(err.message);
     } finally {
       setLoading(false);
     }
@@ -254,13 +250,11 @@ export default function ContentAdminPage() {
                           .replace(/\n{3,}/g, '\n\n');
 
         setContent(markdown);
-        
-        setMessage({ type: 'success', text: 'Importação v3.1 (Protegida) Concluída!' });
-        setTimeout(() => setMessage(null), 3000);
+        toast.success('Importação Concluída!');
       };
       reader.readAsArrayBuffer(file);
     } catch (err) {
-      setMessage({ type: 'error', text: 'Erro crítico: ' + err.message });
+      toast.error('Erro crítico: ' + err.message);
     } finally {
       setImporting(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -270,28 +264,6 @@ export default function ContentAdminPage() {
   return (
     <div className="max-w-7xl mx-auto space-y-8 pb-12 relative">
       <input type="file" ref={fileInputRef} onChange={handleWordImport} accept=".docx" className="hidden" />
-
-      <AnimatePresence>
-        {message && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: -20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: -20 }}
-            className="fixed top-24 left-1/2 -track-x-1/2 z-[100] -translate-x-1/2"
-          >
-            <div className={`px-6 py-4 rounded-2xl border shadow-2xl backdrop-blur-xl flex items-center gap-4 min-w-[320px] ${message.type === 'success' ? 'bg-success/20 border-success/30 text-success' : 'bg-error/20 border-error/30 text-error'}`}>
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${message.type === 'success' ? 'bg-success/20' : 'bg-error/20'}`}>
-                {message.type === 'success' ? <CheckCircle2 size={24} /> : <AlertCircle size={24} />}
-              </div>
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-widest opacity-60">{message.type === 'success' ? 'Sucesso' : 'Erro no Sistema'}</p>
-                <p className="text-sm font-bold tracking-tight">{message.text}</p>
-              </div>
-              <button onClick={() => setMessage(null)} className="ml-auto opacity-40 hover:opacity-100 transition-opacity"><X size={16} /></button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>

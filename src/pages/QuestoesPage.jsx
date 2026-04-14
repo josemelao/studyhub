@@ -46,6 +46,8 @@ export default function QuestoesPage() {
     load();
   }, []);
 
+import { toast } from 'react-hot-toast';
+
   const startQuiz = async (topic) => {
     try {
       setLoadingQuiz(true);
@@ -57,7 +59,11 @@ export default function QuestoesPage() {
 
       const { data: qData, error } = await supabase.from('questions').select('*').eq('topic_id', topic.id);
       if (error) throw error;
-      if (!qData?.length) { alert('Nenhuma questão cadastrada para este tópico.'); setLoadingQuiz(false); return; }
+      if (!qData?.length) { 
+        toast.error('Nenhuma questão cadastrada para este tópico.', { icon: '🔍' }); 
+        setLoadingQuiz(false); 
+        return; 
+      }
       setQuestions([...qData].sort(() => Math.random() - 0.5));
       setView('quiz');
     } catch (err) { console.error(err); }
