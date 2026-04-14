@@ -1,7 +1,8 @@
 import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, BookOpen, Target, 
-  BarChart3, Star, LogOut, Trophy, History, Calendar
+  BarChart3, Star, LogOut, Trophy, History, Calendar,
+  Edit3
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { motion } from 'framer-motion';
@@ -52,7 +53,20 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      <div className="p-4 border-t border-default">
+      <div className="p-4 border-t border-default space-y-2">
+        <NavLink
+            to="/gerenciar-conteudo"
+            className={({ isActive }) => `
+              flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group
+              ${isActive 
+                ? 'bg-accent/10 text-accent font-bold border border-accent/20 shadow-accent' 
+                : 'text-muted hover:text-primary hover:bg-white/[0.04] border border-transparent'}
+            `}
+          >
+            <Edit3 className="w-5 h-5 transition-transform group-hover:scale-110" />
+            <span className="text-sm tracking-tight">Gerenciar Conteúdo</span>
+          </NavLink>
+
         <button
           onClick={signOut}
           className="w-full flex items-center gap-3 px-4 py-3 text-muted hover:text-error hover:bg-error/10 rounded-xl transition-all font-bold text-sm"

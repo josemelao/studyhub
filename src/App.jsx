@@ -22,6 +22,7 @@ import FavoritesPage from './pages/FavoritesPage';
 import HistoryPage from './pages/HistoryPage';
 import AchievementToast from './components/ui/AchievementToast';
 import PlannerPage from './pages/PlannerPage';
+import ContentAdminPage from './pages/ContentAdminPage';
 
 /**
  * Componente que gerencia apenas as rotas que precisam do Sidebar/Navbar persistente.
@@ -48,6 +49,7 @@ function AuthenticatedApp() {
             <Route path="/modo-prova/resultado/:id" element={<ExamResultPage />} />
             <Route path="/favoritos" element={<FavoritesPage />} />
             <Route path="/historico" element={<HistoryPage />} />
+            <Route path="/gerenciar-conteudo" element={<ContentAdminPage />} />
             
             {/* Redirecionamentos internos se necessário */}
             <Route path="/" element={<Navigate to="/dashboard" replace />} />

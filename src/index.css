@@ -177,3 +177,15 @@
   from { transform: translateX(-100%); }
   to   { transform: translateX(200%); }
 }
+
+/* Bizu Card (Dicas) */
+.bizu-card {
+  background: linear-gradient(135deg, rgba(124, 92, 252, 0.08) 0%, rgba(124, 92, 252, 0.03) 100%);
+  border-left: 4px solid var(--accent);
+  box-shadow: 0 10px 30px -10px rgba(124, 92, 252, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.bizu-card:hover {
+  transform: translateY(-2px);
+}

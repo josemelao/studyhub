@@ -27,25 +27,54 @@ export default function SubjectPage() {
         if (subE) throw subE;
         setSubject(subData);
 
+        // 1. Buscar Sub-matérias (Módulos) com seus tópicos
         const { data: subSubs, error: ssE } = await supabase
           .from('sub_subjects')
-          .select('id, nome, descricao, ordem, topics(id, nome, descricao, ordem)')
-          .eq('subject_id', id).order('ordem');
+          .select(`
+            id, nome, descricao, ordem,
+            topics (id, nome, descricao, ordem)
+          `)
+          .eq('subject_id', id)
+          .order('ordem');
         if (ssE) throw ssE;
 
+        // 2. Buscar Tópicos Diretos (criados via CMS sem sub_subject)
+        const { data: directTopics, error: dtE } = await supabase
+          .from('topics')
+          .select('id, nome, descricao, ordem')
+          .eq('subject_id', id)
+          .is('sub_subject_id', null)
+          .order('ordem');
+        if (dtE) throw dtE;
+
+        // 3. Buscar progresso do usuário
         const { data: progData } = await supabase
           .from('user_progress')
           .select('topic_id, conteudo_lido')
           .eq('user_id', user.id);
 
-        const enriched = (subSubs || []).map(ss => ({
+        const mapStatus = (topic) => {
+          const p = (progData || []).find(pr => pr.topic_id === topic.id);
+          const status = !p ? 'not-started' : (p.conteudo_lido ? 'completed' : 'in-progress');
+          return { ...topic, status };
+        };
+
+        // 4. Consolidar tudo
+        let enriched = (subSubs || []).map(ss => ({
           ...ss,
-          topics: (ss.topics || []).sort((a, b) => a.ordem - b.ordem).map(topic => {
-            const p = (progData || []).find(pr => pr.topic_id === topic.id);
-            const status = !p ? 'not-started' : (p.conteudo_lido ? 'completed' : 'in-progress');
-            return { ...topic, status };
-          })
+          topics: (ss.topics || []).sort((a, b) => a.ordem - b.ordem).map(mapStatus)
         }));
+
+        // Se houver tópicos diretos, adicionamos como um "Módulo Geral"
+        if (directTopics && directTopics.length > 0) {
+          enriched.unshift({
+            id: 'direct-content',
+            nome: 'Conteúdo de Estudo',
+            descricao: 'Tópicos e apostilas desta matéria',
+            ordem: -1,
+            topics: directTopics.map(mapStatus)
+          });
+        }
 
         setSubSubjects(enriched);
         if (enriched.length > 0) setOpenAccordion({ [enriched[0].id]: true });
