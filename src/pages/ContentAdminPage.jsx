@@ -191,11 +191,17 @@ export default function ContentAdminPage() {
 
           let mdTable = '\n\n';
           
-          // Lógica Especial: Se for uma tabela de uma linha só, converter para DESTAQUE (>)
+          // Lógica Especial: Se for uma tabela de uma linha só, converter para DESTAQUE (>) sem a palavra redundante
           if (rows.length === 1) {
             const firstRowCells = Array.from(rows[0].querySelectorAll('td, th'));
-            const content = firstRowCells.map(c => c.textContent.replace(/\s+/g, ' ').trim()).join(' - ');
-            mdTable = `\n\n> **DESTAQUE:** ${content}\n\n`;
+            let content = firstRowCells.map(c => c.textContent.replace(/\s+/g, ' ').trim()).join(' - ');
+            
+            // Negritar o primeiro termo (até : ou )) e garantir um espaço depois
+            if ((content.includes(':') || content.includes(')')) && !content.startsWith('**')) {
+              content = content.replace(/^([^:)]+[:)])/, '**$1** ');
+            }
+            
+            mdTable = `\n\n> ${content}\n\n`;
           } else {
             // Tabela real com mais de uma linha
             rows.forEach((row, i) => {
@@ -223,7 +229,15 @@ export default function ContentAdminPage() {
 
         turndownService.addRule('forceHighlight', {
           filter: 'blockquote',
-          replacement: (content) => `\n\n> **DESTAQUE:** ${content.trim()}\n\n`
+          replacement: (content) => {
+            let cleanContent = content.trim();
+            // Negritar o primeiro termo (até : ou )) e remover 'DESTAQUE' caso venha do mammoth
+            cleanContent = cleanContent.replace(/^DESTAQUE:\s*/i, '');
+            if ((cleanContent.includes(':') || cleanContent.includes(')')) && !cleanContent.startsWith('**')) {
+              cleanContent = cleanContent.replace(/^([^:)]+[:)])/, '**$1** ');
+            }
+            return `\n\n> ${cleanContent}\n\n`;
+          }
         });
 
         // 3. Converter Restante do Documento
