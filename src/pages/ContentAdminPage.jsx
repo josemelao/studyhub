@@ -496,7 +496,13 @@ export default function ContentAdminPage() {
                </div>
                <textarea
                   className="flex-1 w-full bg-transparent p-6 outline-none resize-none text-sm font-medium text-secondary leading-relaxed font-mono"
-                  placeholder={selectedTopic ? "Cole sua apostila aqui..." : "Escolha ou crie um tópico para habilitar o editor."}
+                  placeholder={
+                    !selectedTopic 
+                      ? "Escolha ou crie um tópico para habilitar o editor." 
+                      : contentType === 'video'
+                        ? "Cole os links do YouTube aqui.\nUse um link por linha para exibir múltiplos vídeos na sidebar do aluno.\nExemplo:\nhttps://youtube.com/watch?v=123\nhttps://youtube.com/watch?v=456"
+                        : "Cole sua apostila aqui..."
+                  }
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   disabled={!selectedTopic || fetching}
