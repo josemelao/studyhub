@@ -9,14 +9,14 @@ import {
 import { supabase } from '../lib/supabase';
 import { pageVariants, staggerContainer, staggerItem, scaleIn, expandDown } from '../lib/animations';
 import FavoriteButton from '../components/ui/FavoriteButton';
-import { updateUserStats } from '../lib/gamification';
-import { checkAndUnlockAchievements } from '../lib/achievements';
 import { useAuth } from '../hooks/useAuth';
+import { useGamification } from '../hooks/useGamification';
 
 export default function ExamResultPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { processActivity } = useGamification();
 
   const [session, setSession] = useState(null);
   const [questions, setQuestions] = useState([]);
@@ -42,22 +42,15 @@ export default function ExamResultPage() {
         const ordered = s.questoes.map(qid => qData.find(q => q.id === qid)).filter(Boolean);
         setQuestions(ordered);
 
-        // ── ATUALIZAR GAMIFICAÇÃO ──
+        // ── ATUALIZAR GAMIFICAÇÃO UTILIZANDO O HOOK CENTRALIZADO ──
         if (s.status === 'finalizada' && s.questoes.length > 0 && user) {
           const totalQ = s.questoes.length;
           const totalC = ordered.filter(q => s.respostas[q.id] === q.resposta_correta).length;
           
-          const stats = await updateUserStats(supabase, user.id, { 
+          await processActivity({ 
             questoes: totalQ, 
             acertos: totalC 
           });
-          
-          window.dispatchEvent(new CustomEvent('update_streak'));
-          
-          const unlocked = await checkAndUnlockAchievements(supabase, user.id, stats);
-          if (unlocked && unlocked.length > 0) {
-            window.dispatchEvent(new CustomEvent('show_achievement', { detail: unlocked }));
-          }
         }
       } catch (err) { 
         console.error('[ExamResultPage] Erro:', err);
@@ -66,7 +59,7 @@ export default function ExamResultPage() {
       finally { setLoading(false); }
     }
     load();
-  }, [id]); // user não precisa ser dep — só usamos dentro do bloco gamificação que já guarda com && user
+  }, [id, user]);
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-36 gap-4">

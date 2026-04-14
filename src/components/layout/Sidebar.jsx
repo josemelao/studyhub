@@ -33,9 +33,6 @@ export default function Sidebar() {
         <span className="text-xl font-black italic tracking-tighter gradient-text">StudyHub</span>
       </div>
 
-      <div className="mb-4">
-        <StreakWidget />
-      </div>
 
       <nav className="flex-1 px-4 space-y-1.5 pt-4">
         {navItems.map((item) => (

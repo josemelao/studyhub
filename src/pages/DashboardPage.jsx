@@ -5,6 +5,8 @@ import * as Icons from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useSubjectsContext } from '../contexts/SubjectsContext';
 import { Link } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
+import { calculateLevel } from '../lib/levels';
 import { pageVariants, staggerContainer, staggerItem } from '../lib/animations';
 
 // Bento Components
@@ -16,8 +18,17 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const { subjects, loading, fetchSubjects } = useSubjectsContext();
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [stats, setStats] = useState(null);
 
-  useEffect(() => { fetchSubjects(); }, [fetchSubjects]);
+  useEffect(() => { 
+    fetchSubjects(); 
+    async function loadStats() {
+      if (!user) return;
+      const { data } = await supabase.from('user_stats').select('*').eq('user_id', user.id).single();
+      if (data) setStats(data);
+    }
+    loadStats();
+  }, [fetchSubjects, user]);
 
   const daysToExam = 68;
 
@@ -53,10 +64,15 @@ export default function DashboardPage() {
             <div className="absolute -right-12 -top-12 w-64 h-64 rounded-full bg-accent/10 blur-3xl pointer-events-none" />
             
             <div>
-              <h1 className="text-3xl font-black mb-1 text-primary tracking-tighter italic">
-                Bom dia, {user?.email?.split('@')[0]}! 👋
-              </h1>
-              <div className="flex items-center gap-3 text-xs mt-1 text-secondary font-medium">
+              <div className="flex items-center gap-3 mb-1">
+                <h1 className="text-3xl font-black text-primary tracking-tighter italic">
+                  Bom dia, {user?.email?.split('@')[0]}!👋
+                </h1>
+                <div className="px-3 py-1 rounded-full bg-accent/20 border border-accent/30 text-accent text-[10px] font-black uppercase tracking-widest shadow-glow-accent">
+                   Lvl {calculateLevel(stats?.pontos_xp)}
+                </div>
+              </div>
+              <div className="flex items-center gap-3 text-xs text-secondary font-medium">
                 <Clock className="w-4 h-4 text-accent" />
                 <span className="opacity-80">Banco do Brasil — <strong className="text-primary">{daysToExam} dias</strong> para a prova</span>
               </div>
@@ -83,8 +99,8 @@ export default function DashboardPage() {
             {[
               { label: 'Módulos lidos', value: doneTopics, icon: BookOpen, color: 'text-accent' },
               { label: 'Conclusão geral', value: `${progress}%`, icon: TrendingUp, color: 'text-success' },
-              { label: 'Questões Feitas', value: '342', icon: Icons.Target, color: 'text-orange-500' },
-              { label: 'Semanas Ativo', value: '4', icon: Icons.Zap, color: 'text-yellow-500' },
+              { label: 'Questões Feitas', value: stats?.total_questoes_respondidas || 0, icon: Icons.Target, color: 'text-orange-500' },
+              { label: 'Streak Atual', value: `${stats?.streak_atual || 0} dias`, icon: Icons.Flame, color: 'text-yellow-500' },
             ].map((stat, i) => (
               <motion.div 
                 key={i} 

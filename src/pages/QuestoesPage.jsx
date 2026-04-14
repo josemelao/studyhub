@@ -7,11 +7,13 @@ import {
 import * as Icons from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
+import { useGamification } from '../hooks/useGamification';
 import { pageVariants, staggerContainer, staggerItem, scaleIn, expandDown } from '../lib/animations';
 import FavoriteButton from '../components/ui/FavoriteButton';
 
 export default function QuestoesPage() {
   const { user } = useAuth();
+  const { processActivity } = useGamification();
   const [view, setView] = useState('list');
   const [subjects, setSubjects] = useState([]);
   const [openSubject, setOpenSubject] = useState(null);
@@ -91,6 +93,13 @@ export default function QuestoesPage() {
         user_id: user.id, topic_id: selectedTopic.id,
         questions_total: total, questions_correct: correct, score_percent: scorePercent
       });
+
+      // ── SINCRONIZAÇÃO DE GAMIFICAÇÃO ──
+      await processActivity({
+        questoes: total,
+        acertos: correct
+      });
+
       const { data: hist } = await supabase
         .from('quiz_sessions').select('*')
         .eq('user_id', user.id).eq('topic_id', selectedTopic.id)

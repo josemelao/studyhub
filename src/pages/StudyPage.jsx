@@ -6,16 +6,15 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
-import '../styles/markdown.css';
+import { useGamification } from '../hooks/useGamification';
 import { pageVariants, staggerItem, scaleIn } from '../lib/animations';
-import FavoriteButton from '../components/ui/FavoriteButton';
-import { updateUserStats } from '../lib/gamification';
-import { checkAndUnlockAchievements } from '../lib/achievements';
+import '../styles/markdown.css';
 
 export default function StudyPage() {
   const { id: topicId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { processActivity } = useGamification();
 
   const [topic, setTopic] = useState(null);
   const [content, setContent] = useState(null);
@@ -58,9 +57,8 @@ export default function StudyPage() {
         last_studied_at: new Date().toISOString()
       }, { onConflict: 'user_id,topic_id' });
       
-      // Atualizar Stats e Streaks
-      const stats = await updateUserStats(supabase, user.id);
-      await checkAndUnlockAchievements(supabase, user.id, stats);
+      // Atualizar Stats e Streaks usando o novo sistema centralizado
+      await processActivity({ leitura: true });
 
       setAlreadyRead(true);
       navigate(`/materia/${topic.subjects?.id}`);
