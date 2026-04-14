@@ -27,12 +27,6 @@ export default function StudyPage() {
   const [marking, setMarking] = useState(false);
   const [alreadyRead, setAlreadyRead] = useState(false);
 
-  // Estados para Notas
-  const [notes, setNotes] = useState('');
-  const [lastSaved, setLastSaved] = useState(null);
-  const [isSaving, setIsSaving] = useState(false);
-  const saveTimeoutRef = useRef(null);
-
   // Estado para Vídeo Ativo
   const [activeVideoIndex, setActiveVideoIndex] = useState(0);
 
@@ -76,47 +70,13 @@ export default function StudyPage() {
           .from('user_progress').select('conteudo_lido')
           .eq('user_id', user.id).eq('topic_id', topicId).maybeSingle();
         setAlreadyRead(prog?.conteudo_lido === true);
-
-        // 4. Carregar Notas do Usuário para este Tópico
-        const { data: notesData } = await supabase
-          .from('user_topic_notes').select('content, updated_at')
-          .eq('user_id', user.id).eq('topic_id', topicId).maybeSingle();
-        
-        if (notesData) {
-          setNotes(notesData.content || '');
-          setLastSaved(new Date(notesData.updated_at));
-        }
       } catch (err) { setError(err.message); }
       finally { setLoading(false); }
     }
     loadData();
   }, [topicId, user]);
 
-  // Lógica de Autosave para Notas
-  useEffect(() => {
-    if (!topicId || !user || loading) return;
-
-    const saveNotes = async () => {
-      setIsSaving(true);
-      try {
-        await supabase.from('user_topic_notes').upsert({
-          user_id: user.id,
-          topic_id: topicId,
-          content: notes,
-          updated_at: new Date().toISOString()
-        }, { onConflict: 'user_id,topic_id' });
-        setLastSaved(new Date());
-      } catch (err) { console.error('Erro ao salvar notas:', err); }
-      finally { setIsSaving(false); }
-    };
-
-    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-    
-    // Só salva se houver conteúdo ou se já existia algo antes
-    saveTimeoutRef.current = setTimeout(saveNotes, 1500);
-
-    return () => clearTimeout(saveTimeoutRef.current);
-  }, [notes]);
+  // Lógica de Autosave para Notas removida (agora no NotesWidget)
 
   const getYoutubeId = (url) => {
     if (!url) return null;
@@ -315,50 +275,8 @@ export default function StudyPage() {
               </motion.div>
             )}
 
-            {/* Widget de Notas Personalizadas */}
-            <motion.div variants={staggerItem} className="glass-card border-primary/5 shadow-2xl flex flex-col min-h-[450px]">
-              <div className="p-5 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
-                <div className="flex items-center gap-3">
-                  <Edit3Icon className="w-4 h-4 text-accent" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-primary italic">Caderno de Notas</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <AnimatePresence>
-                    {isSaving ? (
-                      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2 text-accent">
-                        <Loader2 className="w-3 h-3 animate-spin" />
-                        <span className="text-[8px] font-black uppercase">Salvando...</span>
-                      </motion.div>
-                    ) : lastSaved && (
-                      <div className="flex items-center gap-1.5 text-muted/60">
-                        <Check className="w-3 h-3" />
-                        <span className="text-[8px] font-black uppercase">Sincronizado</span>
-                      </div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </div>
-
-              <div className="flex-1 relative p-1 bg-white/[0.01]">
-                <textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Escreva suas anotações aqui... (Salvo automaticamente)"
-                  className="w-full h-full min-h-[400px] bg-transparent p-6 text-sm text-secondary font-medium outline-none resize-none leading-relaxed placeholder:italic placeholder:opacity-20"
-                />
-                {/* Linhas de Caderno decorativas */}
-                <div className="absolute inset-x-0 top-0 bottom-0 pointer-events-none opacity-[0.03] space-y-6 pt-12 px-6">
-                  {[...Array(15)].map((_, i) => <div key={i} className="h-[1px] bg-white w-full" />)}
-                </div>
-              </div>
-
-              <div className="p-4 border-t border-white/5 bg-white/[0.02] flex items-center justify-between">
-                <div className="flex items-center gap-2 text-muted">
-                    <History className="w-3 h-3" />
-                    <span className="text-[8px] font-black uppercase">Notas salvas por tópico</span>
-                </div>
-              </div>
-            </motion.div>
+            {/* Widget de Notas Personalizadas (Componente Isolado para Performance) */}
+            <NotesWidget topicId={topicId} user={user} />
           </div>
         </aside>
       </div>
@@ -391,7 +309,7 @@ export default function StudyPage() {
   );
 }
 
-// Pequeno helper de ícone customizado se não estiver no lucide
+// Pequeno helper de ícone customizado
 function Edit3Icon(props) {
   return (
     <svg 
@@ -407,5 +325,106 @@ function Edit3Icon(props) {
     >
       <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
     </svg>
+  );
+}
+
+// Componente Isolado para Notas (Evita re-render da página inteira)
+function NotesWidget({ topicId, user }) {
+  const [notes, setNotes] = useState('');
+  const [lastSaved, setLastSaved] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const saveTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    async function loadNotes() {
+      if (!user || !topicId) return;
+      try {
+        setLoading(true);
+        const { data: notesData } = await supabase
+          .from('user_topic_notes').select('content, updated_at')
+          .eq('user_id', user.id).eq('topic_id', topicId).maybeSingle();
+        
+        if (notesData) {
+          setNotes(notesData.content || '');
+          setLastSaved(new Date(notesData.updated_at));
+        }
+      } catch (err) { console.error(err); }
+      finally { setLoading(false); }
+    }
+    loadNotes();
+  }, [topicId, user]);
+
+  useEffect(() => {
+    if (!topicId || !user || loading) return;
+
+    const saveNotes = async () => {
+      setIsSaving(true);
+      try {
+        await supabase.from('user_topic_notes').upsert({
+          user_id: user.id,
+          topic_id: topicId,
+          content: notes,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id,topic_id' });
+        setLastSaved(new Date());
+      } catch (err) { console.error('Erro:', err); }
+      finally { setIsSaving(false); }
+    };
+
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(saveNotes, 1000);
+    return () => clearTimeout(saveTimeoutRef.current);
+  }, [notes]);
+
+  if (loading) return (
+    <div className="glass-card border-primary/5 min-h-[400px] flex items-center justify-center">
+      <Loader2 className="w-6 h-6 animate-spin text-accent/30" />
+    </div>
+  );
+
+  return (
+    <motion.div variants={staggerItem} className="glass-card border-primary/5 shadow-2xl flex flex-col min-h-[450px]">
+      <div className="p-5 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+        <div className="flex items-center gap-3">
+          <Edit3Icon className="w-4 h-4 text-accent" />
+          <span className="text-[10px] font-black uppercase tracking-widest text-primary italic">Caderno de Notas</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <AnimatePresence>
+            {isSaving ? (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2 text-accent">
+                <Loader2 className="w-3 h-3 animate-spin" />
+                <span className="text-[8px] font-black uppercase">Salvando...</span>
+              </motion.div>
+            ) : lastSaved && (
+              <div className="flex items-center gap-1.5 text-muted/60">
+                <Check className="w-3 h-3" />
+                <span className="text-[8px] font-black uppercase">Sincronizado</span>
+              </div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      <div className="flex-1 relative p-1 bg-white/[0.01]">
+        <textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder="Escreva suas anotações aqui... (Salvo automaticamente)"
+          className="w-full h-full min-h-[400px] bg-transparent p-6 text-sm text-secondary font-medium outline-none resize-none leading-relaxed placeholder:italic placeholder:opacity-20"
+        />
+        <div className="absolute inset-x-0 top-0 bottom-0 pointer-events-none opacity-[0.03] space-y-6 pt-12 px-6">
+          {[...Array(15)].map((_, i) => <div key={i} className="h-[1px] bg-white w-full" />)}
+        </div>
+      </div>
+
+      <div className="p-4 border-t border-white/5 bg-white/[0.02] flex items-center justify-between">
+        <div className="flex items-center gap-2 text-muted">
+            <History className="w-3 h-3" />
+            <span className="text-[8px] font-black uppercase">Notas salvas por tópico</span>
+        </div>
+      </div>
+    </motion.div>
   );
 }
