@@ -9,7 +9,7 @@ export default function PageWrapper({ children }) {
     <div className="min-h-screen bg-primary text-primary flex flex-col font-sans">
       <Navbar onMenuToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
       
-      <div className="flex flex-1 pt-14">
+      <div className="flex flex-1">
         <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
         
         <main className="flex-1 w-full flex flex-col relative md:pl-64">

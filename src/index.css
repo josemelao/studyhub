@@ -333,9 +333,9 @@
 
 /* Bizu Card (Dicas) */
 .bizu-card {
-  background: linear-gradient(135deg, rgba(124, 92, 252, 0.08) 0%, rgba(124, 92, 252, 0.03) 100%);
+  background: var(--accent-subtle);
   border-left: 4px solid var(--accent);
-  box-shadow: 0 10px 30px -10px rgba(124, 92, 252, 0.1);
+  box-shadow: 0 10px 30px -10px rgba(var(--accent-rgb), 0.1);
   transition: transform 0.3s ease;
 }
 
@@ -365,7 +365,7 @@
 }
 
 /* ── 2. Sidebar: branco sólido com sombra lateral ── */
-[data-theme='clean'] aside {
+[data-theme='clean'] aside.fixed {
   background: #FFFFFF !important;
   backdrop-filter: none !important;
   border-right: 1px solid rgba(0, 0, 0, 0.07) !important;
@@ -429,9 +429,9 @@
 [data-theme='clean'] textarea::placeholder {
   color: #9CA3AF !important;
 }
-[data-theme='clean'] input:focus,
+[data-theme='clean'] input:focus:not([class*="border-none"]),
 [data-theme='clean'] select:focus,
-[data-theme='clean'] textarea:focus {
+[data-theme='clean'] textarea:focus:not([class*="border-none"]) {
   background-color: #FFFFFF !important;
   border-color: rgba(67, 56, 232, 0.50) !important;
   outline: none !important;
@@ -528,7 +528,7 @@
 }
 
 /* ── 2. Sidebar: branco quente com sombra lateral ── */
-[data-theme='autumn'] aside {
+[data-theme='autumn'] aside.fixed {
   background: #FFFFFF !important;
   backdrop-filter: none !important;
   border-right: 1px solid rgba(0, 0, 0, 0.07) !important;
@@ -598,9 +598,9 @@
 [data-theme='autumn'] textarea::placeholder {
   color: #8F8376 !important;
 }
-[data-theme='autumn'] input:focus,
+[data-theme='autumn'] input:focus:not([class*="border-none"]),
 [data-theme='autumn'] select:focus,
-[data-theme='autumn'] textarea:focus {
+[data-theme='autumn'] textarea:focus:not([class*="border-none"]) {
   background-color: #FFFFFF !important;
   border-color: rgba(104, 140, 53, 0.50) !important;
   outline: none !important;

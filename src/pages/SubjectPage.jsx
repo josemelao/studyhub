@@ -86,7 +86,16 @@ export default function SubjectPage() {
         }
 
         setSubSubjects(enriched);
-        if (enriched.length > 0) setOpenAccordion({ [enriched[0].id]: true });
+        
+        // UX Inteligente: Abre o módulo onde o aluno "parei" (primeiro que não está totalmente concluído)
+        if (enriched.length > 0) {
+          const activeModule = enriched.find(ss => ss.topics.some(t => t.status !== 'completed'));
+          if (activeModule) {
+            setOpenAccordion({ [activeModule.id]: true });
+          } else {
+            setOpenAccordion({}); // Se tudo estiver 100%, todos começam fechados
+          }
+        }
       } catch (err) { setError(err.message); }
       finally { setLoading(false); }
     }

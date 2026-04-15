@@ -30,6 +30,11 @@ export default {
         'tertiary':  'var(--bg-tertiary)',
         'elevated':  'var(--bg-elevated)',
       },
+      backgroundImage: {
+        'gradient-accent': 'var(--gradient-accent)',
+        'gradient-text':   'var(--gradient-text)',
+        'gradient-hero':   'var(--gradient-hero)',
+      },
       textColor: {
         'primary':   'var(--text-primary)',
         'secondary': 'var(--text-secondary)',

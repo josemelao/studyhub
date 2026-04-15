@@ -183,7 +183,7 @@ export default function StudyPage() {
         {/* Lado Esquerdo: Conteúdo Pedagógico (8/12) */}
         <div className="lg:col-span-8 space-y-10 order-2 lg:order-1">
           {/* Resumo em Texto */}
-          <div className="bg-[#111115] border border-white/5 rounded-3xl p-8 md:p-14 relative shadow-2xl">
+          <div className="bg-secondary border border-default rounded-3xl p-8 md:p-14 relative shadow-card">
             <div className="absolute top-0 right-0 w-64 h-64 bg-accent/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2" />
             
             {contents.resumo?.conteudo ? (
@@ -301,14 +301,14 @@ export default function StudyPage() {
             {/* Area do Botão (Movida da página para a barra lateral) */}
             <div className="pt-4">
               {alreadyRead ? (
-                <div className="flex items-center justify-center gap-2 py-4 text-sm font-bold rounded-2xl bg-success/10 border border-success/25 text-success shadow-2xl border-b-4 border-b-success/20">
+                <div className="flex items-center justify-center gap-2 py-4 text-sm font-bold rounded-2xl bg-success/20 border border-success/30 text-success shadow-lg border-b-4 border-b-success/20">
                   <Check className="w-5 h-5" /> Meta Concluída
                 </div>
               ) : (
                 <button
                   onClick={markAsRead}
                   disabled={marking}
-                  className="w-full flex items-center justify-center gap-3 py-4 text-base font-bold rounded-2xl bg-gradient-accent text-white shadow-glow-accent hover:scale-[1.05] active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed border-b-4 border-b-black/20"
+                  className="w-full flex items-center justify-center gap-3 py-4 text-base font-bold rounded-2xl bg-gradient-accent text-white border border-white/20 shadow-glow-accent hover:brightness-110 hover:shadow-glow-accent/50 active:scale-[0.98] transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed border-b-4 border-b-black/20"
                 >
                   {marking ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />}
                   {marking ? 'Registrando...' : 'Concluir Tópico'}
@@ -403,8 +403,8 @@ function NotesWidget({ topicId, user }) {
   );
 
   return (
-    <motion.div variants={staggerItem} className="glass-card border-primary/5 shadow-2xl flex flex-col min-h-[450px]">
-      <div className="p-5 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+    <div className="glass-card border-default shadow-card flex flex-col min-h-[450px] overflow-hidden">
+      <div className="p-5 border-b border-subtle flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Edit3Icon className="w-4 h-4 text-accent" />
           <span className="text-[10px] font-black uppercase tracking-widest text-primary italic">Caderno de Notas</span>
@@ -426,24 +426,24 @@ function NotesWidget({ topicId, user }) {
         </div>
       </div>
 
-      <div className="flex-1 relative p-1 bg-white/[0.01]">
+      <div className="flex-1 relative p-1">
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           placeholder="Escreva suas anotações aqui... (Salvo automaticamente)"
-          className="w-full h-full min-h-[400px] bg-transparent p-6 text-sm text-secondary font-medium outline-none resize-none leading-relaxed placeholder:italic placeholder:opacity-20"
+          className="w-full h-full min-h-[400px] bg-transparent border-none p-6 text-sm text-secondary font-medium outline-none resize-none leading-relaxed placeholder:italic placeholder:opacity-40"
         />
-        <div className="absolute inset-x-0 top-0 bottom-0 pointer-events-none opacity-[0.03] space-y-6 pt-12 px-6">
-          {[...Array(15)].map((_, i) => <div key={i} className="h-[1px] bg-white w-full" />)}
+        <div className="absolute inset-x-0 top-0 bottom-0 pointer-events-none opacity-[0.08] space-y-6 pt-12 px-6">
+          {[...Array(15)].map((_, i) => <div key={i} className="h-[1px] bg-primary w-full" />)}
         </div>
       </div>
 
-      <div className="p-4 border-t border-white/5 bg-white/[0.02] flex items-center justify-between">
+      <div className="p-4 border-t border-subtle flex items-center justify-between">
         <div className="flex items-center gap-2 text-muted">
             <History className="w-3 h-3" />
             <span className="text-[8px] font-black uppercase">Notas salvas por tópico</span>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
