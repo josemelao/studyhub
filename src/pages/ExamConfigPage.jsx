@@ -7,12 +7,14 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
+import { useWorkspace } from '../contexts/WorkspaceContext';
 import { pageVariants, staggerContainer, staggerItem, scaleIn } from '../lib/animations';
 import { toast } from 'react-hot-toast';
 
 export default function ExamConfigPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { currentWorkspaceId } = useWorkspace();
 
   const [subjects, setSubjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -25,14 +27,19 @@ export default function ExamConfigPage() {
 
   useEffect(() => {
     async function load() {
+      if (!user || !currentWorkspaceId) return;
       try {
-        const { data } = await supabase.from('subjects').select('id, nome, icone, cor').order('ordem');
+        const { data } = await supabase
+          .from('subjects')
+          .select('id, nome, icone, cor')
+          .eq('workspace_id', currentWorkspaceId)
+          .order('ordem');
         setSubjects(data || []);
       } catch (err) { console.error(err); }
       finally { setLoading(false); }
     }
     load();
-  }, []);
+  }, [user, currentWorkspaceId]);
 
   const toggleSubject = (id) => {
     setSelectedSubjects(prev => 
@@ -55,6 +62,7 @@ export default function ExamConfigPage() {
         .from('questions')
         .select('id, topic_id(subject_id)')
         .filter('topic_id.subject_id', 'in', `(${selectedSubjects.join(',')})`)
+        .eq('workspace_id', currentWorkspaceId)
         .limit(numQuestions * 2);
 
       if (qError) throw qError;
@@ -74,6 +82,7 @@ export default function ExamConfigPage() {
         .from('exam_sessions')
         .insert({
           user_id: user.id,
+          workspace_id: currentWorkspaceId,
           configuracao: { 
             subjects: selectedSubjects, 
             total_questoes: shuffledIds.length, 

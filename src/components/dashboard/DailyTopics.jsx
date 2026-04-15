@@ -4,15 +4,17 @@ import { Target, BookOpen, ChevronRight, CheckCircle2, Loader2 } from 'lucide-re
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
+import { useWorkspace } from '../../contexts/WorkspaceContext';
 
 export default function DailyTopics({ selectedDate }) {
   const { user } = useAuth();
+  const { currentWorkspaceId } = useWorkspace();
   const [topics, setTopics] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     async function fetchDailyTopics() {
-      if (!user || !selectedDate) return;
+      if (!user || !selectedDate || !currentWorkspaceId) return;
       try {
         setLoading(true);
         const dateStr = selectedDate.toISOString().split('T')[0];
@@ -21,6 +23,7 @@ export default function DailyTopics({ selectedDate }) {
           .from('study_plans')
           .select('topicos')
           .eq('user_id', user.id)
+          .eq('workspace_id', currentWorkspaceId)
           .eq('data', dateStr)
           .limit(1);
 
@@ -34,7 +37,7 @@ export default function DailyTopics({ selectedDate }) {
       }
     }
     fetchDailyTopics();
-  }, [user, selectedDate]);
+  }, [user, selectedDate, currentWorkspaceId]);
 
   return (
     <div className="glass-card flex flex-col h-full overflow-hidden">

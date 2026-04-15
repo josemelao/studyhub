@@ -7,6 +7,7 @@ import {
 import * as Icons from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
+import { useWorkspace } from '../contexts/WorkspaceContext';
 import { useGamification } from '../hooks/useGamification';
 import { pageVariants, staggerContainer, staggerItem, scaleIn, expandDown } from '../lib/animations';
 import FavoriteButton from '../components/ui/FavoriteButton';
@@ -14,6 +15,7 @@ import { toast } from 'react-hot-toast';
 
 export default function QuestoesPage() {
   const { user } = useAuth();
+  const { currentWorkspaceId } = useWorkspace();
   const { processActivity } = useGamification();
   const [view, setView] = useState('list');
   const [subjects, setSubjects] = useState([]);
@@ -33,11 +35,13 @@ export default function QuestoesPage() {
 
   useEffect(() => {
     async function load() {
+      if (!user || !currentWorkspaceId) return;
       try {
         setLoadingSubjects(true);
         const { data, error } = await supabase
           .from('subjects')
           .select('id, nome, cor, icone, categoria, ordem, sub_subjects(id, nome, ordem, topics(id, nome, ordem))')
+          .eq('workspace_id', currentWorkspaceId)
           .order('ordem');
         if (error) throw error;
         setSubjects(data || []);
@@ -45,7 +49,7 @@ export default function QuestoesPage() {
       finally { setLoadingSubjects(false); }
     }
     load();
-  }, []);
+  }, [user, currentWorkspaceId]);
 
 
   const startQuiz = async (topic) => {
@@ -57,7 +61,11 @@ export default function QuestoesPage() {
       setIsAnswered(false);
       setSessionAnswers([]);
 
-      const { data: qData, error } = await supabase.from('questions').select('*').eq('topic_id', topic.id);
+      const { data: qData, error } = await supabase
+        .from('questions')
+        .select('*')
+        .eq('topic_id', topic.id)
+        .eq('workspace_id', currentWorkspaceId);
       if (error) throw error;
       if (!qData?.length) { 
         toast.error('Nenhuma questão cadastrada para este tópico.', { icon: '🔍' }); 
@@ -96,8 +104,12 @@ export default function QuestoesPage() {
 
     try {
       await supabase.from('quiz_sessions').insert({
-        user_id: user.id, topic_id: selectedTopic.id,
-        questions_total: total, questions_correct: correct, score_percent: scorePercent
+        user_id: user.id, 
+        workspace_id: currentWorkspaceId,
+        topic_id: selectedTopic.id,
+        questions_total: total, 
+        questions_correct: correct, 
+        score_percent: scorePercent
       });
 
       // ── SINCRONIZAÇÃO DE GAMIFICAÇÃO ──
@@ -107,9 +119,13 @@ export default function QuestoesPage() {
       });
 
       const { data: hist } = await supabase
-        .from('quiz_sessions').select('*')
-        .eq('user_id', user.id).eq('topic_id', selectedTopic.id)
-        .order('completed_at', { ascending: false }).limit(10);
+        .from('quiz_sessions')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('workspace_id', currentWorkspaceId)
+        .eq('topic_id', selectedTopic.id)
+        .order('completed_at', { ascending: false })
+        .limit(10);
       setSessionHistory(hist || []);
     } catch (err) { console.error(err); }
 

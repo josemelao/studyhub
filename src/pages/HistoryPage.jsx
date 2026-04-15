@@ -7,10 +7,12 @@ import {
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
+import { useWorkspace } from '../contexts/WorkspaceContext';
 import { pageVariants, staggerContainer, staggerItem } from '../lib/animations';
 
 export default function HistoryPage() {
   const { user } = useAuth();
+  const { currentWorkspaceId } = useWorkspace();
 
   // States
   const [activities, setActivities] = useState({ simulados: [], questoes: [] });
@@ -21,7 +23,7 @@ export default function HistoryPage() {
   const [showFilters, setShowFilters] = useState(false);
 
   const fetchHistory = useCallback(async () => {
-    if (!user) return;
+    if (!user || !currentWorkspaceId) return;
     
     try {
       setLoading(true);
@@ -31,6 +33,7 @@ export default function HistoryPage() {
         .from('exam_sessions')
         .select('*')
         .eq('user_id', user.id)
+        .eq('workspace_id', currentWorkspaceId)
         .eq('status', 'finalizada')
         .order('finalizada_em', { ascending: false })
         .limit(10);
@@ -40,6 +43,7 @@ export default function HistoryPage() {
         .from('quiz_sessions')
         .select('*, topics(nome, subjects(nome, cor))')
         .eq('user_id', user.id)
+        .eq('workspace_id', currentWorkspaceId)
         .order('completed_at', { ascending: false })
         .limit(10);
 
@@ -61,12 +65,10 @@ export default function HistoryPage() {
         questoes: quesRes.data || []
       });
       
-    } catch (err) {
-      console.error(err);
     } finally {
       setLoading(false);
     }
-  }, [user, period]);
+  }, [user, period, currentWorkspaceId]);
 
   useEffect(() => {
     fetchHistory();

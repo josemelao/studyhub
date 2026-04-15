@@ -3,11 +3,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { BarChart3, TrendingUp, Crosshair, Award, Clock, Loader2, Flame, Trophy, ChevronDown } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
+import { useWorkspace } from '../contexts/WorkspaceContext';
 import { Link } from 'react-router-dom';
 import { pageVariants, staggerContainer, staggerItem, scaleIn } from '../lib/animations';
 
 export default function ProgressPage() {
   const { user } = useAuth();
+  const { currentWorkspaceId } = useWorkspace();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ topicsRead: 0, totalQ: 0, totalC: 0, accuracy: 0, sessions: 0, streakMax: 0, conquistas: [] });
   const [sessions, setSessions] = useState([]);
@@ -17,36 +19,51 @@ export default function ProgressPage() {
 
   useEffect(() => {
     async function fetchData() {
+      if (!user || !currentWorkspaceId) return;
       try {
         setLoading(true);
 
         // 1. Buscar progresso de leitura
         const { data: progressData } = await supabase
           .from('user_progress')
-          .select('conteudo_lido')
-          .eq('user_id', user.id);
+          .select('conteudo_lido, acertos, total_questoes')
+          .eq('user_id', user.id)
+          .eq('workspace_id', currentWorkspaceId);
+          
         const lidos = (progressData || []).filter(p => p.conteudo_lido).length;
+        const totalQLocal = (progressData || []).reduce((acc, p) => acc + (p.total_questoes || 0), 0);
+        const totalCLocal = (progressData || []).reduce((acc, p) => acc + (p.acertos || 0), 0);
 
         // 2. Buscar historico de quizzes
         const { data: sessionsData } = await supabase
           .from('quiz_sessions')
           .select('questions_total, questions_correct, score_percent, completed_at, topics(nome, subjects(nome, cor))')
           .eq('user_id', user.id)
+          .eq('workspace_id', currentWorkspaceId)
           .order('completed_at', { ascending: false })
           .limit(5);
 
-        // 3. Buscar stats de gamificação
-        const { data: userStats } = await supabase
+        // 3. Buscar stats globais (XP e Streaks)
+        const { data: globalStats } = await supabase
           .from('user_stats')
-          .select('*')
+          .select('streak_atual, streak_max, pontos_xp')
           .eq('user_id', user.id)
           .single();
 
-        // 4. Buscar histórico de simulados (Modo Prova)
+        // 4. Buscar stats locais do workspace (Conquistas e performance específica se necessário)
+        const { data: localStats } = await supabase
+          .from('workspace_stats')
+          .select('conquistas, total_questoes_respondidas, total_acertos')
+          .eq('user_id', user.id)
+          .eq('workspace_id', currentWorkspaceId)
+          .single();
+
+        // 5. Buscar histórico de simulados (Modo Prova)
         const { data: examData } = await supabase
           .from('exam_sessions')
           .select('*')
           .eq('user_id', user.id)
+          .eq('workspace_id', currentWorkspaceId)
           .eq('status', 'finalizada')
           .order('finalizada_em', { ascending: false })
           .limit(5);
@@ -55,13 +72,14 @@ export default function ProgressPage() {
         
         setStats({ 
           topicsRead: lidos, 
-          totalQ: userStats?.total_questoes_respondidas || 0, 
-          totalC: userStats?.total_acertos || 0, 
-          accuracy: userStats?.total_questoes_respondidas > 0 ? Math.round((userStats.total_acertos / userStats.total_questoes_respondidas) * 100) : 0, 
+          totalQ: totalQLocal, 
+          totalC: totalCLocal, 
+          accuracy: totalQLocal > 0 ? Math.round((totalCLocal / totalQLocal) * 100) : 0, 
           sessions: allSessions.length,
-          streakMax: userStats?.streak_max || 0,
-          streakAtual: userStats?.streak_atual || 0,
-          conquistas: userStats?.conquistas || []
+          streakMax: globalStats?.streak_max || 0,
+          streakAtual: globalStats?.streak_atual || 0,
+          conquistas: localStats?.conquistas || [],
+          xp: globalStats?.pontos_xp || 0
         });
         setSessions(allSessions);
         setExamSessions(examData || []);
@@ -72,7 +90,7 @@ export default function ProgressPage() {
       }
     }
     fetchData();
-  }, [user]);
+  }, [user, currentWorkspaceId]);
 
   if (loading) {
     return (

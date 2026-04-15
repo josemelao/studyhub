@@ -49,7 +49,7 @@ export const ACHIEVEMENTS = [
   }
 ];
 
-export async function checkAndUnlockAchievements(supabase, userId, stats) {
+export async function checkAndUnlockAchievements(supabase, userId, workspaceId, stats) {
   const currentUnlocked = stats.conquistas || [];
   const unlockedIds = currentUnlocked.map(c => c.id);
   const newlyUnlocked = [];
@@ -65,10 +65,12 @@ export async function checkAndUnlockAchievements(supabase, userId, stats) {
     }
   }
 
-  if (newlyUnlocked.length > 0) {
-    await supabase.from('user_stats').update({
+  if (newlyUnlocked.length > 0 && workspaceId) {
+    await supabase.from('workspace_stats').update({
       conquistas: [...currentUnlocked, ...newlyUnlocked]
-    }).eq('user_id', userId);
+    })
+    .eq('user_id', userId)
+    .eq('workspace_id', workspaceId);
   }
 
   return newlyUnlocked;

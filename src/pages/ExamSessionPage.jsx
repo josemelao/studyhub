@@ -6,12 +6,16 @@ import {
   Loader2, AlertCircle, LayoutGrid, Flag
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { useAuth } from '../hooks/useAuth';
+import { useWorkspace } from '../contexts/WorkspaceContext';
 import { pageVariants, scaleIn, staggerItem } from '../lib/animations';
 import FavoriteButton from '../components/ui/FavoriteButton';
 
 export default function ExamSessionPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { currentWorkspaceId } = useWorkspace();
 
   const [session, setSession] = useState(null);
   const [questions, setQuestions] = useState([]);
@@ -25,8 +29,14 @@ export default function ExamSessionPage() {
   // 1. Carregar dados
   useEffect(() => {
     async function load() {
+      if (!user || !currentWorkspaceId) return;
       try {
-        const { data: s, error: sE } = await supabase.from('exam_sessions').select('*').eq('id', id).single();
+        const { data: s, error: sE } = await supabase
+          .from('exam_sessions')
+          .select('*')
+          .eq('id', id)
+          .eq('workspace_id', currentWorkspaceId)
+          .single();
         if (sE) throw sE;
         if (s.status !== 'em_andamento') { navigate(`/modo-prova/resultado/${id}`); return; }
         
@@ -43,7 +53,8 @@ export default function ExamSessionPage() {
         const { data: qData, error: qE } = await supabase
           .from('questions')
           .select('id, enunciado, opcoes, explicacao')
-          .in('id', s.questoes);
+          .in('id', s.questoes)
+          .eq('workspace_id', currentWorkspaceId);
         if (qE) throw qE;
         
         // Manter a ordem especificada na sessão
@@ -53,7 +64,7 @@ export default function ExamSessionPage() {
       finally { setLoading(false); }
     }
     load();
-  }, [id, navigate]);
+  }, [id, navigate, user, currentWorkspaceId]);
 
   // 2. Timer
   useEffect(() => {
@@ -82,7 +93,11 @@ export default function ExamSessionPage() {
     const newAnswers = { ...answers, [qId]: letra };
     setAnswers(newAnswers);
     // Silent update no background
-    await supabase.from('exam_sessions').update({ respostas: newAnswers }).eq('id', id);
+    await supabase
+      .from('exam_sessions')
+      .update({ respostas: newAnswers })
+      .eq('id', id)
+      .eq('workspace_id', currentWorkspaceId);
   };
 
   // 5. Finalizar
@@ -93,7 +108,7 @@ export default function ExamSessionPage() {
         status: 'finalizada',
         finalizada_em: new Date().toISOString(),
         tempo_gasto_segundos: session.configuracao.tempo_minutos * 60 - timeLeft
-      }).eq('id', id);
+      }).eq('id', id).eq('workspace_id', currentWorkspaceId);
       if (error) throw error;
       navigate(`/modo-prova/resultado/${id}`);
     } catch (err) { console.error(err); }

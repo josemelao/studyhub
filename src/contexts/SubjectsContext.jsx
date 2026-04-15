@@ -1,6 +1,7 @@
-import { createContext, useContext, useState, useCallback, useRef } from 'react';
+import { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
+import { useWorkspace } from './WorkspaceContext';
 
 const SubjectsContext = createContext(null);
 
@@ -11,13 +12,24 @@ const SubjectsContext = createContext(null);
  */
 export function SubjectsProvider({ children }) {
   const { user } = useAuth();
+  const { currentWorkspaceId } = useWorkspace();
   const [subjects, setSubjects] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const fetchedRef = useRef(false); // Flag para evitar re-fetch
 
+  const invalidateCache = useCallback(() => {
+    fetchedRef.current = false;
+  }, []);
+
+  // Limpar a memória imediatamente quando o Workspace Mudar
+  useEffect(() => {
+    setSubjects([]);
+    invalidateCache();
+  }, [currentWorkspaceId, invalidateCache]);
+
   const fetchSubjects = useCallback(async (force = false) => {
-    if (!user) return;
+    if (!user || !currentWorkspaceId) return;
     // Se já carregou e não é forçado, usa o cache
     if (fetchedRef.current && !force) return;
 
@@ -31,6 +43,7 @@ export function SubjectsProvider({ children }) {
           id, nome, categoria, cor, icone, ordem,
           topics (id)
         `)
+        .eq('workspace_id', currentWorkspaceId)
         .order('ordem');
 
       if (subjectsError) throw subjectsError;
@@ -38,7 +51,8 @@ export function SubjectsProvider({ children }) {
       const { data: progressData, error: progressError } = await supabase
         .from('user_progress')
         .select('topic_id, acertos, total_questoes, conteudo_lido')
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .eq('workspace_id', currentWorkspaceId);
 
       if (progressError) throw progressError;
 
@@ -57,11 +71,7 @@ export function SubjectsProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  }, [user]);
-
-  const invalidateCache = useCallback(() => {
-    fetchedRef.current = false;
-  }, []);
+  }, [user, currentWorkspaceId]);
 
   return (
     <SubjectsContext.Provider value={{ subjects, loading, error, fetchSubjects, invalidateCache }}>

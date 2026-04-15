@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { useAuth } from './useAuth';
+import { useWorkspace } from '../contexts/WorkspaceContext';
 import { updateUserStats } from '../lib/gamification';
 import { checkAndUnlockAchievements } from '../lib/achievements';
 
@@ -9,6 +10,7 @@ import { checkAndUnlockAchievements } from '../lib/achievements';
  */
 export function useGamification() {
   const { user } = useAuth();
+  const { currentWorkspaceId } = useWorkspace();
 
   const processActivity = async (metrics = {}) => {
     if (!user) {
@@ -17,11 +19,11 @@ export function useGamification() {
     }
 
     try {
-      // 1. Atualizar estatatísticas, XP e Streaks no banco
-      const stats = await updateUserStats(supabase, user.id, metrics);
+      // 1. Atualizar estatatísticas, XP e Streaks (Global e Local)
+      const stats = await updateUserStats(supabase, user.id, currentWorkspaceId, metrics);
       
-      // 2. Verificar se novas conquistas foram desbloqueadas com base nos novos stats
-      const newlyUnlocked = await checkAndUnlockAchievements(supabase, user.id, stats);
+      // 2. Verificar se novas conquistas foram desbloqueadas (Contexto do Workspace)
+      const newlyUnlocked = await checkAndUnlockAchievements(supabase, user.id, currentWorkspaceId, stats);
       
       // 3. Se houver novas conquistas, disparar evento para o componente de Toast
       if (newlyUnlocked && newlyUnlocked.length > 0) {

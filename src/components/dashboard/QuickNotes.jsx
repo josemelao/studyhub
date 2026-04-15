@@ -2,9 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import { StickyNote, Save, Loader2, AlertTriangle, CloudCheck } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
+import { useWorkspace } from '../../contexts/WorkspaceContext';
 
 export default function QuickNotes() {
   const { user } = useAuth();
+  const { currentWorkspaceId } = useWorkspace();
   const [notes, setNotes] = useState('');
   const [initialNotes, setInitialNotes] = useState('');
   const [saving, setSaving] = useState(false);
@@ -24,7 +26,13 @@ export default function QuickNotes() {
   // 1. Carregar notas iniciais com tratamento de erro robusto
   useEffect(() => {
     async function loadNotes() {
-      if (!user) return;
+      if (!user || !currentWorkspaceId) {
+         setNotes('');
+         setInitialNotes('');
+         setIsLoaded(false);
+         return;
+      }
+      
       try {
         setLoadError(false);
         // Usamos .limit(1) para evitar Erro 406 caso existam múltiplas linhas
@@ -32,6 +40,7 @@ export default function QuickNotes() {
           .from('user_notes')
           .select('content, updated_at')
           .eq('user_id', user.id)
+          .eq('workspace_id', currentWorkspaceId)
           .limit(1);
         
         if (error) throw error;
@@ -43,8 +52,10 @@ export default function QuickNotes() {
           notesRef.current = content;
           setLastSaved(new Date(data[0].updated_at));
         } else {
-          // Usuário novo ou sem notas
+          // Usuário novo ou novo workspace
+          setNotes('');
           setInitialNotes('');
+          notesRef.current = '';
         }
         setIsLoaded(true);
       } catch (err) {
@@ -53,11 +64,11 @@ export default function QuickNotes() {
       }
     }
     loadNotes();
-  }, [user]);
+  }, [user, currentWorkspaceId]);
 
   // 2. Função central de salvamento com travas de segurança
   const handleSave = async (content) => {
-    if (!user || !isLoaded || loadError) return;
+    if (!user || !isLoaded || loadError || !currentWorkspaceId) return;
     
     // Só salva se o conteúdo for realmente diferente do que foi carregado/salvo por último
     if (content === initialNotes && lastSaved) return;
@@ -70,6 +81,7 @@ export default function QuickNotes() {
         .from('user_notes')
         .upsert({ 
           user_id: user.id, 
+          workspace_id: currentWorkspaceId,
           content: content,
           updated_at: new Date().toISOString()
         });
@@ -102,22 +114,24 @@ export default function QuickNotes() {
 
   // 4. Save on Unmount (Final Guard)
   useEffect(() => {
+    const cachedWorkspaceId = currentWorkspaceId; // clousure capture
     return () => {
       // Salva apenas se houver mudanças pendentes e o sistema estiver em estado estável
       if (isLoaded && !loadError && notesRef.current !== initialNotes) {
         const userId = user?.id;
         const finalContent = notesRef.current;
-        if (userId) {
+        if (userId && cachedWorkspaceId) {
           // Fire-and-forget save no encerramento do componente
           supabase.from('user_notes').upsert({ 
             user_id: userId, 
+            workspace_id: cachedWorkspaceId,
             content: finalContent,
             updated_at: new Date().toISOString()
           }).then();
         }
       }
     };
-  }, [isLoaded, loadError, user?.id]); // Note: initialNotes is intentionally omitted here to catch the latest change
+  }, [isLoaded, loadError, user?.id, currentWorkspaceId]); // Note: initialNotes is intentionally omitted here to catch the latest change
 
   return (
     <div className={`glass-card flex flex-col h-full transition-colors group ${

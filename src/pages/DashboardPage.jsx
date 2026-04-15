@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ChevronRight, Clock, CheckCircle2, Loader2, TrendingUp, BookOpen } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { useWorkspace } from '../contexts/WorkspaceContext';
 import { useSubjectsContext } from '../contexts/SubjectsContext';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
@@ -16,19 +17,34 @@ import DailyTopics from '../components/dashboard/DailyTopics';
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const { currentWorkspaceId, workspaces } = useWorkspace();
   const { subjects, loading, fetchSubjects } = useSubjectsContext();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [stats, setStats] = useState(null);
+  const [currentConcurso, setCurrentConcurso] = useState(null);
 
   useEffect(() => { 
     fetchSubjects(); 
     async function loadStats() {
-      if (!user) return;
-      const { data } = await supabase.from('user_stats').select('*').eq('user_id', user.id).single();
-      if (data) setStats(data);
+      if (!user || !currentWorkspaceId) return;
+      
+      // 1. Stats Globais (Streaks)
+      const { data: g } = await supabase.from('user_stats').select('*').eq('user_id', user.id).single();
+      
+      // 2. Stats Locais (Questões do Workspace)
+      const { data: l } = await supabase.from('workspace_stats').select('*').eq('user_id', user.id).eq('workspace_id', currentWorkspaceId).single();
+      
+      if (g) setStats({ ...g, total_questoes_respondidas: l?.total_questoes_respondidas || 0 });
+
+      // 3. Info do Concurso
+      const workspace = workspaces.find(w => w.id === currentWorkspaceId);
+      if (workspace?.concurso_id) {
+        const { data: c } = await supabase.from('concursos').select('nome').eq('id', workspace.concurso_id).single();
+        setCurrentConcurso(c);
+      }
     }
     loadStats();
-  }, [fetchSubjects, user]);
+  }, [fetchSubjects, user, currentWorkspaceId, workspaces]);
 
   const daysToExam = 68;
 
@@ -74,7 +90,7 @@ export default function DashboardPage() {
               </div>
               <div className="flex items-center gap-3 text-xs text-secondary font-medium">
                 <Clock className="w-4 h-4 text-accent" />
-                <span className="opacity-80">Banco do Brasil — <strong className="text-primary">{daysToExam} dias</strong> para a prova</span>
+                <span className="opacity-80">{currentConcurso?.nome || 'Seu Edital'} — <strong className="text-primary">{daysToExam} dias</strong> para a prova</span>
               </div>
             </div>
 

@@ -9,6 +9,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
+import { useWorkspace } from '../contexts/WorkspaceContext';
 import { useGamification } from '../hooks/useGamification';
 import FavoriteButton from '../components/ui/FavoriteButton';
 import { pageVariants, staggerItem, scaleIn } from '../lib/animations';
@@ -18,6 +19,7 @@ export default function StudyPage() {
   const { id: topicId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { currentWorkspaceId } = useWorkspace();
   const { processActivity } = useGamification();
 
   const [topic, setTopic] = useState(null);
@@ -32,18 +34,25 @@ export default function StudyPage() {
 
   useEffect(() => {
     async function loadData() {
-      if (!user) return;
+      if (!user || !currentWorkspaceId) return;
       try {
         setLoading(true);
         // 1. Carregar Tópico
         const { data: topicData, error: topicError } = await supabase
-          .from('topics').select('*, subjects(id, nome)').eq('id', topicId).single();
+          .from('topics')
+          .select('*, subjects(id, nome)')
+          .eq('id', topicId)
+          .eq('workspace_id', currentWorkspaceId)
+          .single();
         if (topicError) throw topicError;
         setTopic(topicData);
 
         // 2. Carregar Conteúdos (Suporte a múltiplos links por linha)
         const { data: contentRows, error: contentError } = await supabase
-          .from('contents').select('*').eq('topic_id', topicId);
+          .from('contents')
+          .select('*')
+          .eq('topic_id', topicId)
+          .eq('workspace_id', currentWorkspaceId);
         
         if (contentError) throw contentError;
         
@@ -67,14 +76,18 @@ export default function StudyPage() {
 
         // 3. Carregar Progresso
         const { data: prog } = await supabase
-          .from('user_progress').select('conteudo_lido')
-          .eq('user_id', user.id).eq('topic_id', topicId).maybeSingle();
+          .from('user_progress')
+          .select('conteudo_lido')
+          .eq('user_id', user.id)
+          .eq('topic_id', topicId)
+          .eq('workspace_id', currentWorkspaceId)
+          .maybeSingle();
         setAlreadyRead(prog?.conteudo_lido === true);
       } catch (err) { setError(err.message); }
       finally { setLoading(false); }
     }
     loadData();
-  }, [topicId, user]);
+  }, [topicId, user, currentWorkspaceId]);
 
   // Lógica de Autosave para Notas removida (agora no NotesWidget)
 
@@ -90,10 +103,11 @@ export default function StudyPage() {
       setMarking(true);
       await supabase.from('user_progress').upsert({
         user_id: user.id,
+        workspace_id: currentWorkspaceId,
         topic_id: topicId,
         conteudo_lido: true,
         last_studied_at: new Date().toISOString()
-      }, { onConflict: 'user_id,topic_id' });
+      }, { onConflict: 'user_id,workspace_id,topic_id' });
       
       await processActivity({ leitura: true });
       setAlreadyRead(true);
@@ -330,6 +344,7 @@ function Edit3Icon(props) {
 
 // Componente Isolado para Notas (Evita re-render da página inteira)
 function NotesWidget({ topicId, user }) {
+  const { currentWorkspaceId } = useWorkspace();
   const [notes, setNotes] = useState('');
   const [lastSaved, setLastSaved] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -338,12 +353,15 @@ function NotesWidget({ topicId, user }) {
 
   useEffect(() => {
     async function loadNotes() {
-      if (!user || !topicId) return;
+      if (!user || !topicId || !currentWorkspaceId) return;
       try {
         setLoading(true);
         const { data: notesData } = await supabase
           .from('user_topic_notes').select('content, updated_at')
-          .eq('user_id', user.id).eq('topic_id', topicId).maybeSingle();
+          .eq('user_id', user.id)
+          .eq('workspace_id', currentWorkspaceId)
+          .eq('topic_id', topicId)
+          .maybeSingle();
         
         if (notesData) {
           setNotes(notesData.content || '');
@@ -353,20 +371,22 @@ function NotesWidget({ topicId, user }) {
       finally { setLoading(false); }
     }
     loadNotes();
-  }, [topicId, user]);
+  }, [topicId, user, currentWorkspaceId]);
 
   useEffect(() => {
     if (!topicId || !user || loading) return;
 
     const saveNotes = async () => {
+      if (!currentWorkspaceId) return;
       setIsSaving(true);
       try {
         await supabase.from('user_topic_notes').upsert({
           user_id: user.id,
+          workspace_id: currentWorkspaceId,
           topic_id: topicId,
           content: notes,
           updated_at: new Date().toISOString()
-        }, { onConflict: 'user_id,topic_id' });
+        }, { onConflict: 'user_id,workspace_id,topic_id' });
         setLastSaved(new Date());
       } catch (err) { console.error('Erro:', err); }
       finally { setIsSaving(false); }

@@ -2,9 +2,10 @@ import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, BookOpen, Target, 
   BarChart3, Star, LogOut, Trophy, History, Calendar,
-  Edit3
+  Edit3, ChevronDown
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { motion } from 'framer-motion';
 import StreakWidget from '../ui/StreakWidget';
 
@@ -21,21 +22,40 @@ const navItems = [
 
 export default function Sidebar() {
   const { signOut } = useAuth();
+  const { workspaces, currentWorkspaceId, setWorkspace } = useWorkspace();
 
   return (
     <aside className="w-64 border-r border-default h-full bg-secondary/50 backdrop-blur-xl flex flex-col fixed left-0 top-0 overflow-y-auto z-20">
-      <div className="p-8 flex items-center gap-3">
+      <div className="p-6 pb-4 flex items-center gap-3">
         <motion.div 
           whileHover={{ rotate: 10, scale: 1.1 }}
-          className="w-8 h-8 rounded-lg bg-gradient-accent flex items-center justify-center shadow-glow-accent glow-accent"
+          className="w-8 h-8 rounded-lg bg-gradient-accent flex items-center justify-center shadow-glow-accent glow-accent shrink-0"
         >
           <Trophy className="w-5 h-5 text-white" />
         </motion.div>
-        <span className="text-xl font-black italic tracking-tighter gradient-text">StudyHub</span>
+        <span className="text-xl font-black italic tracking-tighter gradient-text truncate">StudyHub</span>
       </div>
 
+      {workspaces.length > 0 && (
+        <div className="px-6 mb-4">
+          <div className="relative group">
+            <select
+              value={currentWorkspaceId || ''}
+              onChange={(e) => setWorkspace(e.target.value)}
+              className="w-full appearance-none bg-primary/30 hover:bg-white/5 border border-default text-primary text-sm font-bold rounded-xl px-4 py-2.5 outline-none transition-colors cursor-pointer thin-scrollbar shadow-sm truncate pr-10"
+            >
+              {workspaces.map(ws => (
+                <option key={ws.id} value={ws.id} className="font-semibold">{ws.name}</option>
+              ))}
+            </select>
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted group-hover:text-primary transition-colors">
+              <ChevronDown className="w-4 h-4" />
+            </div>
+          </div>
+        </div>
+      )}
 
-      <nav className="flex-1 px-4 space-y-1.5 pt-4">
+      <nav className="flex-1 px-4 space-y-1.5 pt-2">
         {navItems.map((item) => (
           <NavLink
             key={item.path}

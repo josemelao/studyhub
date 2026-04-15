@@ -3,27 +3,30 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Star } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
+import { useWorkspace } from '../../contexts/WorkspaceContext';
 
 export default function FavoriteButton({ tipo, referenciaId, initialIsFav = false }) {
   const { user } = useAuth();
+  const { currentWorkspaceId } = useWorkspace();
   const [isFav, setIsFav] = useState(initialIsFav);
   const [loading, setLoading] = useState(false);
 
   // Sincronizar estado inicial se necessário
   useEffect(() => {
     async function checkFav() {
-      if (!user) return;
+      if (!user || !currentWorkspaceId) return;
       const { data } = await supabase
         .from('favorites')
         .select('*')
         .eq('user_id', user.id)
+        .eq('workspace_id', currentWorkspaceId)
         .eq('tipo', tipo)
         .eq('referencia_id', referenciaId)
         .single();
       if (data) setIsFav(true);
     }
     checkFav();
-  }, [user, tipo, referenciaId]);
+  }, [user, currentWorkspaceId, tipo, referenciaId]);
 
   const toggleFavorite = async (e) => {
     e.preventDefault();
@@ -42,6 +45,7 @@ export default function FavoriteButton({ tipo, referenciaId, initialIsFav = fals
           .from('favorites')
           .delete()
           .eq('user_id', user.id)
+          .eq('workspace_id', currentWorkspaceId)
           .eq('tipo', tipo)
           .eq('referencia_id', referenciaId);
       } else {
@@ -50,6 +54,7 @@ export default function FavoriteButton({ tipo, referenciaId, initialIsFav = fals
           .from('favorites')
           .insert({
             user_id: user.id,
+            workspace_id: currentWorkspaceId,
             tipo,
             referencia_id: referenciaId
           });

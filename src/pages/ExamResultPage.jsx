@@ -10,12 +10,14 @@ import { supabase } from '../lib/supabase';
 import { pageVariants, staggerContainer, staggerItem, scaleIn, expandDown } from '../lib/animations';
 import FavoriteButton from '../components/ui/FavoriteButton';
 import { useAuth } from '../hooks/useAuth';
+import { useWorkspace } from '../contexts/WorkspaceContext';
 import { useGamification } from '../hooks/useGamification';
 
 export default function ExamResultPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { currentWorkspaceId } = useWorkspace();
   const { processActivity } = useGamification();
 
   const [session, setSession] = useState(null);
@@ -26,16 +28,23 @@ export default function ExamResultPage() {
 
   useEffect(() => {
     async function load() {
+      if (!user || !currentWorkspaceId) return;
       try {
         setLoading(true);
-        const { data: s, error: sE } = await supabase.from('exam_sessions').select('*').eq('id', id).single();
+        const { data: s, error: sE } = await supabase
+          .from('exam_sessions')
+          .select('*')
+          .eq('id', id)
+          .eq('workspace_id', currentWorkspaceId)
+          .single();
         if (sE) throw sE;
         setSession(s);
 
         const { data: qData, error: qE } = await supabase
           .from('questions')
           .select('id, enunciado, opcoes, resposta_correta, explicacao, topic_id(nome, subjects(nome, cor))')
-          .in('id', s.questoes);
+          .in('id', s.questoes)
+          .eq('workspace_id', currentWorkspaceId);
         if (qE) throw qE;
         
         // Manter ordem do simulado; filtrar entradas undefined caso alguma questão não seja encontrada
@@ -59,7 +68,7 @@ export default function ExamResultPage() {
       finally { setLoading(false); }
     }
     load();
-  }, [id, user]);
+  }, [id, user, currentWorkspaceId]);
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-36 gap-4">

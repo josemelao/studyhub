@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
+import { useWorkspace } from '../contexts/WorkspaceContext';
 import { pageVariants, staggerContainer, staggerItem, expandDown } from '../lib/animations';
 import ConfirmModal from '../components/ui/ConfirmModal';
 
@@ -15,6 +16,7 @@ import { toast } from 'react-hot-toast';
 
 export default function PlannerPage() {
   const { user } = useAuth();
+  const { currentWorkspaceId } = useWorkspace();
   
   // Data States
   const [subjects, setSubjects] = useState([]);
@@ -56,7 +58,7 @@ export default function PlannerPage() {
 
   useEffect(() => {
     async function loadData() {
-      if (!user) return;
+      if (!user || !currentWorkspaceId) return;
       try {
         setLoading(true);
         
@@ -64,13 +66,15 @@ export default function PlannerPage() {
         const { data: subData } = await supabase
           .from('subjects')
           .select('id, nome, cor, icone, topics(id, nome, ordem)')
+          .eq('workspace_id', currentWorkspaceId)
           .order('ordem');
 
         // 2. Fetch User Progress (to show what's unread)
         const { data: progData } = await supabase
           .from('user_progress')
           .select('topic_id, conteudo_lido')
-          .eq('user_id', user.id);
+          .eq('user_id', user.id)
+          .eq('workspace_id', currentWorkspaceId);
 
         const progMap = new Map((progData || []).map(p => [p.topic_id, p.conteudo_lido]));
 
@@ -88,6 +92,7 @@ export default function PlannerPage() {
           .from('study_plans')
           .select('data, topicos')
           .eq('user_id', user.id)
+          .eq('workspace_id', currentWorkspaceId)
           .gte('data', weekDays[0])
           .lte('data', weekDays[6]);
 
@@ -104,7 +109,7 @@ export default function PlannerPage() {
       }
     }
     loadData();
-  }, [user, weekDays]);
+  }, [user, weekDays, currentWorkspaceId]);
 
   const toggleTopicInDay = (date, topic) => {
     setPlannedDays(prev => {
@@ -128,11 +133,13 @@ export default function PlannerPage() {
   };
 
   const handleSavePlan = async () => {
+    if (!currentWorkspaceId) return;
     const loadingToast = toast.loading('Sincronizando cronograma...');
     setSaving(true);
     try {
       const payloads = Object.entries(plannedDays).map(([date, topics]) => ({
         user_id: user.id,
+        workspace_id: currentWorkspaceId,
         data: date,
         topicos: topics,
         updated_at: new Date().toISOString()
@@ -140,7 +147,7 @@ export default function PlannerPage() {
 
       const { error } = await supabase
         .from('study_plans')
-        .upsert(payloads, { onConflict: 'user_id,data' });
+        .upsert(payloads, { onConflict: 'user_id,workspace_id,data' });
 
       if (error) throw error;
       toast.success('Plano salvo com sucesso!', { id: loadingToast });
@@ -187,6 +194,7 @@ export default function PlannerPage() {
   };
 
   const handleClearWeek = async () => {
+    if (!currentWorkspaceId) return;
     const loadingToast = toast.loading('Limpando cronograma...');
     try {
       setSaving(true);
@@ -194,6 +202,7 @@ export default function PlannerPage() {
         .from('study_plans')
         .delete()
         .eq('user_id', user.id)
+        .eq('workspace_id', currentWorkspaceId)
         .gte('data', weekDays[0])
         .lte('data', weekDays[6]);
 

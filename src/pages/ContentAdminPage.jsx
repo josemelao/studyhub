@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
+import { useWorkspace } from '../contexts/WorkspaceContext';
 import { useSubjectsContext } from '../contexts/SubjectsContext';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -18,6 +19,7 @@ import '../styles/markdown.css';
 
 export default function ContentAdminPage() {
   const { user } = useAuth();
+  const { currentWorkspaceId } = useWorkspace();
   const { invalidateCache } = useSubjectsContext();
   const fileInputRef = useRef(null);
   
@@ -39,7 +41,12 @@ export default function ContentAdminPage() {
 
   // Carregar matérias
   const loadSubjects = async () => {
-    const { data } = await supabase.from('subjects').select('*').order('ordem');
+    if (!currentWorkspaceId) return;
+    const { data } = await supabase
+      .from('subjects')
+      .select('*')
+      .eq('workspace_id', currentWorkspaceId)
+      .order('ordem');
     setSubjects(data || []);
   };
 
@@ -55,7 +62,12 @@ export default function ContentAdminPage() {
       return;
     }
     setFetching(true);
-    const { data } = await supabase.from('topics').select('*').eq('subject_id', subjectId).order('ordem');
+    const { data } = await supabase
+      .from('topics')
+      .select('*')
+      .eq('subject_id', subjectId)
+      .eq('workspace_id', currentWorkspaceId)
+      .order('ordem');
     setTopics(data || []);
     setFetching(false);
   };
@@ -76,6 +88,7 @@ export default function ContentAdminPage() {
         .from('contents')
         .select('*')
         .eq('topic_id', selectedTopic)
+        .eq('workspace_id', currentWorkspaceId)
         .eq('tipo', contentType)
         .single();
       
@@ -91,6 +104,7 @@ export default function ContentAdminPage() {
     try {
       const { error } = await supabase.from('contents').upsert({
         topic_id: selectedTopic,
+        workspace_id: currentWorkspaceId,
         tipo: contentType,
         conteudo: content,
         updated_at: new Date().toISOString()
@@ -112,6 +126,7 @@ export default function ContentAdminPage() {
     try {
       const nextOrder = subjects.length > 0 ? Math.max(...subjects.map(s => s.ordem || 0)) + 1 : 1;
       const { data, error } = await supabase.from('subjects').insert({
+        workspace_id: currentWorkspaceId,
         nome: newSubject.nome,
         categoria: newSubject.categoria,
         icone: 'Book',
@@ -139,6 +154,7 @@ export default function ContentAdminPage() {
     try {
       const nextOrder = topics.length > 0 ? Math.max(...topics.map(t => t.ordem || 0)) + 1 : 1;
       const { data, error } = await supabase.from('topics').insert({
+        workspace_id: currentWorkspaceId,
         subject_id: selectedSubject,
         nome: newTopicName,
         ordem: nextOrder

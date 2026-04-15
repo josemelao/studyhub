@@ -4,9 +4,11 @@ import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-reac
 import * as Icons from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../lib/supabase';
+import { useWorkspace } from '../../contexts/WorkspaceContext';
 
 export default function SmartCalendar({ selectedDate, onSelectDate }) {
   const { user } = useAuth();
+  const { currentWorkspaceId } = useWorkspace();
   const [viewDate, setViewDate] = useState(new Date());
   const [plans, setPlans] = useState({}); // { 'yyyy-mm-dd': topics[] }
   const [loading, setLoading] = useState(false);
@@ -31,7 +33,7 @@ export default function SmartCalendar({ selectedDate, onSelectDate }) {
   // Carregar planos reais do Supabase
   useEffect(() => {
     async function fetchPlans() {
-      if (!user) return;
+      if (!user || !currentWorkspaceId) return;
       try {
         setLoading(true);
         const start = weekDays[0].toISOString().split('T')[0];
@@ -41,6 +43,7 @@ export default function SmartCalendar({ selectedDate, onSelectDate }) {
           .from('study_plans')
           .select('data, topicos')
           .eq('user_id', user.id)
+          .eq('workspace_id', currentWorkspaceId)
           .gte('data', start)
           .lte('data', end);
 
@@ -56,7 +59,7 @@ export default function SmartCalendar({ selectedDate, onSelectDate }) {
       }
     }
     fetchPlans();
-  }, [user, viewDate, weekDays]);
+  }, [user, viewDate, weekDays, currentWorkspaceId]);
 
   const changeWeek = (offset) => {
     const next = new Date(viewDate);

@@ -4,11 +4,13 @@ import { Star, BookOpen, CircleHelp, ChevronRight, Loader2, Trash2, ArrowRight }
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
+import { useWorkspace } from '../contexts/WorkspaceContext';
 import { pageVariants, staggerContainer, staggerItem, expandDown } from '../lib/animations';
 import ConfirmModal from '../components/ui/ConfirmModal';
 
 export default function FavoritesPage() {
   const { user } = useAuth();
+  const { currentWorkspaceId } = useWorkspace();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [favs, setFavs] = useState({ conteudo: [], questao: [] });
@@ -19,12 +21,14 @@ export default function FavoritesPage() {
 
   useEffect(() => {
     async function load() {
+      if (!user || !currentWorkspaceId) return;
       try {
         setLoading(true);
         const { data, error } = await supabase
           .from('favorites')
           .select('*')
-          .eq('user_id', user.id);
+          .eq('user_id', user.id)
+          .eq('workspace_id', currentWorkspaceId);
         
         if (error) throw error;
 
@@ -36,7 +40,8 @@ export default function FavoritesPage() {
           const { data: d } = await supabase
             .from('topics')
             .select('id, nome, subjects(nome, cor)')
-            .in('id', contIds);
+            .in('id', contIds)
+            .eq('workspace_id', currentWorkspaceId);
           contData = d || [];
         }
 
@@ -45,16 +50,18 @@ export default function FavoritesPage() {
           const { data: d } = await supabase
             .from('questions')
             .select('id, enunciado, opcoes, resposta_correta, explicacao, topic_id(nome, subjects(nome, cor))')
-            .in('id', quesIds);
+            .in('id', quesIds)
+            .eq('workspace_id', currentWorkspaceId);
           quesData = d || [];
         }
 
         setFavs({ conteudo: contData, questao: quesData });
-      } catch (err) { console.error(err); }
-      finally { setLoading(false); }
+      } finally {
+        setLoading(false);
+      }
     }
     load();
-  }, [user]);
+  }, [user, currentWorkspaceId]);
 
   const removeFav = async () => {
     if (!itemToDelete) return;
@@ -62,7 +69,13 @@ export default function FavoritesPage() {
     
     try {
       setIsDeleting(true);
-      await supabase.from('favorites').delete().eq('user_id', user.id).eq('tipo', tipo).eq('referencia_id', id);
+      await supabase
+        .from('favorites')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('workspace_id', currentWorkspaceId)
+        .eq('tipo', tipo)
+        .eq('referencia_id', id);
       setFavs(prev => ({
         ...prev,
         [tipo]: prev[tipo].filter(f => f.id !== id)

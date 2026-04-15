@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './useAuth';
+import { useWorkspace } from '../contexts/WorkspaceContext';
 
 export function useSubjects() {
   const { user } = useAuth();
+  const { currentWorkspaceId } = useWorkspace();
   const [subjects, setSubjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -25,6 +27,7 @@ export function useSubjects() {
           ordem,
           topics (id)
         `)
+        .eq('workspace_id', currentWorkspaceId)
         .order('ordem');
 
       if (subjectsError) throw subjectsError;
@@ -38,7 +41,8 @@ export function useSubjects() {
       const { data: progressData, error: progressError } = await supabase
         .from('user_progress')
         .select('topic_id, acertos, total_questoes, conteudo_lido')
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .eq('workspace_id', currentWorkspaceId);
 
       if (progressError) throw progressError;
 
@@ -71,12 +75,10 @@ export function useSubjects() {
       });
 
       setSubjects(enrichedSubjects);
-    } catch (err) {
-      setError(err.message);
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, currentWorkspaceId]);
 
   useEffect(() => {
     fetchSubjects();

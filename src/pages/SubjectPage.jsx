@@ -5,12 +5,14 @@ import { ArrowLeft, PlayCircle, Circle, CheckCircle2, ChevronRight, ChevronDown,
 import * as Icons from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
+import { useWorkspace } from '../contexts/WorkspaceContext';
 import { pageVariants, staggerItem, staggerContainer, expandDown } from '../lib/animations';
 
 export default function SubjectPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { currentWorkspaceId } = useWorkspace();
 
   const [subject, setSubject] = useState(null);
   const [subSubjects, setSubSubjects] = useState([]);
@@ -20,10 +22,15 @@ export default function SubjectPage() {
 
   useEffect(() => {
     async function load() {
+      if (!user || !currentWorkspaceId) return;
       try {
         setLoading(true);
         const { data: subData, error: subE } = await supabase
-          .from('subjects').select('*').eq('id', id).single();
+          .from('subjects')
+          .select('*')
+          .eq('id', id)
+          .eq('workspace_id', currentWorkspaceId)
+          .single();
         if (subE) throw subE;
         setSubject(subData);
 
@@ -35,6 +42,7 @@ export default function SubjectPage() {
             topics (id, nome, descricao, ordem)
           `)
           .eq('subject_id', id)
+          .eq('workspace_id', currentWorkspaceId)
           .order('ordem');
         if (ssE) throw ssE;
 
@@ -43,6 +51,7 @@ export default function SubjectPage() {
           .from('topics')
           .select('id, nome, descricao, ordem')
           .eq('subject_id', id)
+          .eq('workspace_id', currentWorkspaceId)
           .is('sub_subject_id', null)
           .order('ordem');
         if (dtE) throw dtE;
@@ -51,7 +60,8 @@ export default function SubjectPage() {
         const { data: progData } = await supabase
           .from('user_progress')
           .select('topic_id, conteudo_lido')
-          .eq('user_id', user.id);
+          .eq('user_id', user.id)
+          .eq('workspace_id', currentWorkspaceId);
 
         const mapStatus = (topic) => {
           const p = (progData || []).find(pr => pr.topic_id === topic.id);
@@ -82,7 +92,7 @@ export default function SubjectPage() {
       finally { setLoading(false); }
     }
     load();
-  }, [id, user]);
+  }, [id, user, currentWorkspaceId]);
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-36 gap-4">
