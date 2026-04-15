@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, memo, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -15,6 +15,19 @@ import { useSubjectsContext } from '../contexts/SubjectsContext';
 import FavoriteButton from '../components/ui/FavoriteButton';
 import { pageVariants, staggerItem, scaleIn } from '../lib/animations';
 import '../styles/markdown.css';
+
+// Componente memoizado para renderizar Markdown longo sem travar a interface
+const MemoizedMarkdown = memo(({ content }) => {
+  const processedContent = useMemo(() => content?.replace(/\n/g, '  \n') || '', [content]);
+  
+  return (
+    <div className="markdown-body">
+      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+        {processedContent}
+      </ReactMarkdown>
+    </div>
+  );
+});
 
 export default function StudyPage() {
   const { id: topicId } = useParams();
@@ -139,12 +152,8 @@ export default function StudyPage() {
   );
 
   return (
-    <motion.div 
-      variants={pageVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      className="pb-32 px-4 md:px-0"
+    <div 
+      className="pb-32 px-4 md:px-0 animate-in fade-in duration-500"
     >
       {/* Header com Navegação */}
       <motion.nav variants={staggerItem} className="flex items-center justify-between mb-8">
@@ -174,22 +183,18 @@ export default function StudyPage() {
         {/* Lado Esquerdo: Conteúdo Pedagógico (8/12) */}
         <div className="lg:col-span-8 space-y-10 order-2 lg:order-1">
           {/* Resumo em Texto */}
-          <motion.div variants={staggerItem} className="glass-card p-8 md:p-14 relative overflow-hidden shadow-2xl">
+          <div className="bg-[#111115] border border-white/5 rounded-3xl p-8 md:p-14 relative shadow-2xl">
             <div className="absolute top-0 right-0 w-64 h-64 bg-accent/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2" />
             
             {contents.resumo?.conteudo ? (
-              <div className="markdown-body">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {contents.resumo.conteudo.replace(/\n/g, '  \n')}
-                </ReactMarkdown>
-              </div>
+              <MemoizedMarkdown content={contents.resumo.conteudo} />
             ) : (
               <div className="flex flex-col items-center justify-center py-20 grayscale opacity-30">
                 <FileText className="w-16 h-16 mb-6" />
                 <p className="text-xs font-black uppercase tracking-widest italic">Aguardando Apostila...</p>
               </div>
             )}
-          </motion.div>
+          </div>
 
           {/* Dicas / Bizus */}
           {contents.dicas?.conteudo && (
@@ -292,35 +297,28 @@ export default function StudyPage() {
 
             {/* Widget de Notas Personalizadas (Componente Isolado para Performance) */}
             <NotesWidget topicId={topicId} user={user} />
+
+            {/* Area do Botão (Movida da página para a barra lateral) */}
+            <div className="pt-4">
+              {alreadyRead ? (
+                <div className="flex items-center justify-center gap-2 py-4 text-sm font-bold rounded-2xl bg-success/10 border border-success/25 text-success shadow-2xl border-b-4 border-b-success/20">
+                  <Check className="w-5 h-5" /> Meta Concluída
+                </div>
+              ) : (
+                <button
+                  onClick={markAsRead}
+                  disabled={marking}
+                  className="w-full flex items-center justify-center gap-3 py-4 text-base font-bold rounded-2xl bg-gradient-accent text-white shadow-glow-accent hover:scale-[1.05] active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed border-b-4 border-b-black/20"
+                >
+                  {marking ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />}
+                  {marking ? 'Registrando...' : 'Concluir Tópico'}
+                </button>
+              )}
+            </div>
           </div>
         </aside>
       </div>
-
-      {/* Barra de Progresso / CTA */}
-      <AnimatePresence>
-        <motion.div 
-          variants={scaleIn}
-          initial="initial"
-          animate="animate"
-          className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 w-full max-w-xs px-4"
-        >
-          {alreadyRead ? (
-            <div className="flex items-center justify-center gap-2 py-4 text-sm font-bold rounded-2xl bg-success/10 border border-success/25 text-success backdrop-blur-xl shadow-2xl border-b-4 border-b-success/20">
-              <Check className="w-5 h-5" /> Meta Concluída
-            </div>
-          ) : (
-            <button
-              onClick={markAsRead}
-              disabled={marking}
-              className="w-full flex items-center justify-center gap-3 py-4 text-base font-bold rounded-2xl bg-gradient-accent text-white shadow-glow-accent hover:scale-[1.05] active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed border-b-4 border-b-black/20"
-            >
-              {marking ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />}
-              {marking ? 'Registrando...' : 'Concluir Tópico'}
-            </button>
-          )}
-        </motion.div>
-      </AnimatePresence>
-    </motion.div>
+    </div>
   );
 }
 
