@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronRight, Clock, CheckCircle2, Loader2, TrendingUp, BookOpen } from 'lucide-react';
+import { ChevronRight, Clock, CheckCircle2, Loader2, TrendingUp, BookOpen, Target, Flame } from 'lucide-react';
 import * as Icons from 'lucide-react';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Sector } from 'recharts';
 import { useAuth } from '../hooks/useAuth';
 import { useWorkspace } from '../contexts/WorkspaceContext';
 import { useSubjectsContext } from '../contexts/SubjectsContext';
@@ -22,6 +23,52 @@ export default function DashboardPage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [stats, setStats] = useState(null);
   const [currentConcurso, setCurrentConcurso] = useState(null);
+  const [activeSubjectId, setActiveSubjectId] = useState(null);
+
+  const renderSyncedSlice = useCallback((props) => {
+    const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, payload } = props;
+    const isActive = payload?.id === activeSubjectId;
+
+    if (!isActive) {
+      return (
+        <Sector
+          cx={cx}
+          cy={cy}
+          innerRadius={innerRadius}
+          outerRadius={outerRadius}
+          startAngle={startAngle}
+          endAngle={endAngle}
+          fill={fill}
+        />
+      );
+    }
+
+    return (
+      <g>
+        <Sector
+          cx={cx}
+          cy={cy}
+          innerRadius={innerRadius}
+          outerRadius={outerRadius + 8}
+          startAngle={startAngle}
+          endAngle={endAngle}
+          fill={fill}
+        />
+        <Sector
+          cx={cx}
+          cy={cy}
+          startAngle={startAngle}
+          endAngle={endAngle}
+          innerRadius={outerRadius + 12}
+          outerRadius={outerRadius + 15}
+          fill={fill}
+          fillOpacity={0.6}
+          stroke={fill}
+          strokeWidth={1}
+        />
+      </g>
+    );
+  }, [activeSubjectId]);
 
   useEffect(() => { 
     fetchSubjects(); 
@@ -59,6 +106,21 @@ export default function DashboardPage() {
   const doneTopics  = subjects.reduce((a, s) => a + s.topicsDone, 0);
   const progress = totalTopics > 0 ? Math.round((doneTopics / totalTopics) * 100) : 0;
 
+  const editalData = subjects
+    .filter(s => s.topicsTotal > 0)
+    .map(s => ({ id: s.id, name: s.nome, value: s.topicsTotal, color: s.cor }));
+
+  const alunoData = subjects
+    .filter(s => s.topicsDone > 0)
+    .map(s => ({ id: s.id, name: s.nome, value: s.topicsDone, color: s.cor }));
+    
+  const activeSubject = subjects.find(s => s.id === activeSubjectId);
+
+  const CustomTooltip = ({ active, payload }) => {
+    // Tooltip removed in favor of ActiveShape
+    return null;
+  };
+
   return (
     <motion.div 
       variants={pageVariants}
@@ -94,18 +156,93 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="mt-4 bg-tertiary p-5 rounded-2xl border border-default">
-              <div className="flex justify-between items-end mb-2">
-                <span className="text-[9px] font-black uppercase tracking-widest text-muted">Progresso Atual</span>
-                <span className="text-sm text-accent font-bold">{doneTopics}/{totalTopics} módulos</span>
-              </div>
-              <div className="progress-track h-3 bg-white/5">
-                <motion.div 
-                  className="progress-fill h-3 shadow-glow-accent" 
-                  initial={{ width: 0 }}
-                  animate={{ width: `${progress}%` }}
-                  transition={{ duration: 1.5, ease: "easeOut" }}
-                />
+            <div className="mt-6 flex flex-col gap-4">
+              <div className="grid grid-cols-2 gap-4 h-48 md:h-56 lg:h-64">
+                {/* Pizza 1: Edital */}
+                <div className="relative group h-full">
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10 px-2 text-center">
+                    {activeSubject ? (
+                      <div className="flex flex-col items-center justify-center max-w-[100px] -mt-1">
+                        <span className="text-[10px] font-black uppercase tracking-tight leading-tight whitespace-normal break-words mb-1" style={{ color: activeSubject.cor }}>
+                           {activeSubject.nome}
+                        </span>
+                        <span className="text-3xl md:text-4xl font-black text-primary tracking-tighter italic leading-none my-0.5">
+                          {activeSubject.topicsTotal}
+                        </span>
+                        <span className="text-[9px] font-bold text-muted uppercase tracking-wider">Módulos</span>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center">
+                        <span className="text-2xl md:text-3xl lg:text-4xl font-black text-primary tracking-tighter italic leading-none">{totalTopics}</span>
+                        <span className="text-[10px] md:text-xs font-black text-primary/40 uppercase tracking-widest mt-1">Módulos</span>
+                      </div>
+                    )}
+                  </div>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart margin={{ top: 0, right: 15, bottom: 0, left: 15 }}>
+                      <Pie
+                        data={editalData}
+                        shape={renderSyncedSlice}
+                        innerRadius="60%"
+                        outerRadius="82%"
+                        paddingAngle={2}
+                        dataKey="value"
+                        stroke="none"
+                        isAnimationActive={false}
+                        onMouseEnter={(_, index) => setActiveSubjectId(editalData[index].id)}
+                        onMouseOver={(_, index) => setActiveSubjectId(editalData[index].id)}
+                        onMouseLeave={() => setActiveSubjectId(null)}
+                      >
+                        {editalData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Pizza 2: Realidade */}
+                <div className="relative group h-full">
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10 px-2 text-center">
+                    {activeSubject ? (
+                      <div className="flex flex-col items-center justify-center max-w-[100px] -mt-1">
+                        <span className="text-[10px] font-black uppercase tracking-tight leading-tight whitespace-normal break-words mb-1" style={{ color: activeSubject.cor }}>
+                           {activeSubject.nome}
+                        </span>
+                        <span className="text-3xl md:text-4xl font-black text-accent tracking-tighter italic leading-none my-0.5">
+                          {activeSubject.topicsDone}
+                        </span>
+                        <span className="text-[9px] font-bold text-muted uppercase tracking-wider">Feitos</span>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center">
+                        <span className="text-2xl md:text-3xl lg:text-4xl font-black text-accent tracking-tighter italic drop-shadow-glow-accent leading-none">{progress}%</span>
+                        <span className="text-[10px] md:text-xs font-black text-accent/40 uppercase tracking-widest mt-1">Concluído</span>
+                      </div>
+                    )}
+                  </div>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart margin={{ top: 0, right: 15, bottom: 0, left: 15 }}>
+                      <Pie
+                        data={alunoData}
+                        shape={renderSyncedSlice}
+                        innerRadius="60%"
+                        outerRadius="82%"
+                        paddingAngle={3}
+                        dataKey="value"
+                        stroke="none"
+                        isAnimationActive={false}
+                        onMouseEnter={(_, index) => setActiveSubjectId(alunoData[index].id)}
+                        onMouseOver={(_, index) => setActiveSubjectId(alunoData[index].id)}
+                        onMouseLeave={() => setActiveSubjectId(null)}
+                      >
+                        {alunoData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} className="drop-shadow-sm" />
+                        ))}
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
             </div>
           </motion.section>
