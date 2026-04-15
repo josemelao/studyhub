@@ -133,20 +133,20 @@ export default function ExamResultPage() {
               <div className="text-[10px] font-black uppercase tracking-widest text-muted">Aproveitamento Total</div>
            </motion.div>
 
-           <motion.div variants={staggerItem} className="glass-card p-8 flex flex-col justify-center gap-2">
-              <div className="flex items-center gap-3 text-secondary mb-1">
-                <CheckCircle2 className="w-5 h-5 text-success" />
-                <span className="text-sm font-bold">Acertos</span>
+           <motion.div variants={staggerItem} className="glass-card p-10 flex flex-col items-center justify-center relative overflow-hidden group min-h-[180px]">
+              <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                <CheckCircle2 className="w-20 h-20 -mr-6 -mt-6" />
               </div>
-              <div className="text-4xl font-black text-primary italic tracking-tight">{correct} / {total}</div>
+              <div className={`text-7xl font-black mb-1 italic tracking-tighter ${score >= 70 ? 'text-success' : 'text-accent'} pr-2`}>{correct}/{total}</div>
+              <div className="text-[10px] font-black uppercase tracking-widest text-muted">Total de Acertos</div>
            </motion.div>
 
-           <motion.div variants={staggerItem} className="glass-card p-8 flex flex-col justify-center gap-2">
-              <div className="flex items-center gap-3 text-secondary mb-1">
-                <Clock className="w-5 h-5 text-warning" />
-                <span className="text-sm font-bold">Tempo Gasto</span>
+           <motion.div variants={staggerItem} className="glass-card p-10 flex flex-col items-center justify-center relative overflow-hidden group min-h-[180px]">
+              <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                <Clock className="w-20 h-20 -mr-6 -mt-6" />
               </div>
-              <div className="text-4xl font-black text-primary italic tracking-tight">{timeStr}</div>
+              <div className={`text-5xl md:text-6xl lg:text-7xl font-black mb-1 italic tracking-tighter whitespace-nowrap ${score >= 70 ? 'text-success' : 'text-accent'} pr-4`}>{timeStr}</div>
+              <div className="text-[10px] font-black uppercase tracking-widest text-muted">Tempo Gasto</div>
            </motion.div>
         </motion.div>
 
