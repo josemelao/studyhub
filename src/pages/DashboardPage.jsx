@@ -25,6 +25,17 @@ export default function DashboardPage() {
   const [currentConcurso, setCurrentConcurso] = useState(null);
   const [activeSubjectId, setActiveSubjectId] = useState(null);
 
+  const handleActivateSubject = useCallback((dataset, index) => {
+    const subjectId = dataset[index]?.id;
+    if (subjectId) {
+      setActiveSubjectId(subjectId);
+    }
+  }, []);
+
+  const handleClearActiveSubject = useCallback(() => {
+    setActiveSubjectId(null);
+  }, []);
+
   const renderSyncedSlice = useCallback((props) => {
     const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, payload } = props;
     const isActive = payload?.id === activeSubjectId;
@@ -49,7 +60,7 @@ export default function DashboardPage() {
           cx={cx}
           cy={cy}
           innerRadius={innerRadius}
-          outerRadius={outerRadius + 8}
+          outerRadius={outerRadius}
           startAngle={startAngle}
           endAngle={endAngle}
           fill={fill}
@@ -59,10 +70,10 @@ export default function DashboardPage() {
           cy={cy}
           startAngle={startAngle}
           endAngle={endAngle}
-          innerRadius={outerRadius + 12}
-          outerRadius={outerRadius + 15}
+          innerRadius={outerRadius + 3}
+          outerRadius={outerRadius + 6}
           fill={fill}
-          fillOpacity={0.6}
+          fillOpacity={0.7}
           stroke={fill}
           strokeWidth={1}
         />
@@ -157,9 +168,13 @@ export default function DashboardPage() {
             </div>
 
             <div className="mt-6 flex flex-col gap-4">
-              <div className="grid grid-cols-2 gap-4 h-48 md:h-56 lg:h-64">
+              <div
+                className="grid grid-cols-2 gap-4 h-48 md:h-56 lg:h-64"
+                onMouseLeave={handleClearActiveSubject}
+                onPointerLeave={handleClearActiveSubject}
+              >
                 {/* Pizza 1: Edital */}
-                <div className="relative group h-full">
+                <div className="relative group h-full" onMouseLeave={handleClearActiveSubject}>
                   <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10 px-2 text-center overflow-hidden">
                     <AnimatePresence mode="wait">
                       {activeSubject ? (
@@ -204,12 +219,9 @@ export default function DashboardPage() {
                         paddingAngle={2}
                         dataKey="value"
                         stroke="none"
-                        isAnimationActive={true}
-                        animationDuration={400}
-                        animationEasing="ease-out"
-                        onMouseEnter={(_, index) => setActiveSubjectId(editalData[index].id)}
-                        onMouseOver={(_, index) => setActiveSubjectId(editalData[index].id)}
-                        onMouseLeave={() => setActiveSubjectId(null)}
+                        isAnimationActive={false}
+                        onMouseEnter={(_, index) => handleActivateSubject(editalData, index)}
+                        onMouseLeave={handleClearActiveSubject}
                       >
                         {editalData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
@@ -220,7 +232,7 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Pizza 2: Realidade */}
-                <div className="relative group h-full">
+                <div className="relative group h-full" onMouseLeave={handleClearActiveSubject}>
                   <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10 px-2 text-center overflow-hidden">
                     <AnimatePresence mode="wait">
                       {activeSubject ? (
@@ -265,12 +277,9 @@ export default function DashboardPage() {
                         paddingAngle={3}
                         dataKey="value"
                         stroke="none"
-                        isAnimationActive={true}
-                        animationDuration={400}
-                        animationEasing="ease-out"
-                        onMouseEnter={(_, index) => setActiveSubjectId(alunoData[index].id)}
-                        onMouseOver={(_, index) => setActiveSubjectId(alunoData[index].id)}
-                        onMouseLeave={() => setActiveSubjectId(null)}
+                        isAnimationActive={false}
+                        onMouseEnter={(_, index) => handleActivateSubject(alunoData, index)}
+                        onMouseLeave={handleClearActiveSubject}
                       >
                         {alunoData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} className="drop-shadow-sm" />
