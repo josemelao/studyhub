@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Clock, CheckCircle2, Loader2, TrendingUp, BookOpen, Target, Flame } from 'lucide-react';
 import * as Icons from 'lucide-react';
@@ -16,6 +16,8 @@ import SmartCalendar from '../components/dashboard/SmartCalendar';
 import QuickNotes from '../components/dashboard/QuickNotes';
 import DailyTopics from '../components/dashboard/DailyTopics';
 
+const RADIAN = Math.PI / 180;
+
 export default function DashboardPage() {
   const { user } = useAuth();
   const { currentWorkspaceId, workspaces } = useWorkspace();
@@ -24,6 +26,9 @@ export default function DashboardPage() {
   const [stats, setStats] = useState(null);
   const [currentConcurso, setCurrentConcurso] = useState(null);
   const [activeSubjectId, setActiveSubjectId] = useState(null);
+  const [outlineOpacityById, setOutlineOpacityById] = useState({});
+  const outlineOpacityRef = useRef({});
+  const outlineAnimationFrameRef = useRef(null);
 
   const handleActivateSubject = useCallback((dataset, index) => {
     const subjectId = dataset[index]?.id;
@@ -36,11 +41,66 @@ export default function DashboardPage() {
     setActiveSubjectId(null);
   }, []);
 
-  const renderSyncedSlice = useCallback((props) => {
-    const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, payload } = props;
-    const isActive = payload?.id === activeSubjectId;
+  useEffect(() => {
+    outlineOpacityRef.current = outlineOpacityById;
+  }, [outlineOpacityById]);
 
-    if (!isActive) {
+  useEffect(() => {
+    const allSliceIds = [...new Set([...subjects.map((subject) => subject.id), ...Object.keys(outlineOpacityRef.current)])];
+
+    if (!allSliceIds.length) return undefined;
+
+    const from = {};
+    const to = {};
+
+    allSliceIds.forEach((id) => {
+      from[id] = outlineOpacityRef.current[id] ?? 0;
+      to[id] = id === activeSubjectId ? 1 : 0;
+    });
+
+    const duration = 160;
+    const start = performance.now();
+    const easeOutQuad = (t) => 1 - (1 - t) * (1 - t);
+
+    if (outlineAnimationFrameRef.current) {
+      cancelAnimationFrame(outlineAnimationFrameRef.current);
+    }
+
+    const tick = (now) => {
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = easeOutQuad(progress);
+      const next = {};
+
+      allSliceIds.forEach((id) => {
+        next[id] = from[id] + (to[id] - from[id]) * eased;
+      });
+
+      outlineOpacityRef.current = next;
+      setOutlineOpacityById(next);
+
+      if (progress < 1) {
+        outlineAnimationFrameRef.current = requestAnimationFrame(tick);
+      }
+    };
+
+    outlineAnimationFrameRef.current = requestAnimationFrame(tick);
+
+    return () => {
+      if (outlineAnimationFrameRef.current) {
+        cancelAnimationFrame(outlineAnimationFrameRef.current);
+      }
+    };
+  }, [activeSubjectId, subjects]);
+
+  const renderSyncedSlice = useCallback((props) => {
+    const { cx, cy, midAngle, innerRadius, outerRadius, startAngle, endAngle, fill, payload } = props;
+    const outlineOpacity = outlineOpacityById[payload?.id] ?? 0;
+    const labelRadius = outerRadius + 16;
+    const labelX = cx + labelRadius * Math.cos(-midAngle * RADIAN);
+    const labelY = cy + labelRadius * Math.sin(-midAngle * RADIAN);
+    const textAnchor = labelX > cx ? 'start' : 'end';
+
+    if (outlineOpacity <= 0.001) {
       return (
         <Sector
           cx={cx}
@@ -73,13 +133,26 @@ export default function DashboardPage() {
           innerRadius={outerRadius + 3}
           outerRadius={outerRadius + 6}
           fill={fill}
-          fillOpacity={0.7}
+          fillOpacity={0.7 * outlineOpacity}
           stroke={fill}
+          strokeOpacity={outlineOpacity}
           strokeWidth={1}
         />
+        <text
+          x={labelX}
+          y={labelY}
+          fill={fill}
+          textAnchor={textAnchor}
+          dominantBaseline="central"
+          fontSize={11}
+          fontWeight={900}
+          opacity={outlineOpacity}
+        >
+          {payload?.slicePercent}%
+        </text>
       </g>
     );
-  }, [activeSubjectId]);
+  }, [outlineOpacityById]);
 
   useEffect(() => { 
     fetchSubjects(); 
@@ -119,11 +192,23 @@ export default function DashboardPage() {
 
   const editalData = subjects
     .filter(s => s.topicsTotal > 0)
-    .map(s => ({ id: s.id, name: s.nome, value: s.topicsTotal, color: s.cor }));
+    .map(s => ({
+      id: s.id,
+      name: s.nome,
+      value: s.topicsTotal,
+      color: s.cor,
+      slicePercent: totalTopics > 0 ? Math.round((s.topicsTotal / totalTopics) * 100) : 0,
+    }));
 
   const alunoData = subjects
     .filter(s => s.topicsDone > 0)
-    .map(s => ({ id: s.id, name: s.nome, value: s.topicsDone, color: s.cor }));
+    .map(s => ({
+      id: s.id,
+      name: s.nome,
+      value: s.topicsDone,
+      color: s.cor,
+      slicePercent: doneTopics > 0 ? Math.round((s.topicsDone / doneTopics) * 100) : 0,
+    }));
     
   const activeSubject = subjects.find(s => s.id === activeSubjectId);
 
