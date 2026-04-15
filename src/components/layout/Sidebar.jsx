@@ -42,10 +42,12 @@ export default function Sidebar() {
             <select
               value={currentWorkspaceId || ''}
               onChange={(e) => setWorkspace(e.target.value)}
-              className="w-full appearance-none bg-primary/30 hover:bg-white/5 border border-default text-primary text-sm font-bold rounded-xl px-4 py-2.5 outline-none transition-colors cursor-pointer thin-scrollbar shadow-sm truncate pr-10"
+              className="w-full appearance-none bg-white/[0.05] hover:bg-white/[0.08] border border-white/10 text-primary text-sm font-bold rounded-xl px-4 py-2.5 outline-none transition-all cursor-pointer shadow-sm truncate pr-10"
             >
               {workspaces.map(ws => (
-                <option key={ws.id} value={ws.id} className="font-semibold">{ws.name}</option>
+                <option key={ws.id} value={ws.id} className="bg-[#0f0f1a] text-primary">
+                  {ws.name}
+                </option>
               ))}
             </select>
             <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted group-hover:text-primary transition-colors">
