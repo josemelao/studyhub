@@ -10,7 +10,6 @@ export default function OnboardingPage() {
   const { user } = useAuth();
   const { setWorkspace, fetchWorkspaces } = useWorkspace();
   const [loading, setLoading] = useState(false);
-  const [workspaceName, setWorkspaceName] = useState('');
   const [concursos, setConcursos] = useState([]);
   const [selectedConcursoId, setSelectedConcursoId] = useState(null);
 
@@ -37,14 +36,18 @@ export default function OnboardingPage() {
 
   const handleCreate = async (e) => {
     e.preventDefault();
-    if (!workspaceName.trim() || !user) return;
+    if (!selectedConcursoId || !user) return;
 
     try {
       setLoading(true);
+      
+      const selectedConcurso = concursos.find(c => c.id === selectedConcursoId);
+      const name = selectedConcurso ? selectedConcurso.nome : 'Meu Workspace';
+
       const { data, error } = await supabase
         .from('workspaces')
         .insert({
-          name: workspaceName,
+          name: name,
           user_id: user.id,
           concurso_id: selectedConcursoId
         })
@@ -53,7 +56,6 @@ export default function OnboardingPage() {
 
       if (error) throw error;
       
-      // Atualizar a lista de workspaces e o ativo no contexto
       await fetchWorkspaces();
       setWorkspace(data.id);
     } catch (err) {
@@ -85,26 +87,14 @@ export default function OnboardingPage() {
             Bem-vindo ao <span className="gradient-text italic">StudyHub</span>
           </motion.h1>
           <motion.p variants={staggerItem} className="text-muted text-sm font-medium px-4">
-            Parece que você ainda não tem um ambiente de estudos configurado. Vamos criar o seu primeiro Workspace?
+            Parece que você ainda não tem um ambiente de estudos configurado. Selecione seu edital para começar!
           </motion.p>
         </div>
 
         <form onSubmit={handleCreate} className="space-y-6">
           <motion.div variants={staggerItem} className="space-y-2">
-            <label className="text-xs font-black uppercase tracking-widest text-muted ml-1">Nome do Workspace</label>
-            <input 
-              type="text"
-              required
-              placeholder="Ex: Banco do Brasil 2024, Residência Médica..."
-              className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-primary font-bold focus:border-accent/50 focus:ring-4 focus:ring-accent/10 outline-none transition-all placeholder:text-white/20"
-              value={workspaceName}
-              onChange={(e) => setWorkspaceName(e.target.value)}
-            />
-          </motion.div>
-
-          <motion.div variants={staggerItem} className="space-y-2">
             <label className="text-xs font-black uppercase tracking-widest text-muted ml-1 flex items-center gap-2">
-              <Target className="w-3 h-3" /> Concurso Alvo (Obrigatório)
+              <Target className="w-3 h-3" /> Selecione seu Edital (Obrigatório)
             </label>
             <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto pr-2 thin-scrollbar">
               {concursos.map(c => (
@@ -128,7 +118,7 @@ export default function OnboardingPage() {
           <motion.button
             variants={staggerItem}
             type="submit"
-            disabled={loading || !workspaceName.trim() || !selectedConcursoId}
+            disabled={loading || !selectedConcursoId}
             className="w-full bg-gradient-accent text-white font-black py-5 rounded-2xl flex items-center justify-center gap-3 shadow-glow-accent hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
           >
             {loading ? (
