@@ -184,15 +184,22 @@ export default function DashboardPage() {
                       <span>{sub.topicsDone}/{sub.topicsTotal} módulos</span>
                       <span style={{ color: sub.cor }}>{percent}%</span>
                     </div>
-                    <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+                    <div 
+                      className="w-full h-1.5 rounded-full overflow-hidden"
+                      style={{ 
+                        background: percent === 0 ? 'transparent' : 'rgba(128,128,128,0.15)',
+                        border: percent === 0 ? `1px solid ${sub.cor}50` : 'none'
+                      }}
+                    >
                       <motion.div 
                         className="h-full rounded-full" 
                         initial={{ width: 0 }}
                         animate={{ width: `${percent}%` }}
                         transition={{ duration: 1, delay: 0.1 }}
-                        style={{ background: sub.cor, boxShadow: `0 0 10px ${sub.cor}40` }} 
+                        style={{ background: sub.cor, boxShadow: `0 0 8px ${sub.cor}50`, minWidth: percent > 0 ? '4px' : '0' }} 
                       />
                     </div>
+
                   </div>
                 </motion.div>
               </Link>

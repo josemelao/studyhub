@@ -70,12 +70,13 @@ export default function DailyTopics({ selectedDate }) {
               {topics.map((topic, i) => (
                 <div 
                   key={topic.id}
-                  className="group flex items-center justify-between gap-3 p-3 rounded-xl bg-white/[0.02] border border-transparent hover:border-white/10 transition-all"
+                  className="group flex items-center justify-between gap-3 p-3 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:border-accent/20 hover:bg-white/[0.07] transition-all"
+                  style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div 
-                      className="w-1.5 h-6 rounded-full shrink-0" 
-                      style={{ backgroundColor: topic.cor }}
+                      className="w-1 h-8 rounded-full shrink-0" 
+                      style={{ backgroundColor: topic.cor, boxShadow: `0 0 8px ${topic.cor}60` }}
                     />
                     <div className="min-w-0">
                         <h4 className="text-xs font-bold text-primary truncate group-hover:text-accent transition-colors">

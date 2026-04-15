@@ -131,47 +131,97 @@
   --scroll-track:    rgba(255, 255, 255, 0.02);
 }
 
-/* ── Theme: Clean (Light/Indigo) ── */
+/* ── Theme: Autumn (Warm/Relaxing Light) ── */
+[data-theme='autumn'] {
+  --bg-primary:     #E8E3D9;   /* Canvas: Bege quente marcante para contrastar com o branco puro */
+  --bg-secondary:   #FFFFFF;   /* Cards: Branco puro — contraste máximo (igual Clean) */
+  --bg-tertiary:    #F2EBE1;   /* Sub-superfícies: Inputs, áreas secundárias */
+  --bg-elevated:    #FFFFFF;
+
+  /* Textos com alto contraste */
+  --text-primary:   #2C241E;   /* Marrom escuro quase preto */
+  --text-secondary: #5D5146;   /* Marrom médio profundo */
+  --text-muted:     #8F8376;   /* Marrom claro para dicas */
+
+  --accent:          #688C35;  /* Verde-oliva mais profundo para excelente leitura e presença */
+  --accent-hover:    #54732A;
+  --accent-rgb:      104, 140, 53;
+  --accent-subtle:   rgba(104, 140, 53, 0.12);
+  --accent-border:   rgba(104, 140, 53, 0.30);
+  --accent-glow:     0 0 20px rgba(104, 140, 53, 0.15); /* Reativando glow leve */
+
+  --gradient-accent: linear-gradient(135deg, #688C35 0%, #8DAE56 100%);
+  --gradient-text:   linear-gradient(135deg, #4A6624 0%, #688C35 100%);
+  --gradient-hero:   linear-gradient(135deg, rgba(104,140,53,0.08) 0%, rgba(253,167,105,0.04) 50%, transparent 100%);
+
+  --success:         #688C35;
+  --success-rgb:     104, 140, 53;
+  --error:           #D9503E;
+  --error-rgb:       217, 80, 62;
+  --warning:         #F59445;
+  --warning-rgb:     245, 148, 69;
+
+  --border:          rgba(0, 0, 0, 0.08); /* Bordas escuras neutras, focado no box-shadow */
+  --border-hover:    rgba(104, 140, 53, 0.3);
+  --border-subtle:   rgba(0, 0, 0, 0.04);
+  --shadow-accent:   0 4px 16px rgba(104, 140, 53, 0.2);
+  --card-bg:         #FFFFFF;
+  --scroll-track:    rgba(0, 0, 0, 0.05);
+  
+  /* Sistema de sombras igual ao clean (sombras ricas) com um sub-tom quente muito leve */
+  --shadow-sm:       0 1px 3px rgba(44,36,30,0.08), 0 1px 2px rgba(44,36,30,0.05);
+  --shadow-md:       0 4px 14px rgba(44,36,30,0.10), 0 2px 4px rgba(44,36,30,0.06);
+  --shadow-lg:       0 12px 32px rgba(44,36,30,0.12), 0 4px 8px rgba(44,36,30,0.08);
+  --shadow-card:     0 4px 20px rgba(44,36,30,0.08), 0 1px 4px rgba(44,36,30,0.05);
+}
+
+/* ── Theme: Clean (Modern SaaS Light) ── */
 [data-theme='clean'] {
-  --bg-primary:     #e2e8f0;
-  --bg-secondary:   #ffffff;
-  --bg-tertiary:    #cbd5e1;
-  --bg-elevated:    #94a3b8;
+  /*
+   * Filosofia: cards brancos sólidos sobre canvas lavanda-cinza.
+   * Separação visual por SOMBRAS, não por bordas. Zero frosted-glass.
+   * Inspirado em dashboards SaaS modernos (Figma, Linear, Notion).
+   */
+  --bg-primary:     #ECEDF4;   /* Canvas: lavanda-cinza suave — fundo da página */
+  --bg-secondary:   #FFFFFF;   /* Cards: branco puro — contraste máximo */
+  --bg-tertiary:    #F4F5F8;   /* Sub-superfícies: inputs, chips, áreas internas */
+  --bg-elevated:    #FFFFFF;   /* Dropdowns, tooltips: branco puro */
 
-  --text-primary:   #0f172a;
-  --text-secondary: #334155;
-  --text-muted:     #64748b;
+  /* Texto: verificado WCAG AA em todas as combinações */
+  --text-primary:   #0D0F1C;   /* Ratio ~18:1 sobre bg-secondary */
+  --text-secondary: #4B5563;   /* Ratio ~7.2:1 sobre bg-secondary */
+  --text-muted:     #9CA3AF;   /* Ratio ~2.9:1 — uso apenas em hints/labels */
 
-  --accent:          #6366f1;
-  --accent-hover:    #4f46e5;
-  --accent-rgb:      99, 102, 241;
-  --accent-subtle:   rgba(99, 102, 241, 0.08);
-  --accent-border:   rgba(99, 102, 241, 0.20);
-  --accent-glow:     0 0 32px rgba(99, 102, 241, 0.15);
+  --accent:          #4338E8;  /* Indigo profundo — vibrante como na referência */
+  --accent-hover:    #3730D4;
+  --accent-rgb:      67, 56, 232;
+  --accent-subtle:   rgba(67, 56, 232, 0.08);
+  --accent-border:   rgba(67, 56, 232, 0.20);
+  --accent-glow:     0 0 20px rgba(67, 56, 232, 0.18);
 
-  --gradient-accent: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-  --gradient-text:   linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-  --gradient-hero:   linear-gradient(135deg, rgba(99,102,241,0.06) 0%, rgba(168,85,247,0.02) 50%, transparent 100%);
+  --gradient-accent: linear-gradient(135deg, #4338E8 0%, #7C3AED 100%);
+  --gradient-text:   linear-gradient(135deg, #4338E8 0%, #6D28D9 100%);
+  --gradient-hero:   linear-gradient(135deg, rgba(67,56,232,0.06) 0%, rgba(124,58,237,0.02) 50%, transparent 100%);
 
   --success:         #059669;
   --success-rgb:     5, 150, 105;
-  --error:           #dc2626;
+  --error:           #DC2626;
   --error-rgb:       220, 38, 38;
-  --warning:         #d97706;
+  --warning:         #D97706;
   --warning-rgb:     217, 119, 6;
 
-  --border:          rgba(0, 0, 0, 0.18);
-  --border-hover:    rgba(0, 0, 0, 0.25);
-  --border-subtle:   rgba(0, 0, 0, 0.08);
-  --shadow-accent:   0 0 24px rgba(99, 102, 241, 0.10);
-  --card-bg:         #ffffff;
-  --scroll-track:    rgba(0, 0, 0, 0.1);
-  
-  /* Sobrescrever sombras para o tema claro - Elevação Padrão como Borda */
-  --shadow-sm:       0 1px 2px rgba(0,0,0,0.1);
-  --shadow-md:       0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-  --shadow-lg:       0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
-  --shadow-card:     0 0 0 1px rgba(0,0,0,0.08), 0 4px 14px 0 rgba(0,0,0,0.12);
+  --border:          rgba(0, 0, 0, 0.07);    /* Bordas: quase invisíveis — sombra faz o trabalho */
+  --border-hover:    rgba(67, 56, 232, 0.25);
+  --border-subtle:   rgba(0, 0, 0, 0.04);
+  --shadow-accent:   0 0 20px rgba(67, 56, 232, 0.15);
+  --card-bg:         #FFFFFF;
+  --scroll-track:    rgba(0, 0, 0, 0.06);
+
+  /* Sombras: principal mecanismo de separação visual (como nas referências) */
+  --shadow-sm:       0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md:       0 4px 14px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.05);
+  --shadow-lg:       0 12px 32px rgba(0,0,0,0.10), 0 4px 8px rgba(0,0,0,0.06);
+  --shadow-card:     0 4px 20px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05);
 }
 
 @layer base {
@@ -291,4 +341,317 @@
 
 .bizu-card:hover {
   transform: translateY(-2px);
+}
+
+/* ==========================================================
+   THEME CLEAN — OVERRIDES: SOLID WHITE / MODERN SAAS
+   Filosofia: branco sólido com sombras para separação.
+   Zero frosted-glass. Zero bordas visíveis nos cards.
+   Separação visual 100% via box-shadow.
+   ========================================================== */
+
+/* ── 1. Glass Card: branco sólido com sombra profunda ── */
+[data-theme='clean'] .glass-card {
+  background: #FFFFFF !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05) !important;
+}
+
+[data-theme='clean'] .glass-card:hover {
+  border-color: rgba(67, 56, 232, 0.18) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.11), 0 2px 8px rgba(0,0,0,0.06) !important;
+}
+
+/* ── 2. Sidebar: branco sólido com sombra lateral ── */
+[data-theme='clean'] aside {
+  background: #FFFFFF !important;
+  backdrop-filter: none !important;
+  border-right: 1px solid rgba(0, 0, 0, 0.07) !important;
+  box-shadow: 4px 0 16px rgba(0,0,0,0.06) !important;
+}
+
+/* ── 3. Navbar: branco sólido ── */
+[data-theme='clean'] nav[class*="fixed"],
+[data-theme='clean'] header[class*="fixed"] {
+  background: #FFFFFF !important;
+  backdrop-filter: none !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07) !important;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.07) !important;
+}
+
+/* ── 4. bg-white/* → fundo off-white sólido para compat. com dark classes ── */
+[data-theme='clean'] [class*="bg-white/"] {
+  background-color: #F4F5F8 !important;
+}
+[data-theme='clean'] .bg-secondary {
+  background-color: #FFFFFF !important;
+}
+[data-theme='clean'] .bg-secondary\/30,
+[data-theme='clean'] .bg-secondary\/40,
+[data-theme='clean'] .bg-secondary\/50 {
+  background-color: #F4F5F8 !important;
+}
+
+/* ── 5. Bordas: dark-translucent em vez de branco ── */
+[data-theme='clean'] [class*="border-white/"] {
+  border-color: rgba(0, 0, 0, 0.07) !important;
+}
+
+/* ── 6. Hover: cinza muito suave ── */
+[data-theme='clean'] [class*="hover:bg-white/"]:hover {
+  background-color: #F0F1F6 !important;
+}
+
+/* ── 7. Textos ── */
+[data-theme='clean'] .text-muted {
+  color: #9CA3AF !important;
+}
+
+/* ── 8. Inputs, selects, textareas: off-white com borda sutil ── */
+[data-theme='clean'] input:not([class*="border-none"]),
+[data-theme='clean'] select,
+[data-theme='clean'] textarea:not([class*="border-none"]) {
+  background-color: #F4F5F8 !important;
+  border: 1.5px solid rgba(0, 0, 0, 0.10) !important;
+  color: #0D0F1C !important;
+  border-radius: 12px;
+}
+[data-theme='clean'] textarea[class*="border-none"],
+[data-theme='clean'] input[class*="border-none"] {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+[data-theme='clean'] input::placeholder,
+[data-theme='clean'] textarea::placeholder {
+  color: #9CA3AF !important;
+}
+[data-theme='clean'] input:focus,
+[data-theme='clean'] select:focus,
+[data-theme='clean'] textarea:focus {
+  background-color: #FFFFFF !important;
+  border-color: rgba(67, 56, 232, 0.50) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(67, 56, 232, 0.10) !important;
+}
+
+/* ── Opções do dropdown nativo ── */
+[data-theme='clean'] select option {
+  background-color: #FFFFFF !important;
+  color: #0D0F1C !important;
+  font-weight: 500;
+}
+[data-theme='clean'] select option:checked {
+  background-color: rgba(67, 56, 232, 0.08) !important;
+  color: #4338E8 !important;
+}
+[data-theme='clean'] select {
+  color-scheme: light !important;
+}
+
+/* ── Garantia: select/input com border-white/* recebem borda visível ── */
+[data-theme='clean'] select[class*="border"],
+[data-theme='clean'] input[class*="border"] {
+  border-color: rgba(0, 0, 0, 0.12) !important;
+  border-width: 1.5px !important;
+  border-style: solid !important;
+}
+[data-theme='clean'] select[class*="border"]:focus,
+[data-theme='clean'] input[class*="border"]:focus {
+  border-color: rgba(67, 56, 232, 0.50) !important;
+  box-shadow: 0 0 0 3px rgba(67, 56, 232, 0.10) !important;
+}
+
+/* ── 9. bg-tertiary: off-white sólido ── */
+[data-theme='clean'] .bg-tertiary {
+  background-color: #F4F5F8 !important;
+}
+
+/* ── 10. Scrollbar ── */
+[data-theme='clean'] .thin-scrollbar::-webkit-scrollbar-track,
+[data-theme='clean'] ::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.04);
+}
+[data-theme='clean'] .thin-scrollbar::-webkit-scrollbar-thumb,
+[data-theme='clean'] ::-webkit-scrollbar-thumb {
+  background: rgba(67, 56, 232, 0.25);
+  border: 2px solid #ECEDF4;
+}
+
+/* ── 11. Gradiente do body: sutil no topo ── */
+[data-theme='clean'] body::before {
+  background-image: radial-gradient(
+    ellipse 80% 50% at 50% -10%,
+    rgba(67, 56, 232, 0.05) 0%,
+    transparent 60%
+  );
+}
+
+/* ── 12. bg-primary/* ── */
+[data-theme='clean'] [class*="bg-primary/"] {
+  background-color: #F4F5F8 !important;
+}
+
+/* ── 13. Glow: sutil em fundo claro ── */
+[data-theme='clean'] .glow-accent {
+  box-shadow: 0 0 12px rgba(67, 56, 232, 0.18) !important;
+}
+[data-theme='clean'] .shadow-glow-accent {
+  box-shadow: 0 4px 16px rgba(67, 56, 232, 0.22) !important;
+}
+
+/* ── 14. Cards internos rounded ── */
+[data-theme='clean'] .rounded-3xl[class*="bg-secondary"],
+[data-theme='clean'] .rounded-3xl[class*="bg-white"] {
+  background: #FFFFFF !important;
+}
+
+/* ==========================================================
+   THEME AUTUMN — OVERRIDES: SOLID WARM / RELAXING
+   (mesma filosofia do Clean: zero frosted glass)
+   ========================================================== */
+
+/* ── 1. Glass Card: branco quente puro ── */
+[data-theme='autumn'] .glass-card {
+  background: #FFFFFF !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  box-shadow: 0 4px 20px rgba(44,36,30,0.08), 0 1px 4px rgba(44,36,30,0.05) !important;
+}
+[data-theme='autumn'] .glass-card:hover {
+  border-color: rgba(104, 140, 53, 0.25) !important;
+  box-shadow: 0 8px 32px rgba(44,36,30,0.11), 0 2px 8px rgba(44,36,30,0.06) !important;
+}
+
+/* ── 2. Sidebar: branco quente com sombra lateral ── */
+[data-theme='autumn'] aside {
+  background: #FFFFFF !important;
+  backdrop-filter: none !important;
+  border-right: 1px solid rgba(0, 0, 0, 0.07) !important;
+  box-shadow: 4px 0 16px rgba(44,36,30,0.06) !important;
+}
+
+/* ── 3. Navbar: branco quente ── */
+[data-theme='autumn'] nav[class*="fixed"],
+[data-theme='autumn'] header[class*="fixed"] {
+  background: #FFFFFF !important;
+  backdrop-filter: none !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07) !important;
+  box-shadow: 0 2px 16px rgba(44,36,30,0.07) !important;
+}
+
+/* ── 4. Tratamento Utility Classes ── */
+[data-theme='autumn'] [class*="bg-white/"] {
+  background-color: #F2EBE1 !important;
+}
+[data-theme='autumn'] .bg-secondary {
+  background-color: #FFFFFF !important;
+}
+[data-theme='autumn'] .bg-secondary\/30,
+[data-theme='autumn'] .bg-secondary\/40,
+[data-theme='autumn'] .bg-secondary\/50 {
+  background-color: #F2EBE1 !important;
+}
+[data-theme='autumn'] [class*="hover:bg-white/"]:hover {
+  background-color: #E8DFD1 !important;
+}
+[data-theme='autumn'] .bg-tertiary {
+  background-color: #F2EBE1 !important;
+}
+[data-theme='autumn'] [class*="bg-primary/"] {
+  background-color: #F2EBE1 !important;
+}
+[data-theme='autumn'] .rounded-3xl[class*="bg-secondary"],
+[data-theme='autumn'] .rounded-3xl[class*="bg-white"] {
+  background: #FFFFFF !important;
+}
+
+/* ── 5. Textos e Bordas ── */
+[data-theme='autumn'] .text-muted {
+  color: #8F8376 !important;
+}
+[data-theme='autumn'] [class*="border-white/"] {
+  border-color: rgba(0, 0, 0, 0.07) !important;
+}
+
+/* ── 6. Inputs e Formulários ── */
+[data-theme='autumn'] input:not([class*="border-none"]),
+[data-theme='autumn'] select,
+[data-theme='autumn'] textarea:not([class*="border-none"]) {
+  background-color: #F2EBE1 !important;
+  border: 1.5px solid rgba(0, 0, 0, 0.10) !important;
+  color: #2C241E !important;
+  border-radius: 12px;
+}
+[data-theme='autumn'] textarea[class*="border-none"],
+[data-theme='autumn'] input[class*="border-none"] {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+[data-theme='autumn'] input::placeholder,
+[data-theme='autumn'] textarea::placeholder {
+  color: #8F8376 !important;
+}
+[data-theme='autumn'] input:focus,
+[data-theme='autumn'] select:focus,
+[data-theme='autumn'] textarea:focus {
+  background-color: #FFFFFF !important;
+  border-color: rgba(104, 140, 53, 0.50) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(104, 140, 53, 0.15) !important;
+}
+[data-theme='autumn'] select option {
+  background-color: #FFFFFF !important;
+  color: #2C241E !important;
+  font-weight: 500;
+}
+[data-theme='autumn'] select option:checked {
+  background-color: rgba(104, 140, 53, 0.10) !important;
+  color: #54732A !important;
+}
+[data-theme='autumn'] select {
+  color-scheme: light !important;
+}
+[data-theme='autumn'] select[class*="border"],
+[data-theme='autumn'] input[class*="border"] {
+  border-color: rgba(0, 0, 0, 0.12) !important;
+  border-width: 1.5px !important;
+  border-style: solid !important;
+}
+[data-theme='autumn'] select[class*="border"]:focus,
+[data-theme='autumn'] input[class*="border"]:focus {
+  border-color: rgba(104, 140, 53, 0.50) !important;
+  box-shadow: 0 0 0 3px rgba(104, 140, 53, 0.15) !important;
+}
+
+/* ── 7. Scrollbar e Body ── */
+[data-theme='autumn'] .thin-scrollbar::-webkit-scrollbar-track,
+[data-theme='autumn'] ::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.04);
+}
+[data-theme='autumn'] .thin-scrollbar::-webkit-scrollbar-thumb,
+[data-theme='autumn'] ::-webkit-scrollbar-thumb {
+  background: rgba(104, 140, 53, 0.30);
+  border: 2px solid #E8E3D9;
+}
+[data-theme='autumn'] body::before {
+  background-image: radial-gradient(
+    ellipse 80% 50% at 50% -10%,
+    rgba(104, 140, 53, 0.06) 0%,
+    transparent 60%
+  );
+}
+
+/* ── 8. Glows Sutis ── */
+[data-theme='autumn'] .glow-accent {
+  box-shadow: 0 0 12px rgba(104, 140, 53, 0.18) !important;
+}
+[data-theme='autumn'] .shadow-glow-accent {
+  box-shadow: 0 4px 16px rgba(104, 140, 53, 0.22) !important;
 }

@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Palette, Check, Sun, Moon, Terminal, Zap } from 'lucide-react';
+import { Palette, Check, Sun, Moon, Terminal, Zap, Leaf } from 'lucide-react';
 
 const themes = [
   {
@@ -22,6 +22,13 @@ const themes = [
     description: 'Grafite CLI (Slate)',
     icon: Terminal,
     colors: ['#0f1117', '#38bdf8', '#818cf8']
+  },
+  {
+    id: 'autumn',
+    name: 'Autumn',
+    description: 'Terra & Âmbar (Dark)',
+    icon: Leaf,
+    colors: ['#110d06', '#e8922a', '#7ab248']
   },
   {
     id: 'clean',
@@ -50,7 +57,8 @@ export default function ThemePicker({ currentTheme, onThemeChange, isOpen, onClo
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="absolute top-full right-0 mt-4 w-72 z-50 bg-tertiary border border-default rounded-2xl p-2 shadow-2xl"
+            className="absolute top-full right-0 mt-4 w-72 z-50 bg-elevated border border-default rounded-2xl p-2 shadow-2xl backdrop-blur-none"
+
           >
             <div className="p-3 border-b border-white/5 mb-1">
               <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-accent flex items-center gap-2">

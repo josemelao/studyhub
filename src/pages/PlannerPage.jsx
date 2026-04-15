@@ -353,7 +353,9 @@ export default function PlannerPage() {
             const plans = plannedDays[date] || [];
 
             return (
-              <div key={date} className={`flex flex-col h-[70vh] rounded-3xl border transition-all ${isToday ? 'bg-accent/5 border-accent/20' : 'bg-secondary/40 border-white/5'}`}>
+              <div key={date} className={`flex flex-col h-[70vh] rounded-3xl border transition-all ${isToday ? 'bg-accent/[0.12] border-accent/40' : 'bg-secondary/40 border-white/5'}`}>
+
+
                 <div className="p-4 border-b border-default text-center">
                    <div className="text-[9px] font-black uppercase tracking-tighter text-muted">
                       {dateObj.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '')}

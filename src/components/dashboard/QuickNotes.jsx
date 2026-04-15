@@ -162,7 +162,8 @@ export default function QuickNotes() {
           onChange={(e) => setNotes(e.target.value)}
           disabled={loadError || !isLoaded}
           placeholder={loadError ? "Não foi possível carregar suas notas." : "Lembretes, fórmulas, metas do dia..."}
-          className="w-full h-full bg-transparent border-none outline-none text-sm text-primary/90 placeholder:text-muted/50 resize-none leading-relaxed font-medium disabled:opacity-50"
+          className="w-full h-full bg-transparent border-none outline-none ring-0 text-sm text-primary/90 placeholder:text-muted/50 resize-none leading-relaxed font-medium disabled:opacity-50 focus:border-none focus:ring-0 focus:outline-none"
+
         />
         <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-30 transition-opacity">
            <Save className="w-3 h-3 text-muted" />

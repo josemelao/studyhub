@@ -23,6 +23,7 @@ import HistoryPage from './pages/HistoryPage';
 import AchievementToast from './components/ui/AchievementToast';
 import PlannerPage from './pages/PlannerPage';
 import ContentAdminPage from './pages/ContentAdminPage';
+import { Toaster } from 'react-hot-toast';
 
 /**
  * Componente que gerencia apenas as rotas que precisam do Sidebar/Navbar persistente.
@@ -78,7 +79,6 @@ function AppContent() {
   );
 }
 
-import { Toaster } from 'react-hot-toast';
 
 function App() {
   return (

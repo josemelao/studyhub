@@ -10,6 +10,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useGamification } from '../hooks/useGamification';
 import { pageVariants, staggerContainer, staggerItem, scaleIn, expandDown } from '../lib/animations';
 import FavoriteButton from '../components/ui/FavoriteButton';
+import { toast } from 'react-hot-toast';
 
 export default function QuestoesPage() {
   const { user } = useAuth();
@@ -46,7 +47,6 @@ export default function QuestoesPage() {
     load();
   }, []);
 
-import { toast } from 'react-hot-toast';
 
   const startQuiz = async (topic) => {
     try {

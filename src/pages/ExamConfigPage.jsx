@@ -8,6 +8,7 @@ import {
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
 import { pageVariants, staggerContainer, staggerItem, scaleIn } from '../lib/animations';
+import { toast } from 'react-hot-toast';
 
 export default function ExamConfigPage() {
   const navigate = useNavigate();
@@ -39,7 +40,6 @@ export default function ExamConfigPage() {
     );
   };
 
-import { toast } from 'react-hot-toast';
 
   const startExam = async () => {
     if (selectedSubjects.length === 0) {
