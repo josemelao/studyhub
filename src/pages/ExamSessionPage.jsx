@@ -123,6 +123,20 @@ export default function ExamSessionPage() {
   );
 
   const currentQ = questions[currentIndex];
+
+  if (!currentQ) return (
+    <div className="flex flex-col items-center justify-center py-36 gap-6 px-6">
+      <AlertCircle className="w-16 h-16 text-error opacity-80" />
+      <div className="text-center space-y-2">
+        <h2 className="text-2xl font-black text-primary">Questões não encontradas</h2>
+        <p className="text-sm text-muted max-w-md">As questões atreladas a este simulado não foram encontradas ou não pertencem ao seu Edital/Workspace ativo.</p>
+      </div>
+      <button onClick={() => navigate('/modo-prova')} className="px-6 py-3 rounded-xl bg-secondary border border-subtle font-black text-sm text-primary hover:bg-white/[0.05] transition-all">
+        Voltar para Modo Prova
+      </button>
+    </div>
+  );
+
   const formatTime = (s) => {
     const h = Math.floor(s / 3600);
     const m = Math.floor((s % 3600) / 60);
@@ -215,12 +229,14 @@ export default function ExamSessionPage() {
 
            {/* Opções */}
            <div className="space-y-4 mb-16">
-            {currentQ.opcoes.map(opt => {
-              const isActive = answers[currentQ.id] === opt.letra;
+            {currentQ.opcoes.map((opt, index) => {
+              const letra = opt.letra || String.fromCharCode(65 + index);
+              const texto = opt.texto || opt;
+              const isActive = answers[currentQ.id] === letra;
               return (
                 <button
-                  key={opt.letra}
-                  onClick={() => saveAnswer(currentQ.id, opt.letra)}
+                  key={letra}
+                  onClick={() => saveAnswer(currentQ.id, letra)}
                   className={`
                     w-full text-left flex items-start gap-5 p-5 rounded-2xl border transition-all duration-300
                     ${isActive ? 'bg-accent/10 border-accent text-primary shadow-glow-accent' : 'bg-secondary border-default text-muted hover:bg-white/[0.04]'}
@@ -230,9 +246,9 @@ export default function ExamSessionPage() {
                     w-8 h-8 shrink-0 flex items-center justify-center rounded-xl text-sm font-black transition-all
                     ${isActive ? 'bg-accent text-white scale-110 shadow-lg' : 'bg-white/[0.06] text-secondary'}
                   `}>
-                    {opt.letra}
+                    {letra}
                   </span>
-                  <span className="pt-0.5 font-bold leading-relaxed">{opt.texto}</span>
+                  <span className="pt-0.5 font-bold leading-relaxed">{texto}</span>
                 </button>
               );
             })}

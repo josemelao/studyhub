@@ -294,17 +294,19 @@ export default function QuestoesPage() {
 
           {/* Opções */}
           <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-4 mb-10 text-lg">
-            {currentQ.opcoes.map(opt => {
-              const isActive = selectedAnswer === opt.letra;
-              const isCorrect = isAnswered && opt.letra === currentQ.resposta_correta;
-              const isWrong = isAnswered && isActive && opt.letra !== currentQ.resposta_correta;
+            {currentQ.opcoes.map((opt, index) => {
+              const letra = opt.letra || String.fromCharCode(65 + index);
+              const texto = opt.texto || opt;
+              const isActive = selectedAnswer === letra;
+              const isCorrect = isAnswered && letra === currentQ.resposta_correta;
+              const isWrong = isAnswered && isActive && letra !== currentQ.resposta_correta;
 
               return (
                 <motion.button
-                  key={opt.letra}
+                  key={letra}
                   variants={staggerItem}
                   disabled={isAnswered}
-                  onClick={() => setSelectedAnswer(opt.letra)}
+                  onClick={() => setSelectedAnswer(letra)}
                   className={`
                     w-full text-left flex items-start gap-5 p-5 rounded-2xl border transition-all duration-300
                     ${isCorrect ? 'bg-success/10 border-success text-success shadow-[0_0_30px_rgba(var(--success-rgb),0.15)] glow-success' : ''}
@@ -322,9 +324,9 @@ export default function QuestoesPage() {
                     ${!isActive && !isAnswered ? 'bg-white/[0.06] text-secondary' : ''}
                     ${isAnswered && !isActive && !isCorrect ? 'bg-white/[0.02] text-muted' : ''}
                   `}>
-                    {opt.letra}
+                    {letra}
                   </span>
-                  <span className="pt-0.5 font-bold leading-relaxed">{opt.texto}</span>
+                  <span className="pt-0.5 font-bold leading-relaxed">{texto}</span>
                 </motion.button>
               );
             })}

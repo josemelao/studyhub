@@ -27,7 +27,10 @@ export default function ExamConfigPage() {
 
   useEffect(() => {
     async function load() {
-      if (!user || !currentConcursoId) return;
+      if (!user || !currentConcursoId) {
+        setLoading(false);
+        return;
+      }
       try {
         const { data } = await supabase
           .from('subjects')
@@ -61,6 +64,7 @@ export default function ExamConfigPage() {
       const { data: questionsData, error: qError } = await supabase
         .from('questions')
         .select('id, topic_id(subject_id)')
+        .eq('workspace_id', currentWorkspaceId)
         .filter('topic_id.subject_id', 'in', `(${selectedSubjects.join(',')})`)
         .limit(numQuestions * 2);
 

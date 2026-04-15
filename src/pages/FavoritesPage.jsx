@@ -204,12 +204,16 @@ export default function FavoritesPage() {
                                <p className="text-sm font-bold text-primary italic leading-relaxed">"{q.enunciado}"</p>
                                
                                <div className="grid grid-cols-1 gap-2 mt-4">
-                                  {q.opcoes?.map(opt => (
-                                     <div key={opt.letra} className="flex items-start gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/[0.05]">
-                                        <span className="w-6 h-6 shrink-0 flex items-center justify-center rounded-lg bg-white/[0.06] text-secondary text-[10px] font-black">{opt.letra}</span>
-                                        <span className="pt-0.5 text-xs font-medium text-primary/80">{opt.texto}</span>
-                                     </div>
-                                  ))}
+                                  {q.opcoes?.map((opt, index) => {
+                                     const letra = opt.letra || String.fromCharCode(65 + index);
+                                     const texto = opt.texto || opt;
+                                     return (
+                                       <div key={letra} className="flex items-start gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/[0.05]">
+                                          <span className="w-6 h-6 shrink-0 flex items-center justify-center rounded-lg bg-white/[0.06] text-secondary text-[10px] font-black">{letra}</span>
+                                          <span className="pt-0.5 text-xs font-medium text-primary/80">{texto}</span>
+                                       </div>
+                                     );
+                                  })}
                                </div>
                             </div>
 

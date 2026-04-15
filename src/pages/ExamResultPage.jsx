@@ -217,17 +217,19 @@ export default function ExamResultPage() {
                         <p className="text-lg font-bold text-primary mb-8 leading-relaxed italic">"{q.enunciado}"</p>
                         
                         <div className="grid grid-cols-1 gap-3 mb-8">
-                          {q.opcoes.map(opt => {
-                             const isCorrectOpt = opt.letra === q.resposta_correta;
-                             const isUserOpt = opt.letra === userAns;
+                          {q.opcoes.map((opt, index) => {
+                             const letra = opt.letra || String.fromCharCode(65 + index);
+                             const texto = opt.texto || opt;
+                             const isCorrectOpt = letra === q.resposta_correta;
+                             const isUserOpt = letra === userAns;
                              return (
-                               <div key={opt.letra} className={`flex items-start gap-4 p-4 rounded-xl border-2 transition-all ${
+                               <div key={letra} className={`flex items-start gap-4 p-4 rounded-xl border-2 transition-all ${
                                  isCorrectOpt ? 'bg-success/10 border-success/40 text-primary' : 
                                  isUserOpt && !isCorrectOpt ? 'bg-error/10 border-error/40 text-primary' : 
                                  'bg-white/[0.02] border-transparent text-muted opacity-60'
                                }`}>
-                                 <span className="w-6 h-6 shrink-0 flex items-center justify-center rounded-lg bg-black/20 text-xs font-black">{opt.letra}</span>
-                                 <span className="font-bold text-sm tracking-tight">{opt.texto}</span>
+                                 <span className="w-6 h-6 shrink-0 flex items-center justify-center rounded-lg bg-black/20 text-xs font-black">{letra}</span>
+                                 <span className="font-bold text-sm tracking-tight">{texto}</span>
                                  {isCorrectOpt && <CheckCircle2 className="w-4 h-4 ml-auto text-success" />}
                                  {isUserOpt && !isCorrectOpt && <XCircle className="w-4 h-4 ml-auto text-error" />}
                                </div>
