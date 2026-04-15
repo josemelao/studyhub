@@ -40,8 +40,7 @@ export default function FavoritesPage() {
           const { data: d } = await supabase
             .from('topics')
             .select('id, nome, subjects(nome, cor)')
-            .in('id', contIds)
-            .eq('workspace_id', currentWorkspaceId);
+            .in('id', contIds);
           contData = d || [];
         }
 
@@ -50,8 +49,7 @@ export default function FavoritesPage() {
           const { data: d } = await supabase
             .from('questions')
             .select('id, enunciado, opcoes, resposta_correta, explicacao, topic_id(nome, subjects(nome, cor))')
-            .in('id', quesIds)
-            .eq('workspace_id', currentWorkspaceId);
+            .in('id', quesIds);
           quesData = d || [];
         }
 
