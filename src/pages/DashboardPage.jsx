@@ -75,16 +75,16 @@ export default function DashboardPage() {
           {/* Card 1: Hero & Progress */}
           <motion.section 
             variants={staggerItem}
-            className="rounded-3xl p-6 relative overflow-hidden bg-gradient-to-br from-accent/20 to-primary border border-accent/10 flex flex-col justify-between"
+            className="rounded-3xl p-6 relative overflow-hidden bg-secondary border border-default flex flex-col justify-between shadow-sm"
           >
-            <div className="absolute -right-12 -top-12 w-64 h-64 rounded-full bg-accent/10 blur-3xl pointer-events-none" />
+            <div className="absolute -right-12 -top-12 w-64 h-64 rounded-full bg-accent/5 blur-3xl pointer-events-none" />
             
             <div>
               <div className="flex items-center gap-3 mb-1">
                 <h1 className="text-3xl font-black text-primary tracking-tighter italic">
                   Bom dia, {user?.email?.split('@')[0]}!👋
                 </h1>
-                <div className="px-3 py-1 rounded-full bg-accent/20 border border-accent/30 text-accent text-[10px] font-black uppercase tracking-widest shadow-glow-accent">
+                <div className="px-3 py-1 rounded-full bg-accent/10 border border-accent/20 text-accent text-[10px] font-black uppercase tracking-widest shadow-glow-accent">
                    Lvl {calculateLevel(stats?.pontos_xp)}
                 </div>
               </div>
@@ -94,14 +94,14 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="mt-4 bg-white/[0.03] p-5 rounded-2xl border border-white/5 backdrop-blur-sm">
+            <div className="mt-4 bg-tertiary p-5 rounded-2xl border border-default">
               <div className="flex justify-between items-end mb-2">
                 <span className="text-[9px] font-black uppercase tracking-widest text-muted">Progresso Atual</span>
-                <span className="text-xs text-accent font-bold">{doneTopics}/{totalTopics} módulos</span>
+                <span className="text-sm text-accent font-bold">{doneTopics}/{totalTopics} módulos</span>
               </div>
-              <div className="progress-track h-2.5 bg-white/5">
+              <div className="progress-track h-3 bg-white/5">
                 <motion.div 
-                  className="progress-fill h-2.5 shadow-glow-accent" 
+                  className="progress-fill h-3 shadow-glow-accent" 
                   initial={{ width: 0 }}
                   animate={{ width: `${progress}%` }}
                   transition={{ duration: 1.5, ease: "easeOut" }}
@@ -113,22 +113,22 @@ export default function DashboardPage() {
           {/* Card 2: Stats Grid 2x2 */}
           <div className="grid grid-cols-2 gap-4">
             {[
-              { label: 'Módulos lidos', value: doneTopics, icon: BookOpen, color: 'text-accent' },
-              { label: 'Conclusão geral', value: `${progress}%`, icon: TrendingUp, color: 'text-success' },
-              { label: 'Questões Feitas', value: stats?.total_questoes_respondidas || 0, icon: Icons.Target, color: 'text-orange-500' },
-              { label: 'Streak Atual', value: `${stats?.streak_atual || 0} dias`, icon: Icons.Flame, color: 'text-yellow-500' },
+              { label: 'Módulos lidos', value: doneTopics, icon: BookOpen, color: 'text-accent', bg: 'bg-accent/10' },
+              { label: 'Conclusão geral', value: `${progress}%`, icon: TrendingUp, color: 'text-success', bg: 'bg-success/10' },
+              { label: 'Questões Feitas', value: stats?.total_questoes_respondidas || 0, icon: Icons.Target, color: 'text-orange-500', bg: 'bg-orange-500/10' },
+              { label: 'Streak Atual', value: `${stats?.streak_atual || 0} dias`, icon: Icons.Flame, color: 'text-yellow-500', bg: 'bg-yellow-500/10' },
             ].map((stat, i) => (
               <motion.div 
                 key={i} 
                 variants={staggerItem}
-                className="glass-card p-4 flex items-center gap-4 border-white/5 bg-white/[0.01]"
+                className="glass-card p-6 flex items-center gap-6 border-default bg-secondary"
               >
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center bg-white/5 ${stat.color} shrink-0`}>
-                  <stat.icon className="w-4 h-4" />
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${stat.bg} ${stat.color} shrink-0`}>
+                  <stat.icon className="w-6 h-6" />
                 </div>
                 <div>
-                  <div className="text-lg font-black text-primary leading-none">{stat.value}</div>
-                  <div className="text-[9px] text-muted font-bold uppercase tracking-wider mt-1">{stat.label}</div>
+                  <div className="text-2xl font-black text-primary leading-none">{stat.value}</div>
+                  <div className="text-[10px] text-muted font-bold uppercase tracking-wider mt-1">{stat.label}</div>
                 </div>
               </motion.div>
             ))}
