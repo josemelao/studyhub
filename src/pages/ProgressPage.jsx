@@ -72,9 +72,9 @@ export default function ProgressPage() {
         
         setStats({ 
           topicsRead: lidos, 
-          totalQ: totalQLocal, 
-          totalC: totalCLocal, 
-          accuracy: totalQLocal > 0 ? Math.round((totalCLocal / totalQLocal) * 100) : 0, 
+          totalQ: localStats?.total_questoes_respondidas || 0, 
+          totalC: localStats?.total_acertos || 0, 
+          accuracy: (localStats?.total_questoes_respondidas > 0) ? Math.round((localStats.total_acertos / localStats.total_questoes_respondidas) * 100) : 0, 
           sessions: allSessions.length,
           streakMax: globalStats?.streak_max || 0,
           streakAtual: globalStats?.streak_atual || 0,

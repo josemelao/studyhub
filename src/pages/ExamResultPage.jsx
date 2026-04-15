@@ -43,8 +43,7 @@ export default function ExamResultPage() {
         const { data: qData, error: qE } = await supabase
           .from('questions')
           .select('id, enunciado, opcoes, resposta_correta, explicacao, topic_id(nome, subjects(nome, cor))')
-          .in('id', s.questoes)
-          .eq('workspace_id', currentWorkspaceId);
+          .in('id', s.questoes);
         if (qE) throw qE;
         
         // Manter ordem do simulado; filtrar entradas undefined caso alguma questão não seja encontrada

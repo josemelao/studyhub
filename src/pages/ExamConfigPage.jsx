@@ -64,7 +64,6 @@ export default function ExamConfigPage() {
       const { data: questionsData, error: qError } = await supabase
         .from('questions')
         .select('id, topic_id(subject_id)')
-        .eq('workspace_id', currentWorkspaceId)
         .filter('topic_id.subject_id', 'in', `(${selectedSubjects.join(',')})`)
         .limit(numQuestions * 2);
 

@@ -53,8 +53,7 @@ export default function ExamSessionPage() {
         const { data: qData, error: qE } = await supabase
           .from('questions')
           .select('id, enunciado, opcoes, explicacao')
-          .in('id', s.questoes)
-          .eq('workspace_id', currentWorkspaceId);
+          .in('id', s.questoes);
         if (qE) throw qE;
         
         // Manter a ordem especificada na sessão
