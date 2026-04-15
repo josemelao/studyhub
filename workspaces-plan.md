@@ -97,4 +97,26 @@ Efeitos Reactive (`useEffect(..., [currentWorkspaceId])`) nos componentes das p�
 - Condicionar "Gerenciamento de Conteúdo" à autorização "Admin".
 
 ---
+
+## 6. Casos de Borda e Pontos Críticos de Prevenção (Edge Cases)
+
+Para garantir solidez em um ambiente com troca dinâmica de instâncias, as seguintes proteções precisam ser implementadas:
+
+### 6.1 O Paradoxo do "Primeiro Login" (Onboarding)
+Se um novo usuário não tiver nenhum `workspace_id`, o Dashboard não pode tentar renderizar gráficos vazios quebrando requisições (como buscar tópicos em id nulo).
+- **Ação Planejada:** `<App />` deverá bloquear a navegação para rotas protegidas que dependem do ID, forçando uma tela de **Onboarding ("Escolha o seu Foco atual")**. O usuário terá que selecionar um dos Pacotes base do Admin como o pontapé inicial em sua jornada.
+
+### 6.2 Prevenção contra Race Conditions (Condições de Corrida)
+Em redes não ideais, requisições disparadas pouco antes de o usuário trocar de Edital podem "retornar" na nova instância e sobrescrever a tabela temporária do novo painel com informações errôneas.
+- **Ação Planejada:** Toda a obtenção que envolve o `Zustand` ou custom hooks precisa possuir validações com Tokens AbortController, ou um `if(currentFetchedWorkspaceId !== get().currentWorkspaceId) return null` antes da atribuição `.set()`. 
+
+### 6.3 O Escopo das Preferências Globais (Global Settings vs Workspace State)
+Enquanto dados estritamente estudantis variam por painel, o aplicativo tem preferencias de usuário genéricas (e novas virão).
+- **Ação Planejada:** O "Tema selecionado" (Gravity, Autumn, Clean), futuras "configurações de Notificações" e "layout de cards expandido/compacto" devem morar inequivocamente em uma estrutura global (ex: tabela `user_settings` atrelada à tabela superior `users` apenas). Isso anula falhas comportamentais estranhas ou telas "piscando" visualmente ao migrar num "pulo" de Edital.
+
+### 6.4 Arquivamento e Ciclo de Vida do Edital
+Após a realização de uma prova, o usuário pode não desejar mais ver aquele Edital no seu painel diário, mas jamais deve perder suas ricas `QuickNotes` ou históricos construídos naquele período.
+- **Ação Planejada:** Introduzir o conceito de "Soft Delete" na tabela de workspaces (ex: uma flag booleana `is_archived`). Um Edital arquivado desaparece do seletor ativo na Navbar, porém seu conteúdo permanece hígido no banco de dados, possibilitando que o usuário visite uma tela futura de "Editais Prévios" para desarquivá-los ou consultar seus resumos antigos se desejado.
+
+---
 *Este plano garante que um único deploy opere com arquitetura robusta de multi-concursos, maximizando foco de UX e reduzindo fricções de recriação de tabelas e escopos para usuários repetentes em outras rotas.*
