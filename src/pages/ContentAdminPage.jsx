@@ -24,8 +24,10 @@ export default function ContentAdminPage() {
   const fileInputRef = useRef(null);
   
   const [subjects, setSubjects] = useState([]);
+  const [subSubjects, setSubSubjects] = useState([]);
   const [topics, setTopics] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState('');
+  const [selectedSubSubject, setSelectedSubSubject] = useState('');
   const [selectedTopic, setSelectedTopic] = useState('');
   const [content, setContent] = useState('');
   const [contentType, setContentType] = useState('resumo');
@@ -35,8 +37,10 @@ export default function ContentAdminPage() {
 
   // States para criação dinâmica
   const [isAddingSubject, setIsAddingSubject] = useState(false);
+  const [isAddingSubSubject, setIsAddingSubSubject] = useState(false);
   const [isAddingTopic, setIsAddingTopic] = useState(false);
   const [newSubject, setNewSubject] = useState({ nome: '', categoria: 'Geral' });
+  const [newSubSubjectName, setNewSubSubjectName] = useState('');
   const [newTopicName, setNewTopicName] = useState('');
 
   // Carregar matérias
@@ -54,27 +58,56 @@ export default function ContentAdminPage() {
     loadSubjects();
   }, []);
 
+  // Carregar sub-matérias (módulos)
+  const loadSubSubjects = async (subjectId) => {
+    if (!subjectId) {
+      setSubSubjects([]);
+      setSelectedSubSubject('');
+      return;
+    }
+    setFetching(true);
+    const { data } = await supabase
+      .from('sub_subjects')
+      .select('*')
+      .eq('subject_id', subjectId)
+      .eq('workspace_id', currentWorkspaceId)
+      .order('ordem');
+    setSubSubjects(data || []);
+    setFetching(false);
+  };
+
+  useEffect(() => {
+    loadSubSubjects(selectedSubject);
+  }, [selectedSubject]);
+
   // Carregar tópicos
-  const loadTopics = async (subjectId) => {
+  const loadTopics = async (subjectId, subSubjectId) => {
     if (!subjectId) {
       setTopics([]);
       setSelectedTopic('');
       return;
     }
     setFetching(true);
-    const { data } = await supabase
+    let query = supabase
       .from('topics')
       .select('*')
       .eq('subject_id', subjectId)
-      .eq('workspace_id', currentWorkspaceId)
-      .order('ordem');
+      .eq('workspace_id', currentWorkspaceId);
+    
+    if (subSubjectId) {
+      query = query.eq('sub_subject_id', subSubjectId);
+    } else {
+      query = query.is('sub_subject_id', null);
+    }
+
+    const { data } = await query.order('ordem');
     setTopics(data || []);
     setFetching(false);
   };
 
   useEffect(() => {
-    loadTopics(selectedSubject);
-  }, [selectedSubject]);
+    loadTopics(selectedSubject, selectedSubSubject);
+  }, [selectedSubject, selectedSubSubject]);
 
   // Carregar conteúdo
   useEffect(() => {
@@ -148,6 +181,31 @@ export default function ContentAdminPage() {
     }
   };
 
+  const handleCreateSubSubject = async () => {
+    if (!newSubSubjectName || !selectedSubject) return;
+    setLoading(true);
+    try {
+      const nextOrder = subSubjects.length > 0 ? Math.max(...subSubjects.map(s => s.ordem || 0)) + 1 : 1;
+      const { data, error } = await supabase.from('sub_subjects').insert({
+        workspace_id: currentWorkspaceId,
+        subject_id: selectedSubject,
+        nome: newSubSubjectName,
+        ordem: nextOrder
+      }).select().single();
+
+      if (error) throw error;
+      await loadSubSubjects(selectedSubject);
+      setSelectedSubSubject(data.id);
+      setIsAddingSubSubject(false);
+      setNewSubSubjectName('');
+      toast.success('Módulo criado!');
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleCreateTopic = async () => {
     if (!newTopicName || !selectedSubject) return;
     setLoading(true);
@@ -156,12 +214,13 @@ export default function ContentAdminPage() {
       const { data, error } = await supabase.from('topics').insert({
         workspace_id: currentWorkspaceId,
         subject_id: selectedSubject,
+        sub_subject_id: selectedSubSubject || null,
         nome: newTopicName,
         ordem: nextOrder
       }).select().single();
 
       if (error) throw error;
-      await loadTopics(selectedSubject);
+      await loadTopics(selectedSubject, selectedSubSubject);
       setSelectedTopic(data.id);
       setIsAddingTopic(false);
       setNewTopicName('');
@@ -363,6 +422,57 @@ export default function ContentAdminPage() {
                 >
                   <option value="" className="bg-[#1a1a2e] text-primary">Selecione a matéria</option>
                   {subjects.map(s => <option key={s.id} value={s.id} className="bg-[#1a1a2e] text-primary">{s.nome}</option>)}
+                </select>
+              )}
+            </div>
+
+            {/* Módulo */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between px-1">
+                <label className="text-[10px] font-black uppercase tracking-widest text-muted">Módulo (Opcional)</label>
+                {selectedSubject && (
+                  <button 
+                    onClick={() => setIsAddingSubSubject(!isAddingSubSubject)}
+                    className="text-accent hover:text-white transition-colors"
+                  >
+                    {isAddingSubSubject ? <X size={14} /> : <Plus size={14} />}
+                  </button>
+                )}
+              </div>
+
+              <AnimatePresence>
+                {isAddingSubSubject && (
+                  <motion.div 
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden space-y-2"
+                  >
+                    <input 
+                      className="w-full bg-white/5 border border-accent/30 rounded-xl px-4 py-2 text-sm text-primary font-bold outline-none"
+                      placeholder="Nome do módulo..."
+                      value={newSubSubjectName}
+                      onChange={e => setNewSubSubjectName(e.target.value)}
+                    />
+                    <button 
+                      onClick={handleCreateSubSubject}
+                      className="w-full py-2 bg-accent/20 text-accent text-[10px] font-black uppercase rounded-lg hover:bg-accent/30"
+                    >
+                      Criar Módulo
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {!isAddingSubSubject && (
+                <select 
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-accent text-sm font-bold text-primary disabled:opacity-30 appearance-none cursor-pointer"
+                  value={selectedSubSubject}
+                  onChange={(e) => setSelectedSubSubject(e.target.value)}
+                  disabled={!selectedSubject || fetching}
+                >
+                  <option value="" className="bg-[#1a1a2e] text-primary">Tópicos Diretos (Sem Módulo)</option>
+                  {subSubjects.map(ss => <option key={ss.id} value={ss.id} className="bg-[#1a1a2e] text-primary">{ss.nome}</option>)}
                 </select>
               )}
             </div>
