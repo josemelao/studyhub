@@ -8,6 +8,7 @@ import { WorkspaceProvider, useWorkspace } from './contexts/WorkspaceContext';
 import { SubjectsProvider } from './contexts/SubjectsContext';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import PageWrapper from './components/layout/PageWrapper';
+import { useIsAdmin } from './hooks/useIsAdmin';
 
 // Pages
 import LoginPage from './pages/LoginPage';
@@ -36,6 +37,7 @@ import { Toaster } from 'react-hot-toast';
 function AuthenticatedApp() {
   const location = useLocation();
   const { currentWorkspaceId, loadingWorkspace } = useWorkspace();
+  const isAdmin = useIsAdmin();
 
   // Tela de loading Global enquanto o Workspace inicializa
   if (loadingWorkspace) {
@@ -80,7 +82,7 @@ function AuthenticatedApp() {
             <Route path="/modo-prova/resultado/:id" element={<ExamResultPage />} />
             <Route path="/favoritos" element={<FavoritesPage />} />
             <Route path="/historico" element={<HistoryPage />} />
-            <Route path="/gerenciar-conteudo" element={<ContentAdminPage />} />
+            <Route path="/gerenciar-conteudo" element={isAdmin ? <ContentAdminPage /> : <Navigate to="/dashboard" replace />} />
             <Route path="/onboarding" element={<OnboardingPage />} />
             
             {/* Redirecionamentos internos se necessário */}

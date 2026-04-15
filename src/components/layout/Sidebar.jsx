@@ -5,6 +5,7 @@ import {
   Edit3, ChevronDown
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { useIsAdmin } from '../../hooks/useIsAdmin';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { motion } from 'framer-motion';
 import StreakWidget from '../ui/StreakWidget';
@@ -22,6 +23,7 @@ const navItems = [
 
 export default function Sidebar() {
   const { signOut } = useAuth();
+  const isAdmin = useIsAdmin();
   const { workspaces, currentWorkspaceId, setWorkspace } = useWorkspace();
 
   return (
@@ -76,7 +78,8 @@ export default function Sidebar() {
       </nav>
 
       <div className="p-4 border-t border-default space-y-2">
-        <NavLink
+        {isAdmin && (
+          <NavLink
             to="/gerenciar-conteudo"
             className={({ isActive }) => `
               flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group
@@ -88,6 +91,7 @@ export default function Sidebar() {
             <Edit3 className="w-5 h-5 transition-transform group-hover:scale-110" />
             <span className="text-sm tracking-tight">Gerenciar Conteúdo</span>
           </NavLink>
+        )}
 
         <button
           onClick={signOut}

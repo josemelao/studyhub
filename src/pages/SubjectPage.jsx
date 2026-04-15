@@ -12,7 +12,7 @@ export default function SubjectPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { currentWorkspaceId } = useWorkspace();
+  const { currentWorkspaceId, currentConcursoId } = useWorkspace();
 
   const [subject, setSubject] = useState(null);
   const [subSubjects, setSubSubjects] = useState([]);
@@ -22,14 +22,13 @@ export default function SubjectPage() {
 
   useEffect(() => {
     async function load() {
-      if (!user || !currentWorkspaceId) return;
+      if (!user || !currentConcursoId) return;
       try {
         setLoading(true);
         const { data: subData, error: subE } = await supabase
           .from('subjects')
           .select('*')
           .eq('id', id)
-          .eq('workspace_id', currentWorkspaceId)
           .single();
         if (subE) throw subE;
         setSubject(subData);
@@ -42,7 +41,7 @@ export default function SubjectPage() {
             topics (id, nome, descricao, ordem)
           `)
           .eq('subject_id', id)
-          .eq('workspace_id', currentWorkspaceId)
+          .eq('concurso_id', currentConcursoId)
           .order('ordem');
         if (ssE) throw ssE;
 
@@ -51,7 +50,7 @@ export default function SubjectPage() {
           .from('topics')
           .select('id, nome, descricao, ordem')
           .eq('subject_id', id)
-          .eq('workspace_id', currentWorkspaceId)
+          .eq('concurso_id', currentConcursoId)
           .is('sub_subject_id', null)
           .order('ordem');
         if (dtE) throw dtE;
@@ -92,7 +91,7 @@ export default function SubjectPage() {
       finally { setLoading(false); }
     }
     load();
-  }, [id, user, currentWorkspaceId]);
+  }, [id, user, currentWorkspaceId, currentConcursoId]);
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-36 gap-4">

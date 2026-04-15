@@ -11,6 +11,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
 import { useWorkspace } from '../contexts/WorkspaceContext';
 import { useGamification } from '../hooks/useGamification';
+import { useSubjectsContext } from '../contexts/SubjectsContext';
 import FavoriteButton from '../components/ui/FavoriteButton';
 import { pageVariants, staggerItem, scaleIn } from '../lib/animations';
 import '../styles/markdown.css';
@@ -19,8 +20,9 @@ export default function StudyPage() {
   const { id: topicId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { currentWorkspaceId } = useWorkspace();
+  const { currentWorkspaceId, currentConcursoId } = useWorkspace();
   const { processActivity } = useGamification();
+  const { invalidateCache } = useSubjectsContext();
 
   const [topic, setTopic] = useState(null);
   const [contents, setContents] = useState({ resumo: null, videos: [], dicas: null });
@@ -42,7 +44,6 @@ export default function StudyPage() {
           .from('topics')
           .select('*, subjects(id, nome)')
           .eq('id', topicId)
-          .eq('workspace_id', currentWorkspaceId)
           .single();
         if (topicError) throw topicError;
         setTopic(topicData);
@@ -51,8 +52,7 @@ export default function StudyPage() {
         const { data: contentRows, error: contentError } = await supabase
           .from('contents')
           .select('*')
-          .eq('topic_id', topicId)
-          .eq('workspace_id', currentWorkspaceId);
+          .eq('topic_id', topicId);
         
         if (contentError) throw contentError;
         
@@ -87,7 +87,7 @@ export default function StudyPage() {
       finally { setLoading(false); }
     }
     loadData();
-  }, [topicId, user, currentWorkspaceId]);
+  }, [topicId, user, currentWorkspaceId, currentConcursoId]);
 
   // Lógica de Autosave para Notas removida (agora no NotesWidget)
 
@@ -110,6 +110,7 @@ export default function StudyPage() {
       }, { onConflict: 'user_id,workspace_id,topic_id' });
       
       await processActivity({ leitura: true });
+      invalidateCache(); // Força o SubjectsContext a re-buscar o progresso atualizado
       setAlreadyRead(true);
       navigate(`/materia/${topic.subjects?.id}`);
     } catch (err) { console.error(err); }

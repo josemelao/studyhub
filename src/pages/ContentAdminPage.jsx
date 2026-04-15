@@ -11,7 +11,7 @@ import { gfm } from 'turndown-plugin-gfm';
 import { 
   Save, Eye, Edit3, Loader2, BookOpen, 
   AlertCircle, CheckCircle2, Plus, X, 
-  FileText, UploadCloud
+  FileText, UploadCloud, ShieldCheck
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
@@ -19,7 +19,7 @@ import '../styles/markdown.css';
 
 export default function ContentAdminPage() {
   const { user } = useAuth();
-  const { currentWorkspaceId } = useWorkspace();
+  const { currentWorkspaceId, currentConcursoId, currentWorkspace } = useWorkspace();
   const { invalidateCache } = useSubjectsContext();
   const fileInputRef = useRef(null);
   
@@ -43,13 +43,13 @@ export default function ContentAdminPage() {
   const [newSubSubjectName, setNewSubSubjectName] = useState('');
   const [newTopicName, setNewTopicName] = useState('');
 
-  // Carregar matérias
+  // Carregar matérias do admin (pelo concurso_id)
   const loadSubjects = async () => {
-    if (!currentWorkspaceId) return;
+    if (!currentConcursoId) return;
     const { data } = await supabase
       .from('subjects')
       .select('*')
-      .eq('workspace_id', currentWorkspaceId)
+      .eq('concurso_id', currentConcursoId)
       .order('ordem');
     setSubjects(data || []);
   };
@@ -70,7 +70,7 @@ export default function ContentAdminPage() {
       .from('sub_subjects')
       .select('*')
       .eq('subject_id', subjectId)
-      .eq('workspace_id', currentWorkspaceId)
+      .eq('concurso_id', currentConcursoId)
       .order('ordem');
     setSubSubjects(data || []);
     setFetching(false);
@@ -92,7 +92,7 @@ export default function ContentAdminPage() {
       .from('topics')
       .select('*')
       .eq('subject_id', subjectId)
-      .eq('workspace_id', currentWorkspaceId);
+      .eq('concurso_id', currentConcursoId);
     
     if (subSubjectId) {
       query = query.eq('sub_subject_id', subSubjectId);
@@ -121,7 +121,6 @@ export default function ContentAdminPage() {
         .from('contents')
         .select('*')
         .eq('topic_id', selectedTopic)
-        .eq('workspace_id', currentWorkspaceId)
         .eq('tipo', contentType)
         .single();
       
@@ -137,7 +136,7 @@ export default function ContentAdminPage() {
     try {
       const { error } = await supabase.from('contents').upsert({
         topic_id: selectedTopic,
-        workspace_id: currentWorkspaceId,
+        concurso_id: currentConcursoId,
         tipo: contentType,
         conteudo: content,
         updated_at: new Date().toISOString()
@@ -159,7 +158,7 @@ export default function ContentAdminPage() {
     try {
       const nextOrder = subjects.length > 0 ? Math.max(...subjects.map(s => s.ordem || 0)) + 1 : 1;
       const { data, error } = await supabase.from('subjects').insert({
-        workspace_id: currentWorkspaceId,
+        concurso_id: currentConcursoId,
         nome: newSubject.nome,
         categoria: newSubject.categoria,
         icone: 'Book',
@@ -187,7 +186,7 @@ export default function ContentAdminPage() {
     try {
       const nextOrder = subSubjects.length > 0 ? Math.max(...subSubjects.map(s => s.ordem || 0)) + 1 : 1;
       const { data, error } = await supabase.from('sub_subjects').insert({
-        workspace_id: currentWorkspaceId,
+        concurso_id: currentConcursoId,
         subject_id: selectedSubject,
         nome: newSubSubjectName,
         ordem: nextOrder
@@ -212,7 +211,7 @@ export default function ContentAdminPage() {
     try {
       const nextOrder = topics.length > 0 ? Math.max(...topics.map(t => t.ordem || 0)) + 1 : 1;
       const { data, error } = await supabase.from('topics').insert({
-        workspace_id: currentWorkspaceId,
+        concurso_id: currentConcursoId,
         subject_id: selectedSubject,
         sub_subject_id: selectedSubSubject || null,
         nome: newTopicName,
@@ -350,6 +349,11 @@ export default function ContentAdminPage() {
         </div>
 
         <div className="flex items-center gap-3">
+          {/* Badge Admin */}
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-accent/10 border border-accent/20 text-accent text-[10px] font-black uppercase tracking-widest">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            Admin · {currentWorkspace?.name || 'Workspace'}
+          </div>
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={importing || !selectedTopic}

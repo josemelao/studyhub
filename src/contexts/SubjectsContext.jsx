@@ -12,7 +12,7 @@ const SubjectsContext = createContext(null);
  */
 export function SubjectsProvider({ children }) {
   const { user } = useAuth();
-  const { currentWorkspaceId } = useWorkspace();
+  const { currentWorkspaceId, currentConcursoId } = useWorkspace();
   const [subjects, setSubjects] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -22,14 +22,14 @@ export function SubjectsProvider({ children }) {
     fetchedRef.current = false;
   }, []);
 
-  // Limpar a memória imediatamente quando o Workspace Mudar
+  // Limpar a memória imediatamente quando o Workspace ou Concurso Mudar
   useEffect(() => {
     setSubjects([]);
     invalidateCache();
-  }, [currentWorkspaceId, invalidateCache]);
+  }, [currentWorkspaceId, currentConcursoId, invalidateCache]);
 
   const fetchSubjects = useCallback(async (force = false) => {
-    if (!user || !currentWorkspaceId) return;
+    if (!user || !currentConcursoId) return;
     // Se já carregou e não é forçado, usa o cache
     if (fetchedRef.current && !force) return;
 
@@ -43,7 +43,7 @@ export function SubjectsProvider({ children }) {
           id, nome, categoria, cor, icone, ordem,
           topics (id)
         `)
-        .eq('workspace_id', currentWorkspaceId)
+        .eq('concurso_id', currentConcursoId)
         .order('ordem');
 
       if (subjectsError) throw subjectsError;
@@ -71,7 +71,7 @@ export function SubjectsProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  }, [user, currentWorkspaceId]);
+  }, [user, currentWorkspaceId, currentConcursoId]);
 
   return (
     <SubjectsContext.Provider value={{ subjects, loading, error, fetchSubjects, invalidateCache }}>

@@ -16,7 +16,20 @@ export default function OnboardingPage() {
 
   useEffect(() => {
     async function fetchConcursos() {
-      const { data } = await supabase.from('concursos').select('id, nome, sigla').order('nome');
+      // Busca apenas concursos que já possuem matérias cadastradas pelo admin
+      const { data: subjectsWithConcurso } = await supabase
+        .from('subjects')
+        .select('concurso_id')
+        .not('concurso_id', 'is', null);
+
+      const validIds = [...new Set((subjectsWithConcurso || []).map(s => s.concurso_id))];
+      if (!validIds.length) return;
+
+      const { data } = await supabase
+        .from('concursos')
+        .select('id, nome, sigla')
+        .in('id', validIds)
+        .order('nome');
       if (data) setConcursos(data);
     }
     fetchConcursos();
@@ -91,7 +104,7 @@ export default function OnboardingPage() {
 
           <motion.div variants={staggerItem} className="space-y-2">
             <label className="text-xs font-black uppercase tracking-widest text-muted ml-1 flex items-center gap-2">
-              <Target className="w-3 h-3" /> Concurso Alvo (Opcional)
+              <Target className="w-3 h-3" /> Concurso Alvo (Obrigatório)
             </label>
             <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto pr-2 thin-scrollbar">
               {concursos.map(c => (
@@ -115,7 +128,7 @@ export default function OnboardingPage() {
           <motion.button
             variants={staggerItem}
             type="submit"
-            disabled={loading || !workspaceName.trim()}
+            disabled={loading || !workspaceName.trim() || !selectedConcursoId}
             className="w-full bg-gradient-accent text-white font-black py-5 rounded-2xl flex items-center justify-center gap-3 shadow-glow-accent hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
           >
             {loading ? (

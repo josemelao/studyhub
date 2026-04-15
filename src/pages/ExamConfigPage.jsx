@@ -14,7 +14,7 @@ import { toast } from 'react-hot-toast';
 export default function ExamConfigPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { currentWorkspaceId } = useWorkspace();
+  const { currentWorkspaceId, currentConcursoId } = useWorkspace();
 
   const [subjects, setSubjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,19 +27,19 @@ export default function ExamConfigPage() {
 
   useEffect(() => {
     async function load() {
-      if (!user || !currentWorkspaceId) return;
+      if (!user || !currentConcursoId) return;
       try {
         const { data } = await supabase
           .from('subjects')
           .select('id, nome, icone, cor')
-          .eq('workspace_id', currentWorkspaceId)
+          .eq('concurso_id', currentConcursoId)
           .order('ordem');
         setSubjects(data || []);
       } catch (err) { console.error(err); }
       finally { setLoading(false); }
     }
     load();
-  }, [user, currentWorkspaceId]);
+  }, [user, currentConcursoId]);
 
   const toggleSubject = (id) => {
     setSelectedSubjects(prev => 
@@ -62,7 +62,6 @@ export default function ExamConfigPage() {
         .from('questions')
         .select('id, topic_id(subject_id)')
         .filter('topic_id.subject_id', 'in', `(${selectedSubjects.join(',')})`)
-        .eq('workspace_id', currentWorkspaceId)
         .limit(numQuestions * 2);
 
       if (qError) throw qError;

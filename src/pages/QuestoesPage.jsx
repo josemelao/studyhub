@@ -15,7 +15,7 @@ import { toast } from 'react-hot-toast';
 
 export default function QuestoesPage() {
   const { user } = useAuth();
-  const { currentWorkspaceId } = useWorkspace();
+  const { currentWorkspaceId, currentConcursoId } = useWorkspace();
   const { processActivity } = useGamification();
   const [view, setView] = useState('list');
   const [subjects, setSubjects] = useState([]);
@@ -35,13 +35,13 @@ export default function QuestoesPage() {
 
   useEffect(() => {
     async function load() {
-      if (!user || !currentWorkspaceId) return;
+      if (!user || !currentConcursoId) return;
       try {
         setLoadingSubjects(true);
         const { data, error } = await supabase
           .from('subjects')
           .select('id, nome, cor, icone, categoria, ordem, sub_subjects(id, nome, ordem, topics(id, nome, ordem))')
-          .eq('workspace_id', currentWorkspaceId)
+          .eq('concurso_id', currentConcursoId)
           .order('ordem');
         if (error) throw error;
         setSubjects(data || []);
@@ -49,7 +49,7 @@ export default function QuestoesPage() {
       finally { setLoadingSubjects(false); }
     }
     load();
-  }, [user, currentWorkspaceId]);
+  }, [user, currentConcursoId]);
 
 
   const startQuiz = async (topic) => {
@@ -64,8 +64,7 @@ export default function QuestoesPage() {
       const { data: qData, error } = await supabase
         .from('questions')
         .select('*')
-        .eq('topic_id', topic.id)
-        .eq('workspace_id', currentWorkspaceId);
+        .eq('topic_id', topic.id);
       if (error) throw error;
       if (!qData?.length) { 
         toast.error('Nenhuma questão cadastrada para este tópico.', { icon: '🔍' }); 
