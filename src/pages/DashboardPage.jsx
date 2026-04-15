@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Clock, CheckCircle2, Loader2, TrendingUp, BookOpen, Target, Flame } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Sector } from 'recharts';
@@ -160,23 +160,39 @@ export default function DashboardPage() {
               <div className="grid grid-cols-2 gap-4 h-48 md:h-56 lg:h-64">
                 {/* Pizza 1: Edital */}
                 <div className="relative group h-full">
-                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10 px-2 text-center">
-                    {activeSubject ? (
-                      <div className="flex flex-col items-center justify-center max-w-[100px] -mt-1">
-                        <span className="text-[10px] font-black uppercase tracking-tight leading-tight whitespace-normal break-words mb-1" style={{ color: activeSubject.cor }}>
-                           {activeSubject.nome}
-                        </span>
-                        <span className="text-3xl md:text-4xl font-black text-primary tracking-tighter italic leading-none my-0.5">
-                          {activeSubject.topicsTotal}
-                        </span>
-                        <span className="text-[9px] font-bold text-muted uppercase tracking-wider">Módulos</span>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center">
-                        <span className="text-2xl md:text-3xl lg:text-4xl font-black text-primary tracking-tighter italic leading-none">{totalTopics}</span>
-                        <span className="text-[10px] md:text-xs font-black text-primary/40 uppercase tracking-widest mt-1">Módulos</span>
-                      </div>
-                    )}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10 px-2 text-center overflow-hidden">
+                    <AnimatePresence mode="wait">
+                      {activeSubject ? (
+                        <motion.div 
+                          key={`active-${activeSubject.id}`}
+                          initial={{ opacity: 0, scale: 0.9, y: 5 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.95, y: -5 }}
+                          transition={{ duration: 0.2 }}
+                          className="flex flex-col items-center justify-center max-w-[110px] -mt-1"
+                        >
+                          <span className="text-[10px] font-black uppercase tracking-tight leading-tight whitespace-normal break-words mb-1" style={{ color: activeSubject.cor }}>
+                             {activeSubject.nome}
+                          </span>
+                          <span className="text-3xl md:text-4xl font-black text-primary tracking-tighter italic leading-none my-0.5">
+                            {activeSubject.topicsTotal}
+                          </span>
+                          <span className="text-[9px] font-bold text-muted uppercase tracking-wider">Módulos</span>
+                        </motion.div>
+                      ) : (
+                        <motion.div 
+                          key="default-edital"
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 1.1 }}
+                          transition={{ duration: 0.2 }}
+                          className="flex flex-col items-center justify-center"
+                        >
+                          <span className="text-2xl md:text-3xl lg:text-4xl font-black text-primary tracking-tighter italic leading-none">{totalTopics}</span>
+                          <span className="text-[10px] md:text-xs font-black text-primary/40 uppercase tracking-widest mt-1">Módulos</span>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart margin={{ top: 0, right: 15, bottom: 0, left: 15 }}>
@@ -188,7 +204,9 @@ export default function DashboardPage() {
                         paddingAngle={2}
                         dataKey="value"
                         stroke="none"
-                        isAnimationActive={false}
+                        isAnimationActive={true}
+                        animationDuration={400}
+                        animationEasing="ease-out"
                         onMouseEnter={(_, index) => setActiveSubjectId(editalData[index].id)}
                         onMouseOver={(_, index) => setActiveSubjectId(editalData[index].id)}
                         onMouseLeave={() => setActiveSubjectId(null)}
@@ -203,23 +221,39 @@ export default function DashboardPage() {
 
                 {/* Pizza 2: Realidade */}
                 <div className="relative group h-full">
-                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10 px-2 text-center">
-                    {activeSubject ? (
-                      <div className="flex flex-col items-center justify-center max-w-[100px] -mt-1">
-                        <span className="text-[10px] font-black uppercase tracking-tight leading-tight whitespace-normal break-words mb-1" style={{ color: activeSubject.cor }}>
-                           {activeSubject.nome}
-                        </span>
-                        <span className="text-3xl md:text-4xl font-black text-accent tracking-tighter italic leading-none my-0.5">
-                          {activeSubject.topicsDone}
-                        </span>
-                        <span className="text-[9px] font-bold text-muted uppercase tracking-wider">Feitos</span>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center">
-                        <span className="text-2xl md:text-3xl lg:text-4xl font-black text-accent tracking-tighter italic drop-shadow-glow-accent leading-none">{progress}%</span>
-                        <span className="text-[10px] md:text-xs font-black text-accent/40 uppercase tracking-widest mt-1">Concluído</span>
-                      </div>
-                    )}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10 px-2 text-center overflow-hidden">
+                    <AnimatePresence mode="wait">
+                      {activeSubject ? (
+                        <motion.div 
+                          key={`active-realidade-${activeSubject.id}`}
+                          initial={{ opacity: 0, scale: 0.9, y: 5 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.95, y: -5 }}
+                          transition={{ duration: 0.2 }}
+                          className="flex flex-col items-center justify-center max-w-[110px] -mt-1"
+                        >
+                          <span className="text-[10px] font-black uppercase tracking-tight leading-tight whitespace-normal break-words mb-1" style={{ color: activeSubject.cor }}>
+                             {activeSubject.nome}
+                          </span>
+                          <span className="text-3xl md:text-4xl font-black text-accent tracking-tighter italic leading-none my-0.5">
+                            {activeSubject.topicsDone}
+                          </span>
+                          <span className="text-[9px] font-bold text-muted uppercase tracking-wider">Feitos</span>
+                        </motion.div>
+                      ) : (
+                        <motion.div 
+                          key="default-realidade"
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 1.1 }}
+                          transition={{ duration: 0.2 }}
+                          className="flex flex-col items-center justify-center"
+                        >
+                          <span className="text-2xl md:text-3xl lg:text-4xl font-black text-accent tracking-tighter italic drop-shadow-glow-accent leading-none">{progress}%</span>
+                          <span className="text-[10px] md:text-xs font-black text-accent/40 uppercase tracking-widest mt-1">Concluído</span>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart margin={{ top: 0, right: 15, bottom: 0, left: 15 }}>
@@ -231,7 +265,9 @@ export default function DashboardPage() {
                         paddingAngle={3}
                         dataKey="value"
                         stroke="none"
-                        isAnimationActive={false}
+                        isAnimationActive={true}
+                        animationDuration={400}
+                        animationEasing="ease-out"
                         onMouseEnter={(_, index) => setActiveSubjectId(alunoData[index].id)}
                         onMouseOver={(_, index) => setActiveSubjectId(alunoData[index].id)}
                         onMouseLeave={() => setActiveSubjectId(null)}
