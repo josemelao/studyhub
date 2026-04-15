@@ -142,12 +142,15 @@ export default function ProgressPage() {
         {/* KPI: Streak Atual (2x1) */}
         <motion.div 
           variants={staggerItem} 
-          className="md:col-span-2 lg:col-span-2 glass-card p-6 flex items-center gap-6 border-orange-500/20 bg-orange-500/5"
+          className="md:col-span-2 lg:col-span-2 glass-card p-6 flex items-center gap-6 border-orange-500/20 bg-orange-500/5 relative overflow-hidden group"
         >
-          <div className="w-12 h-12 rounded-2xl bg-orange-500 text-white flex items-center justify-center shadow-glow-orange shrink-0">
+          <div className="absolute -right-6 -bottom-6 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity">
+            <Flame size={100} />
+          </div>
+          <div className="w-12 h-12 rounded-2xl bg-orange-500 text-white flex items-center justify-center shadow-glow-orange shrink-0 relative z-10">
             <Flame className="w-6 h-6" />
           </div>
-          <div>
+          <div className="relative z-10">
             <div className="text-3xl font-black text-primary tracking-tight">{stats.streakAtual} dias</div>
             <div className="text-[10px] font-black text-muted uppercase tracking-widest">Streak Atual</div>
           </div>
@@ -156,12 +159,15 @@ export default function ProgressPage() {
         {/* KPI: Questões Respondidas (2x1) */}
         <motion.div 
           variants={staggerItem} 
-          className="md:col-span-2 lg:col-span-2 glass-card p-6 flex items-center gap-6 border-blue-500/20 bg-blue-500/5"
+          className="md:col-span-2 lg:col-span-2 glass-card p-6 flex items-center gap-6 border-blue-500/20 bg-blue-500/5 relative overflow-hidden group"
         >
-          <div className="w-12 h-12 rounded-2xl bg-blue-500 text-white flex items-center justify-center shadow-glow-blue shrink-0">
+          <div className="absolute -right-6 -bottom-6 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity">
+            <TrendingUp size={100} />
+          </div>
+          <div className="w-12 h-12 rounded-2xl bg-blue-500 text-white flex items-center justify-center shadow-glow-blue shrink-0 relative z-10">
             <TrendingUp className="w-6 h-6" />
           </div>
-          <div>
+          <div className="relative z-10">
             <div className="text-3xl font-black text-primary tracking-tight">{stats.totalQ}</div>
             <div className="text-[10px] font-black text-muted uppercase tracking-widest">Questões Respondidas</div>
           </div>
@@ -170,12 +176,15 @@ export default function ProgressPage() {
         {/* KPI: Módulos Lidos (2x1) */}
         <motion.div 
           variants={staggerItem} 
-          className="md:col-span-2 lg:col-span-2 glass-card p-6 flex items-center gap-6 border-success/20 bg-success/5"
+          className="md:col-span-2 lg:col-span-2 glass-card p-6 flex items-center gap-6 border-success/20 bg-success/5 relative overflow-hidden group"
         >
-          <div className="w-12 h-12 rounded-2xl bg-success text-white flex items-center justify-center shadow-glow-success shrink-0">
+          <div className="absolute -right-6 -bottom-6 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity">
+            <Award size={100} />
+          </div>
+          <div className="w-12 h-12 rounded-2xl bg-success text-white flex items-center justify-center shadow-glow-success shrink-0 relative z-10">
             <Award className="w-6 h-6" />
           </div>
-          <div>
+          <div className="relative z-10">
             <div className="text-3xl font-black text-primary tracking-tight">{stats.topicsRead}</div>
             <div className="text-[10px] font-black text-muted uppercase tracking-widest">Módulos Lidos</div>
           </div>
@@ -184,12 +193,15 @@ export default function ProgressPage() {
         {/* KPI: Recorde de Streak (2x1) */}
         <motion.div 
           variants={staggerItem} 
-          className="md:col-span-2 lg:col-span-2 glass-card p-6 flex items-center gap-6 border-white/5 bg-white/[0.02]"
+          className="md:col-span-2 lg:col-span-2 glass-card p-6 flex items-center gap-6 border-default bg-secondary relative overflow-hidden group"
         >
-          <div className="w-12 h-12 rounded-2xl bg-white/10 text-primary flex items-center justify-center shrink-0">
+          <div className="absolute -right-6 -bottom-6 opacity-[0.02] group-hover:opacity-[0.07] transition-opacity">
+            <Trophy size={100} />
+          </div>
+          <div className="w-12 h-12 rounded-2xl bg-white/10 text-primary flex items-center justify-center shrink-0 relative z-10">
             <Trophy className="w-6 h-6" />
           </div>
-          <div>
+          <div className="relative z-10">
             <div className="text-3xl font-black text-primary tracking-tight">{stats.streakMax}</div>
             <div className="text-[10px] font-black text-muted uppercase tracking-widest">Recorde de Streak</div>
           </div>
@@ -216,7 +228,7 @@ export default function ProgressPage() {
                <motion.div 
                  key={i} 
                  variants={scaleIn} 
-                 className="glass-card p-4 flex flex-col items-center text-center gap-3 border-white/5 bg-white/[0.01] hover:bg-accent/5 hover:border-accent/20 transition-all group"
+                 className="glass-card p-4 flex flex-col items-center text-center gap-3 border-default bg-secondary hover:bg-accent/5 hover:border-accent/20 transition-all group"
                >
                  <div className="text-4xl filter drop-shadow-sm group-hover:scale-110 transition-transform">{c.icone}</div>
                  <div>
