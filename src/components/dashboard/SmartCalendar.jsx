@@ -180,14 +180,14 @@ export default function SmartCalendar({ selectedDate, onSelectDate }) {
               <>Plano para <span className="text-primary font-bold">{selectedDate.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}</span> ({currentPlan.length})</>
             )}
          </div>
-         <div className="flex gap-2 opacity-60 group-hover/cal:opacity-100 transition-opacity">
-            {currentPlan.slice(0, 3).map((topic, i) => {
+          <div className="flex gap-1.5 opacity-60 group-hover/cal:opacity-100 transition-opacity items-center">
+            {currentPlan.slice(0, 4).map((topic, i) => {
               const IconComp = Icons[topic.icon] || Icons.BookOpen;
               return (
                 <motion.div
                   key={i}
                   whileHover={{ y: -2, scale: 1.1 }}
-                  className="group/icon relative w-6 h-6 rounded-lg flex items-center justify-center border border-white/5 transition-all"
+                  className="group/icon relative w-6 h-6 rounded-lg flex items-center justify-center border border-white/5 transition-all shadow-sm"
                   style={{ backgroundColor: `${topic.cor}15`, color: topic.cor }}
                 >
                   <IconComp className="w-3.5 h-3.5" />
@@ -197,7 +197,12 @@ export default function SmartCalendar({ selectedDate, onSelectDate }) {
                 </motion.div>
               );
             })}
-         </div>
+            {currentPlan.length > 4 && (
+              <div className="w-6 h-6 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
+                <span className="text-[8px] font-black text-muted">+{currentPlan.length - 4}</span>
+              </div>
+            )}
+          </div>
       </div>
     </div>
   );

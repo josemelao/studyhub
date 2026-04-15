@@ -140,11 +140,11 @@ export default function DashboardPage() {
           <motion.div variants={staggerItem} className="h-full overflow-hidden">
              <SmartCalendar selectedDate={selectedDate} onSelectDate={setSelectedDate} />
           </motion.div>
-          <div className="grid grid-cols-2 gap-4 h-full">
-            <motion.div variants={staggerItem} className="h-full">
+          <div className="grid grid-cols-2 gap-4 h-full min-h-0">
+            <motion.div variants={staggerItem} className="h-full min-h-0">
                <QuickNotes />
             </motion.div>
-            <motion.div variants={staggerItem} className="h-full">
+            <motion.div variants={staggerItem} className="h-full min-h-0">
                <DailyTopics selectedDate={selectedDate} />
             </motion.div>
           </div>

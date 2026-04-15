@@ -119,9 +119,9 @@ export default function PlannerPage() {
       if (exists) {
         return { ...prev, [date]: current.filter(t => t.id !== topic.id) };
       } else {
-        // Limite de 4 tópicos por dia para não poluir
-        if (current.length >= 4) {
-          toast.error('O limite é de 4 tópicos por dia para manter o foco.');
+        // Limite de 6 tópicos por dia para flexibilidade mantendo o foco
+        if (current.length >= 6) {
+          toast.error('O limite máximo é de 6 tópicos por dia para não sobrecarregar sua rotina.');
           return prev;
         }
         return { 
@@ -355,14 +355,14 @@ export default function PlannerPage() {
         </div>
 
         {/* GRADE SEMANAL (Col 8) */}
-        <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-7 gap-4">
+        <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-7 gap-4 items-start">
           {weekDays.map((date, i) => {
             const dateObj = new Date(date + 'T12:00:00');
             const isToday = new Date().toISOString().split('T')[0] === date;
             const plans = plannedDays[date] || [];
 
             return (
-              <div key={date} className={`flex flex-col h-[70vh] rounded-3xl border transition-all ${isToday ? 'bg-accent/[0.12] border-accent/40' : 'bg-secondary/40 border-white/5'}`}>
+              <div key={date} className={`flex flex-col h-fit min-h-[150px] rounded-3xl border transition-all ${isToday ? 'bg-accent/[0.12] border-accent/40' : 'bg-secondary/40 border-white/5'}`}>
 
 
                 <div className="p-4 border-b border-default text-center">
