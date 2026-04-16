@@ -62,8 +62,8 @@ export default function ProgressKpis({ stats }) {
           variants={staggerItem}
           className={`glass-card p-4 flex items-center gap-4 relative overflow-hidden group border ${getColorClasses(kpi.color)}`}
         >
-          <div className="absolute -right-4 -bottom-4 opacity-[0.02] group-hover:opacity-[0.06] transition-opacity">
-            <kpi.icon size={64} />
+          <div className={`absolute -right-2 -bottom-2 opacity-[0.08] transition-opacity group-hover:opacity-[0.15] pointer-events-none -rotate-12`}>
+            <kpi.icon size={84} strokeWidth={1} />
           </div>
           
           <div className={`w-12 h-12 rounded-2xl ${getIconBg(kpi.color)} text-white flex items-center justify-center shrink-0 relative z-10 shadow-lg`}>
