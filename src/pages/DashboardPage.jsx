@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, Clock, CheckCircle2, Loader2, TrendingUp, BookOpen, Target, Flame } from 'lucide-react';
+import { ChevronRight, Clock, CheckCircle2, Loader2, TrendingUp, Target } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Sector } from 'recharts';
 import { useAuth } from '../hooks/useAuth';
@@ -20,6 +20,7 @@ const RADIAN = Math.PI / 180;
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const MotionDiv = motion.div;
   const { currentWorkspaceId, workspaces } = useWorkspace();
   const { subjects, loading, fetchSubjects } = useSubjectsContext();
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -164,8 +165,30 @@ export default function DashboardPage() {
       
       // 2. Stats Locais (Questões do Workspace)
       const { data: l } = await supabase.from('workspace_stats').select('*').eq('user_id', user.id).eq('workspace_id', currentWorkspaceId).single();
+      const { data: examSessions } = await supabase
+        .from('exam_sessions')
+        .select('score_percent')
+        .eq('user_id', user.id)
+        .eq('workspace_id', currentWorkspaceId)
+        .eq('status', 'finalizada');
+
+      const totalQuestoes = l?.total_questoes_respondidas || 0;
+      const totalAcertos = l?.total_acertos || 0;
+      const mediaAcertoQuestoes = totalQuestoes > 0 ? Math.round((totalAcertos / totalQuestoes) * 100) : null;
+      const totalSimulados = examSessions?.length || 0;
+      const mediaAcertoSimulados = totalSimulados > 0
+        ? Math.round(examSessions.reduce((acc, session) => acc + (session.score_percent || 0), 0) / totalSimulados)
+        : null;
       
-      if (g) setStats({ ...g, total_questoes_respondidas: l?.total_questoes_respondidas || 0 });
+      if (g) {
+        setStats({
+          ...g,
+          total_questoes_respondidas: totalQuestoes,
+          media_acerto_questoes: mediaAcertoQuestoes,
+          total_simulados_finalizados: totalSimulados,
+          media_acerto_simulados: mediaAcertoSimulados,
+        });
+      }
 
       // 3. Info do Concurso
       const workspace = workspaces.find(w => w.id === currentWorkspaceId);
@@ -188,7 +211,6 @@ export default function DashboardPage() {
 
   const totalTopics = subjects.reduce((a, s) => a + s.topicsTotal, 0);
   const doneTopics  = subjects.reduce((a, s) => a + s.topicsDone, 0);
-  const progress = totalTopics > 0 ? Math.round((doneTopics / totalTopics) * 100) : 0;
 
   const editalData = subjects
     .filter(s => s.topicsTotal > 0)
@@ -211,11 +233,12 @@ export default function DashboardPage() {
     }));
     
   const activeSubject = subjects.find(s => s.id === activeSubjectId);
-
-  const CustomTooltip = ({ active, payload }) => {
-    // Tooltip removed in favor of ActiveShape
-    return null;
-  };
+  const statsCards = [
+    { label: 'Questões Respondidas', value: stats?.total_questoes_respondidas || 0, icon: Target, color: 'text-orange-500', bg: 'bg-orange-500/10' },
+    { label: 'Simulados Feitos', value: stats?.total_simulados_finalizados || 0, icon: CheckCircle2, color: 'text-success', bg: 'bg-success/10' },
+    { label: 'Acerto Médio em Questões', value: stats?.media_acerto_questoes != null ? `${stats.media_acerto_questoes}%` : '--', icon: Icons.Crosshair, color: 'text-accent', bg: 'bg-accent/10' },
+    { label: 'Acerto Médio em Simulados', value: stats?.media_acerto_simulados != null ? `${stats.media_acerto_simulados}%` : '--', icon: TrendingUp, color: 'text-blue-400', bg: 'bg-blue-400/10' },
+  ];
 
   return (
     <motion.div 
@@ -379,13 +402,8 @@ export default function DashboardPage() {
 
           {/* Card 2: Stats Grid 2x2 */}
           <div className="grid grid-cols-2 gap-4">
-            {[
-              { label: 'Tópicos lidos', value: doneTopics, icon: BookOpen, color: 'text-accent', bg: 'bg-accent/10' },
-              { label: 'Conclusão geral', value: `${progress}%`, icon: TrendingUp, color: 'text-success', bg: 'bg-success/10' },
-              { label: 'Questões Feitas', value: stats?.total_questoes_respondidas || 0, icon: Icons.Target, color: 'text-orange-500', bg: 'bg-orange-500/10' },
-              { label: 'Streak Atual', value: `${stats?.streak_atual || 0} dias`, icon: Icons.Flame, color: 'text-yellow-500', bg: 'bg-yellow-500/10' },
-            ].map((stat, i) => (
-              <motion.div 
+            {statsCards.map((stat, i) => (
+              <MotionDiv 
                 key={i} 
                 variants={staggerItem}
                 className="glass-card p-6 flex items-center gap-6 border-default bg-secondary"
@@ -397,7 +415,7 @@ export default function DashboardPage() {
                   <div className="text-2xl font-black text-primary leading-none">{stat.value}</div>
                   <div className="text-[10px] text-muted font-bold uppercase tracking-wider mt-1">{stat.label}</div>
                 </div>
-              </motion.div>
+              </MotionDiv>
             ))}
           </div>
         </div>
@@ -493,3 +511,4 @@ export default function DashboardPage() {
     </motion.div>
   );
 }
+
