@@ -182,7 +182,7 @@
    * Separação visual por SOMBRAS, não por bordas. Zero frosted-glass.
    * Inspirado em dashboards SaaS modernos (Figma, Linear, Notion).
    */
-  --bg-primary:     #ECEDF4;   /* Canvas: lavanda-cinza suave — fundo da página */
+  --bg-primary:     #E5E7F0;   /* Canvas: lavanda-cinza levemente mais profundo para contraste */
   --bg-secondary:   #FFFFFF;   /* Cards: branco puro — contraste máximo */
   --bg-tertiary:    #F4F5F8;   /* Sub-superfícies: inputs, chips, áreas internas */
   --bg-elevated:    #FFFFFF;   /* Dropdowns, tooltips: branco puro */
@@ -478,7 +478,7 @@
 [data-theme='clean'] .thin-scrollbar::-webkit-scrollbar-thumb,
 [data-theme='clean'] ::-webkit-scrollbar-thumb {
   background: rgba(67, 56, 232, 0.25);
-  border: 2px solid #ECEDF4;
+  border: 2px solid #E5E7F0;
 }
 
 /* ── 11. Gradiente do body: sutil no topo ── */

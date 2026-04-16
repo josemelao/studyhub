@@ -277,7 +277,7 @@ export default function DashboardPage() {
                           <span className="text-3xl md:text-4xl font-black text-primary tracking-tighter italic leading-none my-0.5">
                             {activeSubject.topicsTotal}
                           </span>
-                          <span className="text-[9px] font-bold text-muted uppercase tracking-wider">Módulos</span>
+                          <span className="text-[9px] font-bold text-muted uppercase tracking-wider">Módulos Totais</span>
                         </motion.div>
                       ) : (
                         <motion.div 
@@ -289,7 +289,7 @@ export default function DashboardPage() {
                           className="flex flex-col items-center justify-center"
                         >
                           <span className="text-2xl md:text-3xl lg:text-4xl font-black text-primary tracking-tighter italic leading-none">{totalTopics}</span>
-                          <span className="text-[10px] md:text-xs font-black text-primary/40 uppercase tracking-widest mt-1">Módulos</span>
+                          <span className="text-[10px] md:text-xs font-black text-muted uppercase tracking-widest mt-1">Módulos</span>
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -332,10 +332,10 @@ export default function DashboardPage() {
                           <span className="text-[10px] font-black uppercase tracking-tight leading-tight whitespace-normal break-words mb-1" style={{ color: activeSubject.cor }}>
                              {activeSubject.nome}
                           </span>
-                          <span className="text-3xl md:text-4xl font-black text-accent tracking-tighter italic leading-none my-0.5">
+                          <span className="text-3xl md:text-4xl font-black text-primary tracking-tighter italic leading-none my-0.5">
                             {activeSubject.topicsDone}
                           </span>
-                          <span className="text-[9px] font-bold text-muted uppercase tracking-wider">Feitos</span>
+                          <span className="text-[9px] font-bold text-muted uppercase tracking-wider">Módulos Concluídos</span>
                         </motion.div>
                       ) : (
                         <motion.div 
@@ -346,8 +346,8 @@ export default function DashboardPage() {
                           transition={{ duration: 0.2 }}
                           className="flex flex-col items-center justify-center"
                         >
-                          <span className="text-2xl md:text-3xl lg:text-4xl font-black text-accent tracking-tighter italic drop-shadow-glow-accent leading-none">{progress}%</span>
-                          <span className="text-[10px] md:text-xs font-black text-accent/40 uppercase tracking-widest mt-1">Concluído</span>
+                          <span className="text-2xl md:text-3xl lg:text-4xl font-black text-primary tracking-tighter italic leading-none">{doneTopics}</span>
+                          <span className="text-[10px] md:text-xs font-black text-muted uppercase tracking-widest mt-1">Módulos</span>
                         </motion.div>
                       )}
                     </AnimatePresence>
