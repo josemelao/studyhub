@@ -49,10 +49,10 @@ export default function ExamSessionPage() {
         const elapsed = Date.now() - start;
         setTimeLeft(Math.max(0, Math.floor((limitMs - elapsed) / 1000)));
 
-        // Buscar detalhes das questões
+        // Buscar detalhes das questões (incluindo resposta correta para calcular score no final)
         const { data: qData, error: qE } = await supabase
           .from('questions')
-          .select('id, enunciado, opcoes, explicacao')
+          .select('id, enunciado, opcoes, explicacao, resposta_correta')
           .in('id', s.questoes);
         if (qE) throw qE;
         
@@ -75,7 +75,7 @@ export default function ExamSessionPage() {
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [loading, timeLeft]);
+  }, [loading, timeLeft, finishExam]);
 
   // 3. Prevenir saída acidental
   useEffect(() => {
@@ -103,16 +103,26 @@ export default function ExamSessionPage() {
   const finishExam = useCallback(async () => {
     try {
       setSubmitting(true);
+      
+      // Calcular resultados antes de salvar
+      const totalQ = questions.length;
+      const correctQ = questions.filter(q => answers[q.id] === q.resposta_correta).length;
+      const score = totalQ > 0 ? Math.round((correctQ / totalQ) * 100) : 0;
+
       const { error } = await supabase.from('exam_sessions').update({
         status: 'finalizada',
         finalizada_em: new Date().toISOString(),
-        tempo_gasto_segundos: session.configuracao.tempo_minutos * 60 - timeLeft
+        tempo_gasto_segundos: session.configuracao.tempo_minutos * 60 - timeLeft,
+        score_percent: score,
+        questions_total: totalQ,
+        questions_correct: correctQ
       }).eq('id', id).eq('workspace_id', currentWorkspaceId);
+      
       if (error) throw error;
       navigate(`/modo-prova/resultado/${id}`);
     } catch (err) { console.error(err); }
     finally { setSubmitting(false); }
-  }, [id, timeLeft, session, navigate]);
+  }, [id, timeLeft, session, navigate, questions, answers, currentWorkspaceId]);
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-36 gap-4">

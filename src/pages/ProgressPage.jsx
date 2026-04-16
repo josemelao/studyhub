@@ -37,14 +37,36 @@ export default function ProgressPage() {
       try {
         setLoading(true);
 
-        // 1. Fetch Basic Stats (XP, Streaks)
+        // 1. Fetch current workspace to get the concurso_id
+        const { data: currentWs } = await supabase
+          .from('workspaces')
+          .select('concurso_id')
+          .eq('id', currentWorkspaceId)
+          .single();
+
+        const concursoId = currentWs?.concurso_id;
+
+        // 2. Fetch ALL Workspaces for this concurso (to unify "por edital")
+        let workspaceIds = [currentWorkspaceId];
+        if (concursoId) {
+          const { data: siblingWorkspaces } = await supabase
+            .from('workspaces')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('concurso_id', concursoId);
+          if (siblingWorkspaces) {
+            workspaceIds = siblingWorkspaces.map(w => w.id);
+          }
+        }
+
+        // 3. Fetch Global Stats (XP, Streaks)
         const { data: globalStats } = await supabase
           .from('user_stats')
           .select('*')
           .eq('user_id', user.id)
           .single();
 
-        // 2. Fetch Workspace Stats (Total Q, Accuracy, Achievements)
+        // 4. Fetch Workspace Stats (Achievements focus - using current workspace)
         const { data: localStats } = await supabase
           .from('workspace_stats')
           .select('*')
@@ -52,20 +74,20 @@ export default function ProgressPage() {
           .eq('workspace_id', currentWorkspaceId)
           .single();
 
-        // 3. Fetch All Quiz Sessions for the workspace
+        // 5. Fetch All Quiz Sessions for the UNIFIED workspaces
         const { data: quizData } = await supabase
           .from('quiz_sessions')
           .select('questions_total, questions_correct, score_percent, completed_at, topic_id, topics(nome, subject_id, subjects(nome, cor))')
           .eq('user_id', user.id)
-          .eq('workspace_id', currentWorkspaceId)
+          .in('workspace_id', workspaceIds)
           .order('completed_at', { ascending: true });
 
-        // 4. Fetch All Finalized Exam Sessions
+        // 6. Fetch All Finalized Exam Sessions for the UNIFIED workspaces
         const { data: examData } = await supabase
           .from('exam_sessions')
           .select('*')
           .eq('user_id', user.id)
-          .eq('workspace_id', currentWorkspaceId)
+          .in('workspace_id', workspaceIds)
           .eq('status', 'finalizada')
           .order('finalizada_em', { ascending: true });
 
@@ -76,9 +98,7 @@ export default function ProgressPage() {
           exams: examData || []
         });
 
-        // Ensure subjects are loaded
         fetchSubjects();
-
       } catch (err) {
         console.error('Error fetching progress data:', err);
       } finally {
@@ -105,10 +125,18 @@ export default function ProgressPage() {
     return { quizzes, exams };
   }, [rawStats, timeRange]);
 
-  // 1. Progress KPIs
+  // 1. Progress KPIs (Calculated from RAW sessions for 100% accuracy)
   const kpis = useMemo(() => {
-    const totalQ = rawStats.workspace?.total_questoes_respondidas || 0;
-    const totalC = rawStats.workspace?.total_acertos || 0;
+    // Somar quizzes
+    const qTotal = rawStats.quizzes.reduce((acc, q) => acc + (q.questions_total || 0), 0);
+    const qCorrect = rawStats.quizzes.reduce((acc, q) => acc + (q.questions_correct || 0), 0);
+    
+    // Somar simulados (usando colunas novas se existirem, ou fallback)
+    const eTotal = rawStats.exams.reduce((acc, e) => acc + (e.questions_total || e.questoes?.length || 0), 0);
+    const eCorrect = rawStats.exams.reduce((acc, e) => acc + (e.questions_correct || 0), 0);
+
+    const totalQ = qTotal + eTotal;
+    const totalC = qCorrect + eCorrect;
     const accuracy = totalQ > 0 ? Math.round((totalC / totalQ) * 100) : 0;
 
     return {
@@ -127,7 +155,7 @@ export default function ProgressPage() {
     filteredStats.quizzes.forEach(q => {
       const date = new Date(q.completed_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
       if (!dailyData[date]) dailyData[date] = { date, quizSum: 0, quizCount: 0, examSum: 0, examCount: 0 };
-      dailyData[date].quizSum += q.score_percent;
+      dailyData[date].quizSum += (q.score_percent || 0);
       dailyData[date].quizCount += 1;
     });
 
@@ -135,7 +163,7 @@ export default function ProgressPage() {
     filteredStats.exams.forEach(e => {
       const date = new Date(e.finalizada_em).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
       if (!dailyData[date]) dailyData[date] = { date, quizSum: 0, quizCount: 0, examSum: 0, examCount: 0 };
-      dailyData[date].examSum += e.score_percent;
+      dailyData[date].examSum += (e.score_percent || 0);
       dailyData[date].examCount += 1;
     });
 
@@ -149,11 +177,19 @@ export default function ProgressPage() {
   // 3. Practice Volume (Bar Chart)
   const practiceVolume = useMemo(() => {
     const dailyVolume = {};
+    
     filteredStats.quizzes.forEach(q => {
       const date = new Date(q.completed_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
       if (!dailyVolume[date]) dailyVolume[date] = { date, count: 0 };
-      dailyVolume[date].count += q.questions_total;
+      dailyVolume[date].count += (q.questions_total || 0);
     });
+
+    filteredStats.exams.forEach(e => {
+      const date = new Date(e.finalizada_em).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+      if (!dailyVolume[date]) dailyVolume[date] = { date, count: 0 };
+      dailyVolume[date].count += (e.questions_total || e.questoes?.length || 0);
+    });
+
     return Object.values(dailyVolume);
   }, [filteredStats]);
 
@@ -161,19 +197,21 @@ export default function ProgressPage() {
   const examPerformance = useMemo(() => {
     return filteredStats.exams.map(e => ({
       date: new Date(e.finalizada_em).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
-      score: e.score_percent
+      score: e.score_percent || 0
     }));
   }, [filteredStats]);
 
   // 5. Subject Accuracy (Horizontal Bar Chart)
   const subjectAccuracy = useMemo(() => {
     const subStats = {};
+    
+    // Process Quizzes
     rawStats.quizzes.forEach(q => {
       const subName = q.topics?.subjects?.nome;
       const subColor = q.topics?.subjects?.cor;
       if (!subName) return;
       if (!subStats[subName]) subStats[subName] = { name: subName, color: subColor, sum: 0, count: 0 };
-      subStats[subName].sum += q.score_percent;
+      subStats[subName].sum += (q.score_percent || 0);
       subStats[subName].count += 1;
     });
 

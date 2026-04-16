@@ -55,6 +55,7 @@
   --shadow-accent:   0 0 24px rgba(124, 92, 252, 0.15);
   --card-bg:         rgba(255, 255, 255, 0.025);
   --scroll-track:    rgba(255, 255, 255, 0.02);
+  --chart-2:         #10b981;
 }
 
 /* ── Theme: Amber (Orange/Dark) ── */
@@ -92,6 +93,7 @@
   --shadow-accent:   0 0 24px rgba(245, 166, 35, 0.15);
   --card-bg:         rgba(255, 255, 255, 0.025);
   --scroll-track:    rgba(255, 255, 255, 0.02);
+  --chart-2:         #22c55e;
 }
 
 /* ── Theme: Gravity (Graphite CLI/Slate) ── */
@@ -129,6 +131,7 @@
   --shadow-accent:   0 0 24px rgba(56, 189, 248, 0.15);
   --card-bg:         rgba(255, 255, 255, 0.025);
   --scroll-track:    rgba(255, 255, 255, 0.02);
+  --chart-2:         #fde047;
 }
 
 /* ── Theme: Autumn (Warm/Relaxing Light) ── */
@@ -167,6 +170,7 @@
   --shadow-accent:   0 4px 16px rgba(104, 140, 53, 0.2);
   --card-bg:         #FFFFFF;
   --scroll-track:    rgba(0, 0, 0, 0.05);
+  --chart-2:         #F59445;
   
   /* Sistema de sombras igual ao clean (sombras ricas) com um sub-tom quente muito leve */
   --shadow-sm:       0 1px 3px rgba(44,36,30,0.08), 0 1px 2px rgba(44,36,30,0.05);
@@ -216,6 +220,7 @@
   --shadow-accent:   0 0 20px rgba(67, 56, 232, 0.15);
   --card-bg:         #FFFFFF;
   --scroll-track:    rgba(0, 0, 0, 0.06);
+  --chart-2:         #14b8a6;
 
   /* Sombras: principal mecanismo de separação visual (como nas referências) */
   --shadow-sm:       0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
