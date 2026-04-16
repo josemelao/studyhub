@@ -566,23 +566,38 @@ export default function ContentAdminPage() {
         </section>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <section className="lg:col-span-4 glass-card p-4 flex flex-col justify-center bg-secondary/20">
-            <label className="text-[10px] font-black uppercase tracking-widest text-muted mb-3 px-1">Tipo de Conteudo</label>
-            <div className="flex bg-black/30 rounded-2xl p-1.5 border border-white/5 w-full">
+          <section className="lg:col-span-4 glass-card p-4 bg-secondary/20 border border-accent/10">
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <label className="text-[10px] font-black uppercase tracking-widest text-muted px-1">Tipo de Conteudo</label>
+              <span className="text-[9px] uppercase tracking-[0.18em] text-secondary">Formato</span>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
               {contentTypes.map(({ id, label, Icon }) => {
                 const ItemIcon = Icon;
+                const isActive = contentType === id;
 
                 return (
                   <button
                     key={id}
                     onClick={() => setContentType(id)}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                      contentType === id ? 'bg-accent text-white shadow-glow-accent' : 'text-muted hover:text-primary hover:bg-white/5'
+                    className={`group inline-flex items-center gap-2 rounded-xl border px-3 py-2.5 text-left transition-all duration-200 ${
+                      isActive
+                        ? 'bg-accent/12 border-accent/35 text-primary shadow-[0_6px_18px_rgba(var(--accent-rgb),0.12)]'
+                        : 'bg-primary/20 border-transparent text-secondary hover:bg-primary/30 hover:text-primary'
                     }`}
                   >
-                    <ItemIcon className="w-4 h-4" />
-                    <span className="hidden sm:inline">{label}</span>
-                    <span className="sm:hidden">{label.split(' ')[0]}</span>
+                    <div
+                      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors ${
+                        isActive ? 'bg-accent text-white' : 'bg-secondary/70 text-accent/80 group-hover:bg-accent/10 group-hover:text-accent'
+                      }`}
+                    >
+                      <ItemIcon className="w-3.5 h-3.5" />
+                    </div>
+
+                    <span className={`text-[10px] font-black uppercase tracking-[0.16em] leading-none ${isActive ? 'text-primary' : 'text-secondary group-hover:text-primary'}`}>
+                      {label}
+                    </span>
                   </button>
                 );
               })}
