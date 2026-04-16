@@ -633,8 +633,8 @@ export default function ContentAdminPage() {
         </div>
       </div>
 
-      <div className="w-full flex-1 min-h-[650px] grid grid-cols-1 lg:grid-cols-2 gap-6 pb-8">
-        <div className={`flex flex-col h-full bg-secondary/30 rounded-3xl border transition-all ${!selectedTopic ? 'border-white/5 opacity-40' : 'border-accent/20 shadow-lg shadow-accent/5 overflow-hidden'}`}>
+      <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-6 pb-8 lg:h-[calc(100vh-22rem)] lg:min-h-[650px] lg:max-h-[900px]">
+        <div className={`flex flex-col min-h-[420px] lg:min-h-0 lg:h-full bg-secondary/30 rounded-3xl border overflow-hidden transition-all ${!selectedTopic ? 'border-white/5 opacity-40' : 'border-accent/20 shadow-lg shadow-accent/5'}`}>
           <div className="px-6 py-4 border-b border-white/5 bg-white/5 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Edit3 className="w-4 h-4 text-accent" />
@@ -644,7 +644,7 @@ export default function ContentAdminPage() {
           </div>
 
           <textarea
-            className="flex-1 w-full bg-transparent p-8 outline-none resize-none text-[15px] font-medium text-secondary leading-relaxed font-mono custom-scrollbar"
+            className="flex-1 min-h-[320px] lg:min-h-0 w-full bg-transparent p-8 outline-none resize-none overflow-y-auto text-[15px] font-medium text-secondary leading-relaxed font-mono custom-scrollbar"
             placeholder={
               !selectedTopic
                 ? 'Escolha ou crie um topico para habilitar o editor.'
@@ -658,13 +658,13 @@ export default function ContentAdminPage() {
           />
         </div>
 
-        <div className="flex flex-col h-full bg-secondary/50 rounded-3xl border border-white/5 overflow-hidden shadow-2xl">
+        <div className="flex flex-col min-h-[420px] lg:min-h-0 lg:h-full bg-secondary/50 rounded-3xl border border-white/5 overflow-hidden shadow-2xl">
           <div className="px-6 py-4 border-b border-white/5 bg-white/5 flex items-center gap-2">
             <Eye className="w-4 h-4 text-success" />
             <span className="text-[10px] font-black uppercase tracking-widest text-primary">Visualizacao Final</span>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-10 bg-primary/40 custom-scrollbar">
+          <div className="flex-1 min-h-[320px] lg:min-h-0 overflow-y-auto p-10 bg-primary/40 custom-scrollbar">
             {content ? (
               <div className="markdown-body">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
