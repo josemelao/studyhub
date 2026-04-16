@@ -324,6 +324,22 @@
     );
     animation: shimmer 2.5s infinite;
   }
+
+  /* ── Custom Scrollbar Utility ── */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(var(--accent-rgb), 0.2);
+    border-radius: 10px;
+    transition: background 0.3s;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(var(--accent-rgb), 0.5);
+  }
 }
 
 @keyframes shimmer {
