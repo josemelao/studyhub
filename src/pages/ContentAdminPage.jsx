@@ -381,7 +381,7 @@ export default function ContentAdminPage() {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8 pb-12 relative">
+    <div className="w-full space-y-8 pb-12 relative">
       <input type="file" ref={fileInputRef} onChange={handleWordImport} accept=".docx" className="hidden" />
 
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">

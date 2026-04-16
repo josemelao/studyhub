@@ -13,7 +13,7 @@ export default function PageWrapper({ children }) {
         <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
         
         <main className="flex-1 w-full flex flex-col relative md:pl-64">
-          <div className="max-w-7xl w-full mx-auto p-4 md:p-8">
+          <div className="w-full max-w-[1600px] mx-auto px-4 py-4 md:px-8 md:py-8 xl:px-10">
             {children}
           </div>
         </main>
