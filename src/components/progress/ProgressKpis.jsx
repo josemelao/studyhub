@@ -55,26 +55,26 @@ export default function ProgressKpis({ stats }) {
   };
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {kpiData.map((kpi, i) => (
         <motion.div 
           key={i}
           variants={staggerItem}
-          className={`glass-card p-5 flex flex-col gap-4 relative overflow-hidden group border ${getColorClasses(kpi.color)}`}
+          className={`glass-card p-4 flex items-center gap-4 relative overflow-hidden group border ${getColorClasses(kpi.color)}`}
         >
-          <div className="absolute -right-6 -bottom-6 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity">
-            <kpi.icon size={80} />
+          <div className="absolute -right-4 -bottom-4 opacity-[0.02] group-hover:opacity-[0.06] transition-opacity">
+            <kpi.icon size={64} />
           </div>
           
-          <div className={`w-10 h-10 rounded-xl ${getIconBg(kpi.color)} text-white flex items-center justify-center relative z-10`}>
-            <kpi.icon className="w-5 h-5" />
+          <div className={`w-12 h-12 rounded-2xl ${getIconBg(kpi.color)} text-white flex items-center justify-center shrink-0 relative z-10 shadow-lg`}>
+            <kpi.icon className="w-6 h-6" />
           </div>
 
-          <div className="relative z-10">
-            <div className="text-2xl md:text-3xl font-black text-primary tracking-tight leading-none mb-1">
+          <div className="relative z-10 flex flex-col justify-center">
+            <div className="text-2xl font-black text-primary tracking-tighter leading-none">
               {kpi.value}
             </div>
-            <div className="text-[10px] font-black text-muted uppercase tracking-widest">
+            <div className="text-[10px] font-black text-muted uppercase tracking-widest mt-1">
               {kpi.label}
             </div>
           </div>
