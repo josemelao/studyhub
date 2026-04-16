@@ -163,27 +163,41 @@ export default function DashboardPage() {
       // 1. Stats Globais (Streaks)
       const { data: g } = await supabase.from('user_stats').select('*').eq('user_id', user.id).single();
       
-      // 2. Stats Locais (Questões do Workspace)
-      const { data: l } = await supabase.from('workspace_stats').select('*').eq('user_id', user.id).eq('workspace_id', currentWorkspaceId).single();
-      const { data: examSessions } = await supabase
-        .from('exam_sessions')
-        .select('score_percent')
-        .eq('user_id', user.id)
-        .eq('workspace_id', currentWorkspaceId)
-        .eq('status', 'finalizada');
+      // 2. Stats Locais (Questões & Simulados do Workspace)
+      const [quizSessionsRes, examSessionsRes] = await Promise.all([
+        supabase
+          .from('quiz_sessions')
+          .select('questions_correct, questions_total')
+          .eq('user_id', user.id)
+          .eq('workspace_id', currentWorkspaceId),
+        supabase
+          .from('exam_sessions')
+          .select('score_percent, questions_total, questions_correct')
+          .eq('user_id', user.id)
+          .eq('workspace_id', currentWorkspaceId)
+          .eq('status', 'finalizada')
+      ]);
 
-      const totalQuestoes = l?.total_questoes_respondidas || 0;
-      const totalAcertos = l?.total_acertos || 0;
-      const mediaAcertoQuestoes = totalQuestoes > 0 ? Math.round((totalAcertos / totalQuestoes) * 100) : null;
-      const totalSimulados = examSessions?.length || 0;
+      const quizSessions = quizSessionsRes.data || [];
+      const examSessions = examSessionsRes.data || [];
+
+      // Cálculo de Questões de Prática (Quizzes)
+      const totalQuestoesPratica = quizSessions.reduce((acc, s) => acc + (s.questions_total || 0), 0);
+      const totalAcertosPratica = quizSessions.reduce((acc, s) => acc + (s.questions_correct || 0), 0);
+      const mediaAcertoQuestoes = totalQuestoesPratica > 0 
+        ? Math.round((totalAcertosPratica / totalQuestoesPratica) * 100) 
+        : null;
+
+      // Cálculo de Simulados
+      const totalSimulados = examSessions.length;
       const mediaAcertoSimulados = totalSimulados > 0
         ? Math.round(examSessions.reduce((acc, session) => acc + (session.score_percent || 0), 0) / totalSimulados)
         : null;
-      
+
       if (g) {
         setStats({
           ...g,
-          total_questoes_respondidas: totalQuestoes,
+          total_questoes_respondidas: totalQuestoesPratica,
           media_acerto_questoes: mediaAcertoQuestoes,
           total_simulados_finalizados: totalSimulados,
           media_acerto_simulados: mediaAcertoSimulados,
