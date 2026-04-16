@@ -47,9 +47,11 @@ export default function PerformanceEvolutionChart({ data }) {
                   borderRadius: '12px',
                   fontSize: '12px',
                   boxShadow: 'var(--shadow-lg)',
-                  opacity: 1
+                  opacity: 1,
+                  padding: '8px 12px'
                 }}
-                itemStyle={{ fontWeight: 700 }}
+                labelStyle={{ color: 'var(--text-primary)', fontWeight: 700, marginBottom: '4px' }}
+                itemStyle={{ color: 'var(--text-secondary)', padding: 0 }}
               />
               <Legend 
                 verticalAlign="top" 

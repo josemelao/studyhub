@@ -193,9 +193,11 @@ export default function ProgressPage() {
     return Object.values(dailyVolume);
   }, [filteredStats]);
 
-  // 4. Exam Performance (Bar Chart)
+  // 4. Exam Performance (Bar Chart - Individual Side-by-Side)
   const examPerformance = useMemo(() => {
-    return filteredStats.exams.map(e => ({
+    return filteredStats.exams.map((e, index) => ({
+      id: e.id,
+      name: `Simulado ${index + 1}`,
       date: new Date(e.finalizada_em).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
       score: e.score_percent || 0
     }));

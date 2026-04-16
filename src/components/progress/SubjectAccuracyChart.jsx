@@ -45,12 +45,18 @@ export default function SubjectAccuracyChart({ data }) {
               />
               <Tooltip 
                 cursor={{ fill: 'rgba(255,255,255,0.03)' }}
+                formatter={(value) => [`${value}%`, 'Precisão']}
                 contentStyle={{ 
-                  backgroundColor: 'var(--secondary)', 
-                  border: '1px solid var(--border-default)', 
+                  backgroundColor: 'var(--bg-elevated)', 
+                  border: '1px solid var(--border)', 
                   borderRadius: '12px',
-                  fontSize: '12px'
+                  fontSize: '12px',
+                  boxShadow: 'var(--shadow-lg)',
+                  opacity: 1,
+                  padding: '8px 12px'
                 }}
+                labelStyle={{ color: 'var(--text-primary)', fontWeight: 700, marginBottom: '4px' }}
+                itemStyle={{ color: 'var(--text-secondary)', padding: 0 }}
               />
               <Bar 
                 dataKey="accuracy" 
@@ -58,7 +64,7 @@ export default function SubjectAccuracyChart({ data }) {
                 barSize={20}
               >
                 {data.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color || 'var(--accent)'} fillOpacity={0.8} />
+                  <Cell key={`cell-${index}`} fill={entry.color || 'var(--accent)'} />
                 ))}
               </Bar>
             </BarChart>

@@ -25,11 +25,15 @@ export default function ExamPerformanceChart({ data }) {
             <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
               <XAxis 
-                dataKey="date" 
+                dataKey="id" 
                 axisLine={false} 
                 tickLine={false} 
                 tick={{ fill: 'var(--text-muted)', fontSize: 10, fontWeight: 600 }}
                 dy={10}
+                tickFormatter={(id) => {
+                  const entry = data.find(d => d.id === id);
+                  return entry ? entry.date : id;
+                }}
               />
               <YAxis 
                 domain={[0, 100]} 
@@ -39,12 +43,22 @@ export default function ExamPerformanceChart({ data }) {
               />
               <Tooltip 
                 cursor={{ fill: 'rgba(255,255,255,0.03)' }}
-                contentStyle={{ 
-                  backgroundColor: 'var(--secondary)', 
-                  border: '1px solid var(--border-default)', 
-                  borderRadius: '12px',
-                  fontSize: '12px'
+                labelFormatter={(id) => {
+                  const entry = data.find(d => d.id === id);
+                  return entry ? `${entry.name} (${entry.date})` : id;
                 }}
+                formatter={(value) => [`${value}%`, 'Resultado']}
+                contentStyle={{ 
+                  backgroundColor: 'var(--bg-elevated)', 
+                  border: '1px solid var(--border)', 
+                  borderRadius: '12px',
+                  fontSize: '12px',
+                  boxShadow: 'var(--shadow-lg)',
+                  opacity: 1,
+                  padding: '8px 12px'
+                }}
+                labelStyle={{ color: 'var(--text-primary)', fontWeight: 700, marginBottom: '4px' }}
+                itemStyle={{ color: 'var(--text-secondary)', padding: 0 }}
               />
               <Bar 
                 dataKey="score" 
@@ -54,7 +68,6 @@ export default function ExamPerformanceChart({ data }) {
                   <Cell 
                     key={`cell-${index}`} 
                     fill={entry.score >= 70 ? 'var(--success)' : entry.score >= 50 ? 'var(--accent)' : 'var(--error)'} 
-                    fillOpacity={0.8} 
                   />
                 ))}
               </Bar>

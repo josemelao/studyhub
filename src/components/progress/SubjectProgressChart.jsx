@@ -46,11 +46,16 @@ export default function SubjectProgressChart({ data }) {
               <Tooltip 
                 cursor={{ fill: 'rgba(255,255,255,0.03)' }}
                 contentStyle={{ 
-                  backgroundColor: 'var(--secondary)', 
-                  border: '1px solid var(--border-default)', 
+                  backgroundColor: 'var(--bg-elevated)', 
+                  border: '1px solid var(--border)', 
                   borderRadius: '12px',
-                  fontSize: '12px'
+                  fontSize: '12px',
+                  boxShadow: 'var(--shadow-lg)',
+                  opacity: 1,
+                  padding: '8px 12px'
                 }}
+                labelStyle={{ color: 'var(--text-primary)', fontWeight: 700, marginBottom: '4px' }}
+                itemStyle={{ color: 'var(--text-secondary)', padding: 0 }}
                 formatter={(value, name, props) => [`${value}% (${props.payload.topicsDone}/${props.payload.topicsTotal})`, 'Progresso']}
               />
               <Bar 
@@ -59,7 +64,7 @@ export default function SubjectProgressChart({ data }) {
                 barSize={20}
               >
                 {data.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill="var(--success)" fillOpacity={entry.progress / 100 + 0.2} />
+                  <Cell key={`cell-${index}`} fill="var(--success)" />
                 ))}
               </Bar>
             </BarChart>

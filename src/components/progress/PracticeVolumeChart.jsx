@@ -38,22 +38,24 @@ export default function PracticeVolumeChart({ data }) {
               />
               <Tooltip 
                 cursor={{ fill: 'rgba(255,255,255,0.03)' }}
+                formatter={(value) => [`${value} Questões`, 'Volume']}
                 contentStyle={{ 
-                  backgroundColor: 'var(--secondary)', 
-                  border: '1px solid var(--border-default)', 
+                  backgroundColor: 'var(--bg-elevated)', 
+                  border: '1px solid var(--border)', 
                   borderRadius: '12px',
-                  fontSize: '12px'
+                  fontSize: '12px',
+                  boxShadow: 'var(--shadow-lg)',
+                  opacity: 1,
+                  padding: '8px 12px'
                 }}
+                labelStyle={{ color: 'var(--text-primary)', fontWeight: 700, marginBottom: '4px' }}
+                itemStyle={{ color: 'var(--text-secondary)', padding: 0 }}
               />
               <Bar 
                 dataKey="count" 
                 radius={[4, 4, 0, 0]}
-                fill="var(--blue-500)"
-              >
-                {data.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill="var(--blue-500)" fillOpacity={0.8} />
-                ))}
-              </Bar>
+                fill="var(--accent)"
+              />
             </BarChart>
           </ResponsiveContainer>
         )}
