@@ -27,7 +27,7 @@ export default function SubjectProgressChart({ data }) {
               layout="vertical" 
               margin={{ top: 0, right: 30, left: 40, bottom: 0 }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
               <XAxis 
                 type="number" 
                 domain={[0, 100]} 

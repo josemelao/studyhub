@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { BarChart3, Loader2, Calendar } from 'lucide-react';
+import { BarChart3, Loader2, Calendar, LayoutGrid, Radar as RadarIcon } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
 import { useWorkspace } from '../contexts/WorkspaceContext';
@@ -13,6 +13,7 @@ import PerformanceEvolutionChart from '../components/progress/PerformanceEvoluti
 import PracticeVolumeChart from '../components/progress/PracticeVolumeChart';
 import ExamPerformanceChart from '../components/progress/ExamPerformanceChart';
 import SubjectAccuracyChart from '../components/progress/SubjectAccuracyChart';
+import SubjectRadarChart from '../components/progress/SubjectRadarChart';
 import SubjectProgressChart from '../components/progress/SubjectProgressChart';
 import AchievementsGrid from '../components/progress/AchievementsGrid';
 
@@ -23,12 +24,14 @@ export default function ProgressPage() {
   
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState('30d'); // 7d, 30d, 90d, all
+  const [viewMode, setViewMode] = useState('bar'); // bar, radar
   
   const [rawStats, setRawStats] = useState({
     global: null,
     workspace: null,
     quizzes: [],
-    exams: []
+    exams: [],
+    questionsMeta: {} // pergunta_id -> { subject_nome, subject_cor, resposta_correta }
   });
 
   useEffect(() => {
@@ -91,11 +94,40 @@ export default function ProgressPage() {
           .eq('status', 'finalizada')
           .order('finalizada_em', { ascending: true });
 
+        // 7. Fetch Question Metadata for Exam Breakdown
+        const examQuestionsIds = [...new Set((examData || []).flatMap(e => Object.keys(e.respostas || {})))];
+        let questionsMeta = {};
+        
+        if (examQuestionsIds.length > 0) {
+          const { data: qMeta } = await supabase
+            .from('questions')
+            .select(`
+              id, 
+              resposta_correta,
+              topics (
+                subject_id,
+                subjects (nome, cor)
+              )
+            `)
+            .in('id', examQuestionsIds);
+            
+          if (qMeta) {
+            qMeta.forEach(q => {
+              questionsMeta[q.id] = {
+                resposta_correta: q.resposta_correta,
+                subject_nome: q.topics?.subjects?.nome,
+                subject_cor: q.topics?.subjects?.cor
+              };
+            });
+          }
+        }
+
         setRawStats({
           global: globalStats,
           workspace: localStats,
           quizzes: quizData || [],
-          exams: examData || []
+          exams: examData || [],
+          questionsMeta
         });
 
         fetchSubjects();
@@ -203,12 +235,12 @@ export default function ProgressPage() {
     }));
   }, [filteredStats]);
 
-  // 5. Subject Accuracy (Horizontal Bar Chart)
+  // 5. Subject Accuracy (Horizontal Bar Chart / Radar Chart - Unified)
   const subjectAccuracy = useMemo(() => {
     const subStats = {};
     
     // Process Quizzes
-    rawStats.quizzes.forEach(q => {
+    filteredStats.quizzes.forEach(q => {
       const subName = q.topics?.subjects?.nome;
       const subColor = q.topics?.subjects?.cor;
       if (!subName) return;
@@ -217,11 +249,30 @@ export default function ProgressPage() {
       subStats[subName].count += 1;
     });
 
+    // Process Exams (Question by Question Breakdown)
+    filteredStats.exams.forEach(e => {
+      const resp = e.respostas || {};
+      Object.entries(resp).forEach(([qId, userAns]) => {
+        const meta = rawStats.questionsMeta[qId];
+        if (!meta || !meta.subject_nome) return;
+        
+        const subName = meta.subject_nome;
+        const subColor = meta.subject_cor;
+        
+        if (!subStats[subName]) subStats[subName] = { name: subName, color: subColor, sum: 0, count: 0 };
+        
+        // Em simulados tratamos cada questão como 0 ou 100% de acerto para a média
+        const isCorrect = userAns === meta.resposta_correta;
+        subStats[subName].sum += isCorrect ? 100 : 0;
+        subStats[subName].count += 1;
+      });
+    });
+
     return Object.values(subStats)
       .map(s => ({ ...s, accuracy: Math.round(s.sum / s.count) }))
       .sort((a, b) => b.accuracy - a.accuracy)
       .slice(0, 8);
-  }, [rawStats]);
+  }, [filteredStats, rawStats.questionsMeta]);
 
   // 6. Subject Progress (Horizontal Bar Chart)
   const subjectProgress = useMemo(() => {
@@ -302,7 +353,11 @@ export default function ProgressPage() {
 
         {/* 4. Subject Analysis Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <SubjectAccuracyChart data={subjectAccuracy} />
+          <SubjectAccuracyChart 
+            data={subjectAccuracy} 
+            viewMode={viewMode} 
+            setViewMode={setViewMode} 
+          />
           <SubjectProgressChart data={subjectProgress} />
         </div>
 
