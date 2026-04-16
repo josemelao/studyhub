@@ -216,7 +216,7 @@ export default function SubjectPage() {
                           onClick={() => navigate(`/estudo/${topic.id}`)}
                           className="flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl bg-accent-subtle text-accent border border-accent-border hover:bg-accent/20 transition-all shrink-0 shadow-sm"
                         >
-                          Ir para Módulo <ChevronRight className="w-4 h-4" />
+                          Ir para Tópico <ChevronRight className="w-4 h-4" />
                         </button>
                       </div>
                     ))}

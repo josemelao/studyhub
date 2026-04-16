@@ -277,7 +277,7 @@ export default function DashboardPage() {
                           <span className="text-3xl md:text-4xl font-black text-primary tracking-tighter italic leading-none my-0.5">
                             {activeSubject.topicsTotal}
                           </span>
-                          <span className="text-[9px] font-bold text-muted uppercase tracking-wider">Módulos Totais</span>
+                          <span className="text-[9px] font-bold text-muted uppercase tracking-wider">Tópicos Totais</span>
                         </motion.div>
                       ) : (
                         <motion.div 
@@ -289,7 +289,7 @@ export default function DashboardPage() {
                           className="flex flex-col items-center justify-center"
                         >
                           <span className="text-2xl md:text-3xl lg:text-4xl font-black text-primary tracking-tighter italic leading-none">{totalTopics}</span>
-                          <span className="text-[10px] md:text-xs font-black text-muted uppercase tracking-widest mt-1">Módulos</span>
+                          <span className="text-[10px] md:text-xs font-black text-muted uppercase tracking-widest mt-1">Tópicos</span>
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -335,7 +335,7 @@ export default function DashboardPage() {
                           <span className="text-3xl md:text-4xl font-black text-primary tracking-tighter italic leading-none my-0.5">
                             {activeSubject.topicsDone}
                           </span>
-                          <span className="text-[9px] font-bold text-muted uppercase tracking-wider">Módulos Concluídos</span>
+                          <span className="text-[9px] font-bold text-muted uppercase tracking-wider">Tópicos Concluídos</span>
                         </motion.div>
                       ) : (
                         <motion.div 
@@ -347,7 +347,7 @@ export default function DashboardPage() {
                           className="flex flex-col items-center justify-center"
                         >
                           <span className="text-2xl md:text-3xl lg:text-4xl font-black text-primary tracking-tighter italic leading-none">{doneTopics}</span>
-                          <span className="text-[10px] md:text-xs font-black text-muted uppercase tracking-widest mt-1">Módulos</span>
+                          <span className="text-[10px] md:text-xs font-black text-muted uppercase tracking-widest mt-1">Tópicos</span>
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -380,7 +380,7 @@ export default function DashboardPage() {
           {/* Card 2: Stats Grid 2x2 */}
           <div className="grid grid-cols-2 gap-4">
             {[
-              { label: 'Módulos lidos', value: doneTopics, icon: BookOpen, color: 'text-accent', bg: 'bg-accent/10' },
+              { label: 'Tópicos lidos', value: doneTopics, icon: BookOpen, color: 'text-accent', bg: 'bg-accent/10' },
               { label: 'Conclusão geral', value: `${progress}%`, icon: TrendingUp, color: 'text-success', bg: 'bg-success/10' },
               { label: 'Questões Feitas', value: stats?.total_questoes_respondidas || 0, icon: Icons.Target, color: 'text-orange-500', bg: 'bg-orange-500/10' },
               { label: 'Streak Atual', value: `${stats?.streak_atual || 0} dias`, icon: Icons.Flame, color: 'text-yellow-500', bg: 'bg-yellow-500/10' },
@@ -464,7 +464,7 @@ export default function DashboardPage() {
 
                   <div className="mt-auto">
                     <div className="flex justify-between text-[10px] mb-2 text-muted font-bold uppercase tracking-tight">
-                      <span>{sub.topicsDone}/{sub.topicsTotal} módulos</span>
+                      <span>{sub.topicsDone}/{sub.topicsTotal} tópicos</span>
                       <span style={{ color: sub.cor }}>{percent}%</span>
                     </div>
                     <div 

@@ -105,7 +105,7 @@ export default function ProgressPage() {
     { label: 'Taxa de Acertos', value: `${stats.accuracy}%`, icon: Crosshair, colorClass: 'text-accent bg-accent/10' },
     { label: 'Questões Respondidas', value: stats.totalQ, icon: TrendingUp, colorClass: 'text-blue-400 bg-blue-400/10' },
     { label: 'Recorde de Streak', value: `${stats.streakMax} dias`, icon: Flame, colorClass: 'text-orange-500 bg-orange-500/10' },
-    { label: 'Módulos Lidos', value: stats.topicsRead, icon: Award, colorClass: 'text-success bg-success/10' },
+    { label: 'Tópicos Lidos', value: stats.topicsRead, icon: Award, colorClass: 'text-success bg-success/10' },
   ];
 
   return (
@@ -173,7 +173,7 @@ export default function ProgressPage() {
           </div>
         </motion.div>
 
-        {/* KPI: Módulos Lidos (2x1) */}
+        {/* KPI: Tópicos Lidos (2x1) */}
         <motion.div 
           variants={staggerItem} 
           className="md:col-span-2 lg:col-span-2 glass-card p-6 flex items-center gap-6 border-success/20 bg-success/5 relative overflow-hidden group"
@@ -186,7 +186,7 @@ export default function ProgressPage() {
           </div>
           <div className="relative z-10">
             <div className="text-3xl font-black text-primary tracking-tight">{stats.topicsRead}</div>
-            <div className="text-[10px] font-black text-muted uppercase tracking-widest">Módulos Lidos</div>
+            <div className="text-[10px] font-black text-muted uppercase tracking-widest">Tópicos Lidos</div>
           </div>
         </motion.div>
 
