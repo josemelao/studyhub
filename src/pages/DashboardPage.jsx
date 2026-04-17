@@ -325,8 +325,8 @@ export default function DashboardPage() {
                           transition={{ duration: 0.2 }}
                           className="flex flex-col items-center justify-center"
                         >
-                          <span className="text-2xl md:text-3xl lg:text-4xl font-black text-primary tracking-tighter italic leading-none">{totalTopics}</span>
-                          <span className="text-[10px] md:text-xs font-black text-muted uppercase tracking-widest mt-1">Tópicos</span>
+                          <span className="text-3xl md:text-4xl font-black text-primary tracking-tighter italic leading-none">{totalTopics}</span>
+                          <span className="text-[9px] md:text-[10px] font-black text-muted uppercase tracking-widest mt-1">Tópicos Totais</span>
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -383,8 +383,8 @@ export default function DashboardPage() {
                           transition={{ duration: 0.2 }}
                           className="flex flex-col items-center justify-center"
                         >
-                          <span className="text-2xl md:text-3xl lg:text-4xl font-black text-primary tracking-tighter italic leading-none">{doneTopics}</span>
-                          <span className="text-[10px] md:text-xs font-black text-muted uppercase tracking-widest mt-1">Tópicos</span>
+                          <span className="text-3xl md:text-4xl font-black text-primary tracking-tighter italic leading-none">{doneTopics}</span>
+                          <span className="text-[9px] md:text-[10px] font-black text-muted uppercase tracking-widest mt-1">Tópicos Concluídos</span>
                         </motion.div>
                       )}
                     </AnimatePresence>
