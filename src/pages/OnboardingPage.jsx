@@ -12,6 +12,7 @@ export default function OnboardingPage() {
   const [loading, setLoading] = useState(false);
   const [concursos, setConcursos] = useState([]);
   const [selectedConcursoId, setSelectedConcursoId] = useState(null);
+  const [displayName, setDisplayName] = useState('');
 
   useEffect(() => {
     async function fetchConcursos() {
@@ -36,7 +37,7 @@ export default function OnboardingPage() {
 
   const handleCreate = async (e) => {
     e.preventDefault();
-    if (!selectedConcursoId || !user) return;
+    if (!selectedConcursoId || !user || !displayName.trim()) return;
 
     try {
       setLoading(true);
@@ -44,6 +45,18 @@ export default function OnboardingPage() {
       const selectedConcurso = concursos.find(c => c.id === selectedConcursoId);
       const name = selectedConcurso ? selectedConcurso.nome : 'Meu Workspace';
 
+      // 1. Atualiza/Cria Perfil do Usuário
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .upsert({
+          id: user.id,
+          display_name: displayName.trim(),
+          updated_at: new Date().toISOString()
+        });
+
+      if (profileError) throw profileError;
+
+      // 2. Cria o Workspace
       const { data, error } = await supabase
         .from('workspaces')
         .insert({
@@ -66,18 +79,12 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-primary flex items-center justify-center p-6 relative overflow-hidden">
-      {/* Background Decor */}
-      <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
-        <div className="absolute -top-24 -left-20 w-96 h-96 bg-accent/20 rounded-full blur-[120px]" />
-        <div className="absolute -bottom-24 -right-20 w-96 h-96 bg-blue-500/10 rounded-full blur-[120px]" />
-      </div>
-
+    <div className="min-h-screen bg-primary flex items-start justify-center p-6 pt-[4vh] relative overflow-hidden">
       <motion.div 
         variants={pageVariants}
         initial="initial"
         animate="animate"
-        className="w-full max-w-xl glass-card p-10 relative z-10 border-white/10 shadow-2xl space-y-8"
+        className="w-full max-w-xl glass-card p-10 relative z-10 border-0 space-y-8"
       >
         <div className="text-center space-y-2">
           <motion.div variants={scaleIn} className="w-16 h-16 bg-gradient-accent rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-glow-accent">
@@ -87,14 +94,29 @@ export default function OnboardingPage() {
             Bem-vindo ao <span className="gradient-text italic">StudyHub</span>
           </motion.h1>
           <motion.p variants={staggerItem} className="text-muted text-sm font-medium px-4">
-            Parece que você ainda não tem um ambiente de estudos configurado. Selecione seu edital para começar!
+            Prepare-se para o sucesso! Configure seu perfil para começarmos sua jornada rumo à aprovação.
           </motion.p>
         </div>
 
         <form onSubmit={handleCreate} className="space-y-6">
+          {/* Nome de Exibição */}
           <motion.div variants={staggerItem} className="space-y-2">
             <label className="text-xs font-black uppercase tracking-widest text-muted ml-1 flex items-center gap-2">
-              <Target className="w-3 h-3" /> Selecione seu Edital (Obrigatório)
+              Como gostaria de ser Chamado(a)?
+            </label>
+            <input
+              type="text"
+              value={displayName}
+              onChange={e => setDisplayName(e.target.value)}
+              placeholder="Seu nome ou apelido..."
+              required
+              className="w-full px-5 py-3.5 rounded-2xl bg-secondary border border-default text-primary placeholder:text-muted outline-none focus:border-accent focus:ring-4 focus:ring-accent/10 transition-all font-bold"
+            />
+          </motion.div>
+
+          <motion.div variants={staggerItem} className="space-y-2">
+            <label className="text-xs font-black uppercase tracking-widest text-muted ml-1 flex items-center gap-2">
+              <Target className="w-3 h-3" /> Selecione seu Edital para começar
             </label>
             <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto pr-2 thin-scrollbar">
               {concursos.map(c => (
@@ -118,7 +140,7 @@ export default function OnboardingPage() {
           <motion.button
             variants={staggerItem}
             type="submit"
-            disabled={loading || !selectedConcursoId}
+            disabled={loading || !selectedConcursoId || !displayName.trim()}
             className="w-full bg-gradient-accent text-white font-black py-5 rounded-2xl flex items-center justify-center gap-3 shadow-glow-accent hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
           >
             {loading ? (
@@ -131,10 +153,6 @@ export default function OnboardingPage() {
             )}
           </motion.button>
         </form>
-
-        <motion.p variants={staggerItem} className="text-[10px] text-center text-muted/50 font-bold uppercase tracking-widest">
-            A qualquer momento você poderá criar novos workspaces para outros objetivos.
-        </motion.p>
       </motion.div>
     </div>
   );

@@ -45,7 +45,7 @@ export default function ProgressPage() {
           .from('workspaces')
           .select('concurso_id')
           .eq('id', currentWorkspaceId)
-          .single();
+          .maybeSingle();
 
         const concursoId = currentWs?.concurso_id;
 
@@ -67,7 +67,7 @@ export default function ProgressPage() {
           .from('user_stats')
           .select('*')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
 
         // 4. Fetch Workspace Stats (Achievements focus - using current workspace)
         const { data: localStats } = await supabase
@@ -75,7 +75,7 @@ export default function ProgressPage() {
           .select('*')
           .eq('user_id', user.id)
           .eq('workspace_id', currentWorkspaceId)
-          .single();
+          .maybeSingle();
 
         // 5. Fetch All Quiz Sessions for the UNIFIED workspaces
         const { data: quizData } = await supabase

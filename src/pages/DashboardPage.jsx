@@ -26,6 +26,7 @@ export default function DashboardPage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [loadingStats, setLoadingStats] = useState(true);
   const [stats, setStats] = useState(null);
+  const [profile, setProfile] = useState(null);
   const [currentConcurso, setCurrentConcurso] = useState(null);
   const [activeSubjectId, setActiveSubjectId] = useState(null);
   const [outlineOpacityById, setOutlineOpacityById] = useState({});
@@ -164,10 +165,11 @@ export default function DashboardPage() {
         setLoadingStats(true); // Start loading
         
         // 1. Stats Globais (Streaks)
-        const { data: g } = await supabase.from('user_stats').select('*').eq('user_id', user.id).single();
+        const { data: g } = await supabase.from('user_stats').select('*').eq('user_id', user.id).maybeSingle();
         
-        // 2. Stats Locais (Questões & Simulados do Workspace)
-        const [quizSessionsRes, examSessionsRes] = await Promise.all([
+        // 2. Perfil & Stats Locais (Questões & Simulados do Workspace)
+        const [profileRes, quizSessionsRes, examSessionsRes] = await Promise.all([
+          supabase.from('profiles').select('*').eq('id', user.id).maybeSingle(),
           supabase
             .from('quiz_sessions')
             .select('questions_correct, questions_total')
@@ -183,6 +185,7 @@ export default function DashboardPage() {
 
         const quizSessions = quizSessionsRes.data || [];
         const examSessions = examSessionsRes.data || [];
+        if (profileRes.data) setProfile(profileRes.data);
 
         // Cálculo de Questões de Prática (Quizzes)
         const totalQuestoesPratica = quizSessions.reduce((acc, s) => acc + (s.questions_total || 0), 0);
@@ -301,7 +304,7 @@ export default function DashboardPage() {
             <div>
               <div className="flex items-center gap-3 mb-1">
                 <h1 className="text-3xl font-black text-primary tracking-tighter italic">
-                  Bom dia, {user?.email?.split('@')[0]}!👋
+                  Bom dia, {profile?.display_name || user?.email?.split('@')[0]}!👋
                 </h1>
                 <div className="px-3 py-1 rounded-full bg-accent/10 border border-accent/20 text-accent text-[10px] font-black uppercase tracking-widest shadow-glow-accent">
                    Lvl {calculateLevel(stats?.pontos_xp)}

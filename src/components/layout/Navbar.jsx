@@ -12,6 +12,7 @@ export default function Navbar() {
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [streak, setStreak] = useState(0);
   const [xp, setXp] = useState(0);
+  const [profile, setProfile] = useState(null);
 
   useEffect(() => {
     document.body.setAttribute('data-theme', theme);
@@ -21,15 +22,26 @@ export default function Navbar() {
   useEffect(() => {
     async function fetchStats() {
       if (!user) return;
-      const { data } = await supabase
-        .from('user_stats')
-        .select('streak_atual, pontos_xp')
-        .eq('user_id', user.id)
-        .single();
       
-      if (data) {
-        setStreak(data.streak_atual || 0);
-        setXp(data.pontos_xp || 0);
+      const [statsRes, profileRes] = await Promise.all([
+        supabase
+          .from('user_stats')
+          .select('streak_atual, pontos_xp')
+          .eq('user_id', user.id)
+          .maybeSingle(),
+        supabase
+          .from('profiles')
+          .select('display_name')
+          .eq('id', user.id)
+          .maybeSingle()
+      ]);
+      
+      if (statsRes.data) {
+        setStreak(statsRes.data.streak_atual || 0);
+        setXp(statsRes.data.pontos_xp || 0);
+      }
+      if (profileRes.data) {
+        setProfile(profileRes.data);
       }
     }
     fetchStats();
@@ -119,7 +131,7 @@ export default function Navbar() {
         <div className="flex items-center gap-3 pl-2">
           <div className="text-right hidden sm:block">
             <p className="text-sm font-bold text-primary leading-none">
-              {user?.email?.split('@')[0]}
+              {profile?.display_name || user?.email?.split('@')[0]}
             </p>
             <p className="text-[10px] font-black uppercase tracking-widest text-muted mt-1">
               Estudante Premium
