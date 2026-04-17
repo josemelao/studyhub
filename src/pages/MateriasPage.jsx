@@ -4,7 +4,7 @@ import { ChevronRight, Loader2, BookOpen } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useSubjectsContext } from '../contexts/SubjectsContext';
-import { pageVariants, staggerContainer, staggerItem } from '../lib/animations';
+import { fluidPageVariants, fluidStaggerContainer, fluidStaggerItem } from '../lib/animations';
 
 export default function MateriasPage() {
   const { subjects, loading, fetchSubjects } = useSubjectsContext();
@@ -20,13 +20,13 @@ export default function MateriasPage() {
 
   return (
     <motion.div 
-      variants={pageVariants}
+      variants={fluidPageVariants}
       initial="initial"
       animate="animate"
       exit="exit"
       className="pb-20 space-y-8"
     >
-      <motion.section variants={staggerItem}>
+      <motion.section variants={fluidStaggerItem}>
         {/* Header com ícone animável */}
         <div className="flex items-center gap-4 mb-2">
           <div className="w-10 h-10 rounded-2xl flex items-center justify-center bg-accent/10 text-accent glow-accent">
@@ -40,7 +40,7 @@ export default function MateriasPage() {
       </motion.section>
 
       <motion.div 
-        variants={staggerContainer}
+        variants={fluidStaggerContainer}
         initial="initial" 
         animate="animate" 
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
@@ -52,7 +52,7 @@ export default function MateriasPage() {
           return (
             <Link to={`/materia/${sub.id}`} key={sub.id}>
               <motion.div
-                variants={staggerItem}
+                variants={fluidStaggerItem}
                 className="glass-card card-interactive p-5 group flex flex-col h-full border-white/5"
               >
                 <div className="flex items-start justify-between gap-4 mb-4">
@@ -79,7 +79,7 @@ export default function MateriasPage() {
                       className="h-full rounded-full" 
                       initial={{ width: 0 }}
                       animate={{ width: `${percent}%` }}
-                      transition={{ duration: 1, delay: 0.1 }}
+                      transition={{ duration: 1, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
                       style={{ background: sub.cor, boxShadow: `0 0 10px ${sub.cor}40` }} 
                     />
                   </div>
@@ -90,7 +90,7 @@ export default function MateriasPage() {
         })}
 
         {subjects.length === 0 && (
-          <motion.div variants={staggerItem} className="col-span-full glass-card p-12 text-center text-muted border-dashed border-2">
+          <motion.div variants={fluidStaggerItem} className="col-span-full glass-card p-12 text-center text-muted border-dashed border-2">
             Nenhuma matéria cadastrada ainda.
           </motion.div>
         )}
