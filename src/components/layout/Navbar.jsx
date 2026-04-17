@@ -57,7 +57,7 @@ export default function Navbar() {
   }, [user]);
 
   return (
-    <header className="h-20 border-b border-default bg-primary/50 backdrop-blur-xl flex items-center justify-between px-12 sticky top-0 z-10 md:pl-80">
+    <header className="h-20 border-b border-default bg-primary/50 backdrop-blur-xl flex items-center justify-between px-12 sticky top-0 z-[100] md:pl-80">
          {/* Gamification Stats */}
          <div className="flex items-center gap-4">
            {streak > 0 && (

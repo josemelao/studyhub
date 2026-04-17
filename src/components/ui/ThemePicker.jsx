@@ -26,16 +26,16 @@ const themes = [
   {
     id: 'autumn',
     name: 'Autumn',
-    description: 'Terra & Âmbar (Dark)',
+    description: 'Terra & Âmbar (Light)',
     icon: Leaf,
-    colors: ['#110d06', '#e8922a', '#7ab248']
+    colors: ['#E8E3D9', '#688C35', '#F59445']
   },
   {
     id: 'clean',
     name: 'Clean',
-    description: 'Soft Blue (Light)',
+    description: 'Modern SaaS (Light)',
     icon: Sun,
-    colors: ['#f8fafc', '#6366f1', '#a855f7']
+    colors: ['#E5E7F0', '#4338E8', '#059669']
   }
 ];
 
@@ -57,10 +57,10 @@ export default function ThemePicker({ currentTheme, onThemeChange, isOpen, onClo
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="absolute top-full right-0 mt-4 w-72 z-50 bg-elevated border border-default rounded-2xl p-2 shadow-2xl backdrop-blur-none"
-
+            className="absolute top-full right-0 mt-4 w-72 z-[110] !bg-secondary border border-default rounded-2xl p-2 shadow-2xl !opacity-100"
+            style={{ backgroundColor: 'var(--bg-secondary)' }}
           >
-            <div className="p-3 border-b border-white/5 mb-1">
+            <div className="p-3 border-b border-default/10 mb-1">
               <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-accent flex items-center gap-2">
                 <Palette size={12} /> Presets de Aparência
               </h3>
@@ -79,8 +79,10 @@ export default function ThemePicker({ currentTheme, onThemeChange, isOpen, onClo
                       onClose();
                     }}
                     className={`
-                      w-full flex items-center gap-3 p-3 rounded-xl transition-all group
-                      ${isActive ? 'bg-accent/10 border border-accent/20' : 'hover:bg-white/5 border border-transparent'}
+                      w-full flex items-center gap-3 p-3 rounded-xl transition-all group border
+                      ${isActive 
+                        ? 'bg-accent/10 border-accent/20' 
+                        : 'bg-transparent border-transparent hover:bg-accent/5 hover:border-accent/10'}
                     `}
                   >
                     {/* Preview Circles */}
@@ -101,12 +103,12 @@ export default function ThemePicker({ currentTheme, onThemeChange, isOpen, onClo
                         </span>
                         {isActive && <Check size={12} className="text-accent" />}
                       </div>
-                      <p className="text-[9px] font-bold text-muted uppercase tracking-tighter opacity-60">
+                      <p className="text-[9px] font-bold text-muted uppercase tracking-tighter opacity-70">
                         {t.description}
                       </p>
                     </div>
 
-                    <div className={`p-2 rounded-lg transition-colors ${isActive ? 'bg-accent/20 text-accent' : 'bg-white/5 text-muted group-hover:text-primary'}`}>
+                    <div className={`p-2 rounded-lg transition-colors ${isActive ? 'bg-accent/20 text-accent' : 'bg-accent/5 text-muted group-hover:text-primary'}`}>
                       <Icon size={14} />
                     </div>
                   </button>

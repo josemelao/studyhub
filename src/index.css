@@ -179,6 +179,13 @@
   --shadow-card:     0 4px 20px rgba(44,36,30,0.08), 0 1px 4px rgba(44,36,30,0.05);
 }
 
+/* Forçar Solidez em Componentes Elevados para temas claros */
+[data-theme='autumn'] .bg-secondary,
+[data-theme='autumn'] .bg-elevated {
+  background-color: #FFFFFF !important;
+  backdrop-filter: none !important;
+}
+
 /* ── Theme: Clean (Modern SaaS Light) ── */
 [data-theme='clean'] {
   /*
@@ -227,6 +234,12 @@
   --shadow-md:       0 4px 14px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.05);
   --shadow-lg:       0 12px 32px rgba(0,0,0,0.10), 0 4px 8px rgba(0,0,0,0.06);
   --shadow-card:     0 4px 20px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05);
+}
+
+[data-theme='clean'] .bg-secondary,
+[data-theme='clean'] .bg-elevated {
+  background-color: #FFFFFF !important;
+  backdrop-filter: none !important;
 }
 
 @layer base {
