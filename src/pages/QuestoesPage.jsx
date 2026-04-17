@@ -130,41 +130,48 @@ export default function QuestoesPage() {
   };
 
   const finishQuiz = async () => {
-    const answers = sessionAnswers;
-    const total = questions.length;
-    const correct = answers.filter(a => a.isCorrect).length;
-    const scorePercent = Math.round((correct / total) * 100);
+  const answers = sessionAnswers;
+  const total = questions.length;
+  const correct = answers.filter(a => a.isCorrect).length;
+  const scorePercent = Math.round((correct / total) * 100);
 
-    try {
-      await supabase.from('quiz_sessions').insert({
-        user_id: user.id, 
-        workspace_id: currentWorkspaceId,
-        topic_id: selectedTopic.id,
-        questions_total: total, 
-        questions_correct: correct, 
-        score_percent: scorePercent
-      });
+  // ── MOSTRAR RESULTADO IMEDIATAMENTE (UI Responsiva) ──
+  setSavedSession({ total, correct, scorePercent });
+  setView('result');
 
-      // ── SINCRONIZAÇÃO DE GAMIFICAÇÃO ──
-      await processActivity({
-        questoes: total,
-        acertos: correct
-      });
+  // ── PROCESSAR EM BACKGROUND (Não bloqueia UI) ──
+  try {
+    // 1. Salvar sessão
+    await supabase.from('quiz_sessions').insert({
+      user_id: user.id, 
+      workspace_id: currentWorkspaceId,
+      topic_id: selectedTopic.id,
+      questions_total: total, 
+      questions_correct: correct, 
+      score_percent: scorePercent
+    });
 
-      const { data: hist } = await supabase
-        .from('quiz_sessions')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('workspace_id', currentWorkspaceId)
-        .eq('topic_id', selectedTopic.id)
-        .order('completed_at', { ascending: false })
-        .limit(10);
-      setSessionHistory(hist || []);
-    } catch (err) { console.error(err); }
+    // 2. Processar gamificação
+    await processActivity({
+      questoes: total,
+      acertos: correct
+    });
 
-    setSavedSession({ total, correct, scorePercent });
-    setView('result');
-  };
+    // 3. Carregar histórico
+    const { data: hist } = await supabase
+      .from('quiz_sessions')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('workspace_id', currentWorkspaceId)
+      .eq('topic_id', selectedTopic.id)
+      .order('completed_at', { ascending: false })
+      .limit(10);
+    setSessionHistory(hist || []);
+  } catch (err) { 
+    console.error('Erro ao processar resultado em background:', err);
+    // Erro silencioso — resultado já foi exibido
+  }
+};
 
   const resetToList = () => {
     setView('list'); setSelectedTopic(null); setQuestions([]);
