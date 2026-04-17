@@ -16,7 +16,7 @@ import { toast } from 'react-hot-toast';
 
 export default function PlannerPage() {
   const { user } = useAuth();
-  const { currentWorkspaceId } = useWorkspace();
+  const { currentWorkspaceId, currentConcursoId } = useWorkspace();
   
   // Data States
   const [subjects, setSubjects] = useState([]);
@@ -66,7 +66,7 @@ export default function PlannerPage() {
         const { data: subData } = await supabase
           .from('subjects')
           .select('id, nome, cor, icone, topics(id, nome, ordem)')
-          .eq('workspace_id', currentWorkspaceId)
+          .eq('concurso_id', currentConcursoId)
           .order('ordem');
 
         // 2. Fetch User Progress (to show what's unread)

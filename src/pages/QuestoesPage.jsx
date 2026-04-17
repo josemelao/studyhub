@@ -44,7 +44,41 @@ export default function QuestoesPage() {
           .eq('concurso_id', currentConcursoId)
           .order('ordem');
         if (error) throw error;
-        setSubjects(data || []);
+
+        const subjectsData = data || [];
+        const topicIds = subjectsData
+          .flatMap(subject => subject.sub_subjects || [])
+          .flatMap(ss => ss.topics || [])
+          .map(topic => topic.id);
+
+        const uniqueTopicIds = [...new Set(topicIds)];
+        let filteredSubjects = subjectsData;
+
+        if (uniqueTopicIds.length > 0) {
+          const { data: questionRows, error: questionError } = await supabase
+            .from('questions')
+            .select('topic_id')
+            .in('topic_id', uniqueTopicIds);
+          if (questionError) throw questionError;
+
+          const validTopicIds = new Set((questionRows || []).map(q => q.topic_id));
+
+          filteredSubjects = subjectsData
+            .map(subject => ({
+              ...subject,
+              sub_subjects: (subject.sub_subjects || [])
+                .map(ss => ({
+                  ...ss,
+                  topics: (ss.topics || []).filter(topic => validTopicIds.has(topic.id))
+                }))
+                .filter(ss => (ss.topics || []).length > 0)
+            }))
+            .filter(subject => (subject.sub_subjects || []).length > 0);
+        } else {
+          filteredSubjects = [];
+        }
+
+        setSubjects(filteredSubjects);
       } catch (err) { console.error(err); }
       finally { setLoadingSubjects(false); }
     }
