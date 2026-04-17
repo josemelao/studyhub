@@ -49,6 +49,7 @@ export default function ThemePicker({ currentTheme, onThemeChange, isOpen, onClo
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
             onClick={onClose}
             className="fixed inset-0 z-40"
           />
@@ -57,6 +58,7 @@ export default function ThemePicker({ currentTheme, onThemeChange, isOpen, onClo
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            transition={{ duration: 0.15 }}
             className="absolute top-full right-0 mt-4 w-72 z-[110] !bg-secondary border border-default rounded-2xl p-2 shadow-2xl !opacity-100"
             style={{ backgroundColor: 'var(--bg-secondary)' }}
           >
@@ -75,8 +77,9 @@ export default function ThemePicker({ currentTheme, onThemeChange, isOpen, onClo
                   <button
                     key={t.id}
                     onClick={() => {
-                      onThemeChange(t.id);
                       onClose();
+                      // Pequeno delay para permitir que o fechamento comece antes de processar as cores da página toda
+                      setTimeout(() => onThemeChange(t.id), 50);
                     }}
                     className={`
                       w-full flex items-center gap-3 p-3 rounded-xl transition-all group border

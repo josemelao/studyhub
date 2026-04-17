@@ -27,7 +27,7 @@ export default function Sidebar() {
   const { workspaces, currentWorkspaceId, setWorkspace } = useWorkspace();
 
   return (
-    <aside className="w-64 border-r border-default h-full bg-secondary/50 backdrop-blur-xl flex flex-col fixed left-0 top-0 overflow-y-auto z-20">
+    <aside className="w-64 border-r border-default h-full bg-secondary/50 backdrop-blur-xl flex flex-col fixed left-0 top-0 overflow-y-auto z-[120]">
       <div className="p-6 pb-4 flex items-center gap-3">
         <motion.div 
           whileHover={{ rotate: 10, scale: 1.1 }}
