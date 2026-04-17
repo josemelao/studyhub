@@ -32,7 +32,13 @@ export function AuthProvider({ children }) {
   };
 
   const signUp = async (email, password) => {
-    return await supabase.auth.signUp({ email, password });
+    return await supabase.auth.signUp({ 
+      email, 
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}`
+      }
+    });
   };
 
   const signOut = async () => {

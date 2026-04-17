@@ -8,16 +8,24 @@ import ThemePicker from '../ui/ThemePicker';
 
 export default function Navbar() {
   const { user } = useAuth();
-  const [theme, setTheme] = useState(localStorage.getItem('studyhub-theme') || 'luminary');
+  const getThemeKey = (userId) => `studyhub_theme_${userId}`;
+  const [theme, setTheme] = useState('luminary');
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [streak, setStreak] = useState(0);
   const [xp, setXp] = useState(0);
   const [profile, setProfile] = useState(null);
 
   useEffect(() => {
+    if (!user) return;
+    const savedTheme = localStorage.getItem(getThemeKey(user.id)) || 'luminary';
+    setTheme(savedTheme);
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
     document.body.setAttribute('data-theme', theme);
-    localStorage.setItem('studyhub-theme', theme);
-  }, [theme]);
+    localStorage.setItem(getThemeKey(user.id), theme);
+  }, [theme, user]);
 
   useEffect(() => {
     async function fetchStats() {

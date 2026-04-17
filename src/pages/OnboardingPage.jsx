@@ -45,16 +45,23 @@ export default function OnboardingPage() {
       const selectedConcurso = concursos.find(c => c.id === selectedConcursoId);
       const name = selectedConcurso ? selectedConcurso.nome : 'Meu Workspace';
 
-      // 1. Atualiza/Cria Perfil do Usuário
+      // 1. Atualiza/Cria Perfil do Usuário e Metadados do Auth
+      const nameClean = displayName.trim();
+      
       const { error: profileError } = await supabase
         .from('profiles')
         .upsert({
           id: user.id,
-          display_name: displayName.trim(),
+          display_name: nameClean,
           updated_at: new Date().toISOString()
         });
 
       if (profileError) throw profileError;
+
+      // Sincroniza com o campo "Display name" do painel de Auth do Supabase
+      await supabase.auth.updateUser({
+        data: { display_name: nameClean }
+      });
 
       // 2. Cria o Workspace
       const { data, error } = await supabase

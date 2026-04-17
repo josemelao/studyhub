@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Trophy } from 'lucide-react';
+import { Trophy, Zap } from 'lucide-react';
+import { useEffect } from 'react';
 
 // Contexts & Layouts
 import { AuthProvider } from './contexts/AuthContext';
@@ -29,6 +30,8 @@ import ContentAdminPage from './pages/ContentAdminPage';
 import OnboardingPage from './pages/OnboardingPage';
 import { Toaster } from 'react-hot-toast';
 
+import { useAuth } from './hooks/useAuth';
+
 /**
  * Componente que gerencia apenas as rotas que precisam do Sidebar/Navbar persistente.
  * O AnimatePresence aqui garante que apenas o CONTEÚDO da página mude, 
@@ -38,19 +41,59 @@ function AuthenticatedApp() {
   const location = useLocation();
   const { currentWorkspaceId, loadingWorkspace } = useWorkspace();
   const isAdmin = useIsAdmin();
+  const { user } = useAuth();
+
+  // Garante que o tema padrão seja aplicado globalmente e isolado por usuário
+  useEffect(() => {
+    if (user) {
+      const savedTheme = localStorage.getItem(`studyhub_theme_${user.id}`) || 'luminary';
+      document.body.setAttribute('data-theme', savedTheme);
+    } else {
+      document.body.setAttribute('data-theme', 'luminary');
+    }
+  }, [user]);
 
   // Tela de loading Global enquanto o Workspace inicializa
   if (loadingWorkspace) {
     return (
-      <div className="h-screen w-full bg-primary flex flex-col items-center justify-center gap-4">
+      <div className="h-screen w-full bg-primary flex flex-col items-center justify-center gap-6 overflow-hidden relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-accent/5 to-transparent pointer-events-none" />
+        
         <motion.div 
-          animate={{ rotate: 360 }}
-          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-          className="w-12 h-12 rounded-xl bg-gradient-accent flex items-center justify-center shadow-glow-accent"
+          animate={{ 
+            scale: [1, 1.1, 1],
+            opacity: [0.7, 1, 0.7],
+          }}
+          transition={{ 
+            duration: 2, 
+            repeat: Infinity, 
+            ease: "easeInOut" 
+          }}
+          className="relative"
         >
-          <Trophy className="w-6 h-6 text-white" />
+          {/* Outer Ring Animation */}
+          <motion.div 
+            animate={{ rotate: 360 }}
+            transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+            className="absolute inset-0 -m-4 rounded-full border border-dashed border-accent/20"
+          />
+          
+          <div className="w-16 h-16 rounded-3xl bg-gradient-accent flex items-center justify-center shadow-glow-accent relative z-10 border border-white/10">
+            <Zap className="w-8 h-8 text-white fill-current" />
+          </div>
         </motion.div>
-        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-accent animate-pulse">StudyHub</p>
+
+        <div className="flex flex-col items-center gap-2 relative z-10">
+          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-accent animate-pulse">StudyHub AI</p>
+          <div className="w-32 h-1 bg-white/5 rounded-full overflow-hidden">
+            <motion.div 
+              initial={{ x: '-100%' }}
+              animate={{ x: '100%' }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+              className="w-full h-full bg-gradient-to-r from-transparent via-accent to-transparent"
+            />
+          </div>
+        </div>
       </div>
     );
   }

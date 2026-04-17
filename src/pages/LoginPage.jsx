@@ -26,13 +26,46 @@ export default function LoginPage() {
         if (error) throw error;
         navigate('/dashboard');
       } else {
-        const { error } = await signUp(email, password);
+        const { error, data } = await signUp(email, password);
         if (error) throw error;
-        setSuccess('Conta criada! Faça login para continuar.');
+        
+        // Se o email confirmation estiver ativado, a sessão será null
+        if (data?.user && !data?.session) {
+          setSuccess('Quase lá! Enviamos um link de confirmação para o seu e-mail. Verifique sua caixa de entrada para ativar sua conta.');
+        } else {
+          setSuccess('Conta criada com sucesso!');
+        }
         setMode('login');
       }
     } catch (err) {
-      setError(err.message || 'Algo deu errado. Tente novamente.');
+      // Mapeamento de erros técnicos para mensagens amigáveis em Português
+      const errorMap = {
+        'Invalid login credentials': 'E-mail ou senha incorretos. Verifique seus dados.',
+        'Email not confirmed': 'Seu e-mail ainda não foi confirmado. Verifique sua caixa de entrada.',
+        'User not found': 'Não encontramos nenhuma conta com este e-mail.',
+        'User already registered': 'Este e-mail já está sendo usado por outra conta.',
+        'Password should be at least 6 characters': 'A senha deve ter pelo menos 6 caracteres.',
+        'Too many attempts': 'Muitas tentativas. Por segurança, tente novamente em alguns minutos.',
+        'rate limit exceeded': 'Limite de envios atingido. Por segurança, tente novamente em uma hora.',
+        'Signup is disabled': 'O cadastro de novos usuários está temporariamente desativado.',
+        'Auth session missing!': 'Sua sessão expirou. Faça login novamente.'
+      };
+
+      let friendlyMessage = err.message;
+      
+      // Procura se alguma chave do mapa está contida na mensagem de erro (case insensitive)
+      const matchingKey = Object.keys(errorMap).find(key => 
+        err.message?.toLowerCase().includes(key.toLowerCase())
+      );
+
+      if (matchingKey) {
+        friendlyMessage = errorMap[matchingKey];
+      } else {
+        // Fallback genérico para erros desconhecidos em português
+        friendlyMessage = 'Ocorreu um erro inesperado. Verifique sua conexão e tente novamente.';
+      }
+      
+      setError(friendlyMessage);
     } finally {
       setLoading(false);
     }
@@ -62,7 +95,7 @@ export default function LoginPage() {
             >
               <Zap className="w-8 h-8 text-white fill-current" />
             </motion.div>
-            <h1 className="text-4xl font-black mb-2 gradient-text tracking-tighter italic">StudyHub AI</h1>
+            <h1 className="text-4xl font-black mb-2 gradient-text tracking-tighter italic pr-2">StudyHub AI</h1>
             <p className="text-sm font-bold text-muted uppercase tracking-widest">
               {mode === 'login' ? 'Inteligência para sua Aprovação' : 'Junte-se a milhares de concurseiros'}
             </p>
