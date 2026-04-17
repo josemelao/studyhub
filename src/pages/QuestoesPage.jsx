@@ -130,47 +130,52 @@ export default function QuestoesPage() {
   };
 
   const finishQuiz = async () => {
-  const answers = sessionAnswers;
-  const total = questions.length;
-  const correct = answers.filter(a => a.isCorrect).length;
-  const scorePercent = Math.round((correct / total) * 100);
+    if (sessionAnswers.length === 0) {
+      toast.error('Responda pelo menos uma questão antes de ver o resultado.', { icon: '⚠️' });
+      return;
+    }
 
-  // ── MOSTRAR RESULTADO IMEDIATAMENTE (UI Responsiva) ──
-  setSavedSession({ total, correct, scorePercent });
-  setView('result');
+    const answers = sessionAnswers;
+    const total = answers.length;
+    const correct = answers.filter(a => a.isCorrect).length;
+    const scorePercent = Math.round((correct / total) * 100);
 
-  // ── PROCESSAR EM BACKGROUND (Não bloqueia UI) ──
-  try {
-    // 1. Salvar sessão
-    await supabase.from('quiz_sessions').insert({
-      user_id: user.id, 
-      workspace_id: currentWorkspaceId,
-      topic_id: selectedTopic.id,
-      questions_total: total, 
-      questions_correct: correct, 
-      score_percent: scorePercent
-    });
+    // ── MOSTRAR RESULTADO IMEDIATAMENTE (UI Responsiva) ──
+    setSavedSession({ total, correct, scorePercent });
+    setView('result');
 
-    // 2. Processar gamificação
-    await processActivity({
-      questoes: total,
-      acertos: correct
-    });
+    // ── PROCESSAR EM BACKGROUND (Não bloqueia UI) ──
+    try {
+      // 1. Salvar sessão
+      await supabase.from('quiz_sessions').insert({
+        user_id: user.id, 
+        workspace_id: currentWorkspaceId,
+        topic_id: selectedTopic.id,
+        questions_total: total, 
+        questions_correct: correct, 
+        score_percent: scorePercent
+      });
 
-    // 3. Carregar histórico
-    const { data: hist } = await supabase
-      .from('quiz_sessions')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('workspace_id', currentWorkspaceId)
-      .eq('topic_id', selectedTopic.id)
-      .order('completed_at', { ascending: false })
-      .limit(10);
-    setSessionHistory(hist || []);
-  } catch (err) { 
-    console.error('Erro ao processar resultado em background:', err);
-    // Erro silencioso — resultado já foi exibido
-  }
+      // 2. Processar gamificação
+      await processActivity({
+        questoes: total,
+        acertos: correct
+      });
+
+      // 3. Carregar histórico
+      const { data: hist } = await supabase
+        .from('quiz_sessions')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('workspace_id', currentWorkspaceId)
+        .eq('topic_id', selectedTopic.id)
+        .order('completed_at', { ascending: false })
+        .limit(10);
+      setSessionHistory(hist || []);
+    } catch (err) { 
+      console.error('Erro ao processar resultado em background:', err);
+      // Erro silencioso — resultado já foi exibido
+    }
 };
 
   const resetToList = () => {
@@ -391,13 +396,22 @@ export default function QuestoesPage() {
             )}
           </AnimatePresence>
 
-          <div className="flex justify-end gap-3 mt-12 pb-8">
+          <div className="flex flex-wrap justify-end gap-3 mt-12 pb-8">
              {isAnswered && (
                 <button onClick={resetToList}
                   className="px-6 py-4 rounded-2xl text-sm font-black uppercase tracking-widest transition-all text-muted hover:text-primary mr-auto"
                 >
                   Sair
                 </button>
+             )}
+
+             {(sessionAnswers.length > 0 || isAnswered) && (
+               <button
+                 onClick={finishQuiz}
+                 className="px-6 py-4 rounded-2xl text-sm font-black uppercase tracking-widest bg-secondary text-primary border border-default hover:bg-white/[0.08] transition-all"
+               >
+                 Ver Resultado
+               </button>
              )}
 
             {!isAnswered ? (
