@@ -17,7 +17,7 @@ export default function StreakWidget() {
           .from('user_stats')
           .select('streak_atual, ultimo_estudo_dia')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
 
         if (data) {
           setStreak(data.streak_atual || 0);

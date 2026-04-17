@@ -14,7 +14,7 @@ export async function updateUserStats(supabase, userId, workspaceId, metrics = {
     .from('user_stats')
     .select('*')
     .eq('user_id', userId)
-    .single();
+    .maybeSingle();
 
   if (gFetchError && gFetchError.code !== 'PGRST116') throw gFetchError;
 
@@ -72,7 +72,7 @@ export async function updateUserStats(supabase, userId, workspaceId, metrics = {
       .select('*')
       .eq('user_id', userId)
       .eq('workspace_id', workspaceId)
-      .single();
+      .maybeSingle();
 
     if (lFetchError && lFetchError.code !== 'PGRST116') throw lFetchError;
 
@@ -96,7 +96,7 @@ export async function updateUserStats(supabase, userId, workspaceId, metrics = {
         .eq('user_id', userId)
         .eq('workspace_id', workspaceId)
         .select()
-        .single();
+        .maybeSingle();
       localStats = updatedLocal;
     }
 

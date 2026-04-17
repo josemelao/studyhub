@@ -22,7 +22,7 @@ export default function FavoriteButton({ tipo, referenciaId, initialIsFav = fals
         .eq('workspace_id', currentWorkspaceId)
         .eq('tipo', tipo)
         .eq('referencia_id', referenciaId)
-        .single();
+        .maybeSingle();
       if (data) setIsFav(true);
     }
     checkFav();

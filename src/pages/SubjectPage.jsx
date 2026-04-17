@@ -29,7 +29,7 @@ export default function SubjectPage() {
           .from('subjects')
           .select('*')
           .eq('id', id)
-          .single();
+          .maybeSingle();
         if (subE) throw subE;
         setSubject(subData);
 

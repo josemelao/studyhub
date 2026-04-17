@@ -57,7 +57,7 @@ export default function StudyPage() {
           .from('topics')
           .select('*, subjects(id, nome)')
           .eq('id', topicId)
-          .single();
+          .maybeSingle();
         if (topicError) throw topicError;
         setTopic(topicData);
 
