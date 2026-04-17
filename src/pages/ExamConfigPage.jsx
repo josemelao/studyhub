@@ -116,6 +116,7 @@ export default function ExamConfigPage() {
 
   return (
     <motion.div 
+      key="exam-setup-page"
       variants={pageVariants}
       initial="initial"
       animate="animate"
@@ -137,7 +138,7 @@ export default function ExamConfigPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Configurações principais */}
         <div className="lg:col-span-2 space-y-8">
-          <motion.section variants={scaleIn} className="glass-card p-8 bg-white/[0.01]">
+          <motion.section variants={staggerItem} className="glass-card p-8 bg-white/[0.01]">
             <div className="flex items-center gap-3 mb-6">
               <BookOpen className="w-5 h-5 text-accent" />
               <h2 className="text-xl font-bold text-primary">1. Selecione as Matérias</h2>
@@ -167,7 +168,7 @@ export default function ExamConfigPage() {
             </div>
           </motion.section>
 
-          <motion.section variants={scaleIn} className="glass-card p-8 bg-white/[0.01]">
+          <motion.section variants={staggerItem} className="glass-card p-8 bg-white/[0.01]">
             <div className="flex items-center gap-3 mb-8">
               <Target className="w-5 h-5 text-accent" />
               <h2 className="text-xl font-bold text-primary">2. Quantidade de Questões</h2>
@@ -192,7 +193,7 @@ export default function ExamConfigPage() {
 
         {/* Resumo e Tempo */}
         <div className="space-y-8">
-          <motion.section variants={scaleIn} className="glass-card p-8 border-accent/20 bg-accent/[0.02]">
+          <motion.section variants={staggerItem} className="glass-card p-8 border-accent/20 bg-accent/[0.02]">
             <div className="flex items-center gap-3 mb-6">
               <Clock className="w-5 h-5 text-accent" />
               <h2 className="text-xl font-bold text-primary">Tempo de Prova</h2>

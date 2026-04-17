@@ -228,71 +228,79 @@ export default function PlannerPage() {
 
   return (
     <motion.div 
+      key="planner-page-content"
       variants={pageVariants}
       initial="initial"
       animate="animate"
       exit="exit"
       className="pb-20 space-y-10"
     >
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
-        <div className="flex items-center gap-6">
-          <div className="w-14 h-14 rounded-3xl flex items-center justify-center bg-accent/10 text-accent glow-accent shrink-0">
-            <CalendarIcon className="w-7 h-7" />
-          </div>
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-4xl font-black text-primary tracking-tighter italic">Planejador</h1>
-              <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl ml-2 border border-white/5">
-                <button 
-                  onClick={() => changeWeek(-1)}
-                  className="p-1.5 hover:bg-white/10 rounded-lg transition-all"
-                >
-                  <ChevronLeft size={16} />
-                </button>
-                <span className="text-[10px] font-black uppercase tracking-widest px-3 min-w-[140px] text-center">
-                  {currentMonth}
-                </span>
-                <button 
-                  onClick={() => changeWeek(1)}
-                  className="p-1.5 hover:bg-white/10 rounded-lg transition-all"
-                >
-                  <ChevronRight size={16} />
-                </button>
-              </div>
+      <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-10">
+        {/* Header */}
+        <motion.div variants={staggerItem} className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+          <div className="flex items-center gap-6">
+            <div className="w-14 h-14 rounded-3xl flex items-center justify-center bg-accent/10 text-accent glow-accent shrink-0">
+              <CalendarIcon className="w-7 h-7" />
             </div>
-            <p className="text-sm text-muted font-medium mt-1">Organize os tópicos que deseja dominar nesta semana.</p>
+            <div>
+              <div className="flex items-center gap-3">
+                <h1 className="text-4xl font-black text-primary tracking-tighter italic">Planejador</h1>
+                <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl ml-2 border border-white/5">
+                  <button 
+                    onClick={() => changeWeek(-1)}
+                    className="p-1.5 hover:bg-white/10 rounded-lg transition-all"
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+                  <span className="text-[10px] font-black uppercase tracking-widest px-3 min-w-[140px] text-center">
+                    {currentMonth}
+                  </span>
+                  <button 
+                    onClick={() => changeWeek(1)}
+                    className="p-1.5 hover:bg-white/10 rounded-lg transition-all"
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
+              </div>
+              <p className="text-sm text-muted font-medium mt-1">Organize os tópicos que deseja dominar nesta semana.</p>
+            </div>
           </div>
-        </div>
 
-        <div className="flex items-center gap-3">
-           <button 
-             onClick={() => setShowClearConfirm(true)}
-             className="flex items-center gap-2 px-4 py-3 bg-white/5 border border-white/5 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-error/10 hover:text-error transition-all text-muted"
-           >
-              <RotateCcw className="w-4 h-4" /> Limpar
-           </button>
-           <button 
-             onClick={autoPlan}
-             className="flex items-center gap-2 px-6 py-3 bg-white/5 border border-white/5 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-white/10 transition-all text-muted hover:text-primary"
-           >
-              <Zap className="w-4 h-4 text-yellow-500" /> Auto-Planejar
-           </button>
-           <button 
-             onClick={handleSavePlan}
-             disabled={saving}
-             className="flex items-center gap-2 px-8 py-3 bg-accent text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-glow-accent hover:opacity-90 transition-all disabled:opacity-50"
-           >
-              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-              Salvar Cronograma
-           </button>
-        </div>
-      </div>
+          <div className="flex items-center gap-3">
+             <button 
+               onClick={() => setShowClearConfirm(true)}
+               className="flex items-center gap-2 px-4 py-3 bg-white/5 border border-white/5 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-error/10 hover:text-error transition-all text-muted"
+             >
+                <RotateCcw className="w-4 h-4" /> Limpar
+             </button>
+             <button 
+               onClick={autoPlan}
+               className="flex items-center gap-2 px-6 py-3 bg-white/5 border border-white/5 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-white/10 transition-all text-muted hover:text-primary"
+             >
+                <Zap className="w-4 h-4 text-yellow-500" /> Auto-Planejar
+             </button>
+             <button 
+               onClick={handleSavePlan}
+               disabled={saving}
+               className="flex items-center gap-2 px-8 py-3 bg-accent text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-glow-accent hover:opacity-90 transition-all disabled:opacity-50"
+             >
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                Salvar Cronograma
+             </button>
+          </div>
+        </motion.div>
+      </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <motion.div 
+        variants={staggerContainer}
+        initial="initial"
+        animate="animate"
+        className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start"
+      >
         
         {/* BIBLIOTECA DE TÓPICOS (Col 4) */}
-        <div className="lg:col-span-4 space-y-4 h-[70vh] flex flex-col">
+        <motion.div variants={staggerItem} className="lg:col-span-4 space-y-4 h-[70vh] flex flex-col">
           <div className="flex items-center gap-3 px-2">
              <BookOpen className="w-4 h-4 text-accent" />
              <h2 className="text-[10px] font-black uppercase tracking-widest text-muted">Biblioteca de Conteúdo</h2>
@@ -352,10 +360,10 @@ export default function PlannerPage() {
               </div>
             ))}
           </div>
-        </div>
+        </motion.div>
 
         {/* GRADE SEMANAL (Col 8) */}
-        <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-7 gap-4 items-start">
+        <motion.div variants={staggerItem} className="lg:col-span-8 grid grid-cols-1 md:grid-cols-7 gap-4 items-start">
           {weekDays.map((date, i) => {
             const dateObj = new Date(date + 'T12:00:00');
             const isToday = new Date().toISOString().split('T')[0] === date;
@@ -417,9 +425,8 @@ export default function PlannerPage() {
               </div>
             );
           })}
-        </div>
-
-      </div>
+        </motion.div>
+      </motion.div>
 
       <ConfirmModal 
         isOpen={showClearConfirm}

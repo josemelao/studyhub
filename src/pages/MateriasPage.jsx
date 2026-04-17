@@ -4,7 +4,7 @@ import { ChevronRight, Loader2, BookOpen } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useSubjectsContext } from '../contexts/SubjectsContext';
-import { fluidPageVariants, fluidStaggerContainer, fluidStaggerItem } from '../lib/animations';
+import { pageVariants, staggerContainer, staggerItem } from '../lib/animations';
 
 export default function MateriasPage() {
   const { subjects, loading, fetchSubjects } = useSubjectsContext();
@@ -20,13 +20,13 @@ export default function MateriasPage() {
 
   return (
     <motion.div 
-      variants={fluidPageVariants}
+      variants={pageVariants}
       initial="initial"
       animate="animate"
       exit="exit"
       className="pb-20 space-y-8"
     >
-      <motion.section variants={fluidStaggerItem}>
+      <motion.section variants={staggerItem}>
         {/* Header com ícone animável */}
         <div className="flex items-center gap-4 mb-2">
           <div className="w-10 h-10 rounded-2xl flex items-center justify-center bg-accent/10 text-accent glow-accent">
@@ -40,7 +40,7 @@ export default function MateriasPage() {
       </motion.section>
 
       <motion.div 
-        variants={fluidStaggerContainer}
+        variants={staggerContainer}
         initial="initial" 
         animate="animate" 
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
@@ -52,7 +52,7 @@ export default function MateriasPage() {
           return (
             <Link to={`/materia/${sub.id}`} key={sub.id}>
               <motion.div
-                variants={fluidStaggerItem}
+                variants={staggerItem}
                 className="glass-card card-interactive p-5 group flex flex-col h-full border-white/5"
               >
                 <div className="flex items-start justify-between gap-4 mb-4">
@@ -90,7 +90,7 @@ export default function MateriasPage() {
         })}
 
         {subjects.length === 0 && (
-          <motion.div variants={fluidStaggerItem} className="col-span-full glass-card p-12 text-center text-muted border-dashed border-2">
+          <motion.div variants={staggerItem} className="col-span-full glass-card p-12 text-center text-muted border-dashed border-2">
             Nenhuma matéria cadastrada ainda.
           </motion.div>
         )}

@@ -343,22 +343,32 @@ export default function ProgressPage() {
         <ProgressKpis stats={kpis} />
 
         {/* 2. Main Evolution Chart */}
-        <PerformanceEvolutionChart data={performanceTrend} />
+        <motion.div variants={staggerItem}>
+          <PerformanceEvolutionChart data={performanceTrend} />
+        </motion.div>
 
         {/* 3. Volume & Exams Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <PracticeVolumeChart data={practiceVolume} />
-          <ExamPerformanceChart data={examPerformance} />
+          <motion.div variants={staggerItem}>
+            <PracticeVolumeChart data={practiceVolume} />
+          </motion.div>
+          <motion.div variants={staggerItem}>
+            <ExamPerformanceChart data={examPerformance} />
+          </motion.div>
         </div>
 
         {/* 4. Subject Analysis Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <SubjectAccuracyChart 
-            data={subjectAccuracy} 
-            viewMode={viewMode} 
-            setViewMode={setViewMode} 
-          />
-          <SubjectProgressChart data={subjectProgress} />
+          <motion.div variants={staggerItem}>
+            <SubjectAccuracyChart 
+              data={subjectAccuracy} 
+              viewMode={viewMode} 
+              setViewMode={setViewMode} 
+            />
+          </motion.div>
+          <motion.div variants={staggerItem}>
+            <SubjectProgressChart data={subjectProgress} />
+          </motion.div>
         </div>
 
         {/* 5. Achievements */}

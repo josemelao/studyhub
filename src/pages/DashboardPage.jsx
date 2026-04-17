@@ -256,6 +256,7 @@ export default function DashboardPage() {
 
   return (
     <motion.div 
+      key="dashboard-page"
       variants={pageVariants}
       initial="initial"
       animate="animate"
@@ -263,12 +264,17 @@ export default function DashboardPage() {
       className="pb-16 space-y-8"
     >
       {/* ── BENTO GRID ── */}
-      <div className="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-4 h-auto md:h-[600px]">
+      <motion.div 
+        variants={staggerContainer}
+        initial="initial"
+        animate="animate"
+        className="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-4 h-auto md:h-[600px]"
+      >
         
         {/* LADO ESQUERDO: Hero + Stats (2x2 total) */}
         <div className="md:col-span-2 md:row-span-2 grid grid-rows-[1.3fr_0.7fr] gap-4">
           {/* Card 1: Hero & Progress */}
-          <motion.section 
+          <motion.div 
             variants={staggerItem}
             className="rounded-3xl p-6 relative overflow-hidden bg-secondary border border-default flex flex-col justify-between shadow-sm"
           >
@@ -412,12 +418,11 @@ export default function DashboardPage() {
                 </div>
               </div>
             </div>
-          </motion.section>
+          </motion.div>
 
-          {/* Card 2: Stats Grid 2x2 */}
           <div className="grid grid-cols-2 gap-4">
             {statsCards.map((stat, i) => (
-              <MotionDiv 
+              <motion.div 
                 key={i} 
                 variants={staggerItem}
                 className="glass-card p-6 flex items-center gap-6 border-default bg-secondary"
@@ -429,7 +434,7 @@ export default function DashboardPage() {
                   <div className="text-2xl font-black text-primary leading-none">{stat.value}</div>
                   <div className="text-[10px] text-muted font-bold uppercase tracking-wider mt-1">{stat.label}</div>
                 </div>
-              </MotionDiv>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -449,7 +454,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-      </div>
+      </motion.div>
 
       {/* ── Matérias ── */}
 

@@ -4,20 +4,20 @@ import { staggerItem, scaleIn } from '../../lib/animations';
 
 export default function AchievementsGrid({ conquistas }) {
   return (
-    <motion.section variants={staggerItem}>
-      <div className="flex items-center justify-between mb-6 px-1">
+    <section>
+      <motion.div variants={staggerItem} className="flex items-center justify-between mb-6 px-1">
         <div className="flex items-center gap-3">
           <Award className="w-5 h-5 text-accent" />
           <h2 className="text-xl font-black text-primary tracking-tight uppercase tracking-widest text-sm">Suas Conquistas</h2>
         </div>
         <span className="text-[10px] font-black text-muted bg-white/5 px-2 py-1 rounded-md">{conquistas.length} DESBLOQUEADAS</span>
-      </div>
+      </motion.div>
       
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
          {conquistas.length === 0 ? (
-           <div className="col-span-full glass-card p-12 text-center text-muted border-dashed border-2">
+           <motion.div variants={staggerItem} className="col-span-full glass-card p-12 text-center text-muted border-dashed border-2">
              Ainda não há conquistas. Continue estudando para desbloqueá-las!
-           </div>
+           </motion.div>
          ) : (
            conquistas.map((c, i) => (
              <motion.div 
@@ -36,6 +36,6 @@ export default function AchievementsGrid({ conquistas }) {
            ))
          )}
       </div>
-    </motion.section>
+    </section>
   );
 }
