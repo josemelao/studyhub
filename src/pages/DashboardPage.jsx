@@ -24,6 +24,7 @@ export default function DashboardPage() {
   const { currentWorkspaceId, workspaces } = useWorkspace();
   const { subjects, loading, fetchSubjects } = useSubjectsContext();
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [loadingStats, setLoadingStats] = useState(true);
   const [stats, setStats] = useState(null);
   const [currentConcurso, setCurrentConcurso] = useState(null);
   const [activeSubjectId, setActiveSubjectId] = useState(null);
@@ -159,56 +160,61 @@ export default function DashboardPage() {
     fetchSubjects(); 
     async function loadStats() {
       if (!user || !currentWorkspaceId) return;
-      
-      // 1. Stats Globais (Streaks)
-      const { data: g } = await supabase.from('user_stats').select('*').eq('user_id', user.id).single();
-      
-      // 2. Stats Locais (Questões & Simulados do Workspace)
-      const [quizSessionsRes, examSessionsRes] = await Promise.all([
-        supabase
-          .from('quiz_sessions')
-          .select('questions_correct, questions_total')
-          .eq('user_id', user.id)
-          .eq('workspace_id', currentWorkspaceId),
-        supabase
-          .from('exam_sessions')
-          .select('score_percent, questions_total, questions_correct')
-          .eq('user_id', user.id)
-          .eq('workspace_id', currentWorkspaceId)
-          .eq('status', 'finalizada')
-      ]);
+      try {
+        setLoadingStats(true); // Start loading
+        
+        // 1. Stats Globais (Streaks)
+        const { data: g } = await supabase.from('user_stats').select('*').eq('user_id', user.id).single();
+        
+        // 2. Stats Locais (Questões & Simulados do Workspace)
+        const [quizSessionsRes, examSessionsRes] = await Promise.all([
+          supabase
+            .from('quiz_sessions')
+            .select('questions_correct, questions_total')
+            .eq('user_id', user.id)
+            .eq('workspace_id', currentWorkspaceId),
+          supabase
+            .from('exam_sessions')
+            .select('score_percent, questions_total, questions_correct')
+            .eq('user_id', user.id)
+            .eq('workspace_id', currentWorkspaceId)
+            .eq('status', 'finalizada')
+        ]);
 
-      const quizSessions = quizSessionsRes.data || [];
-      const examSessions = examSessionsRes.data || [];
+        const quizSessions = quizSessionsRes.data || [];
+        const examSessions = examSessionsRes.data || [];
 
-      // Cálculo de Questões de Prática (Quizzes)
-      const totalQuestoesPratica = quizSessions.reduce((acc, s) => acc + (s.questions_total || 0), 0);
-      const totalAcertosPratica = quizSessions.reduce((acc, s) => acc + (s.questions_correct || 0), 0);
-      const mediaAcertoQuestoes = totalQuestoesPratica > 0 
-        ? Math.round((totalAcertosPratica / totalQuestoesPratica) * 100) 
-        : null;
+        // Cálculo de Questões de Prática (Quizzes)
+        const totalQuestoesPratica = quizSessions.reduce((acc, s) => acc + (s.questions_total || 0), 0);
+        const totalAcertosPratica = quizSessions.reduce((acc, s) => acc + (s.questions_correct || 0), 0);
+        const mediaAcertoQuestoes = totalQuestoesPratica > 0 
+          ? Math.round((totalAcertosPratica / totalQuestoesPratica) * 100) 
+          : null;
 
-      // Cálculo de Simulados
-      const totalSimulados = examSessions.length;
-      const mediaAcertoSimulados = totalSimulados > 0
-        ? Math.round(examSessions.reduce((acc, session) => acc + (session.score_percent || 0), 0) / totalSimulados)
-        : null;
+        // Cálculo de Simulados
+        const totalSimulados = examSessions.length;
+        const mediaAcertoSimulados = totalSimulados > 0
+          ? Math.round(examSessions.reduce((acc, session) => acc + (session.score_percent || 0), 0) / totalSimulados)
+          : null;
 
-      if (g) {
-        setStats({
-          ...g,
-          total_questoes_respondidas: totalQuestoesPratica,
-          media_acerto_questoes: mediaAcertoQuestoes,
-          total_simulados_finalizados: totalSimulados,
-          media_acerto_simulados: mediaAcertoSimulados,
-        });
-      }
+        if (g) {
+          setStats({
+            ...g,
+            total_questoes_respondidas: totalQuestoesPratica,
+            media_acerto_questoes: mediaAcertoQuestoes,
+            total_simulados_finalizados: totalSimulados,
+            media_acerto_simulados: mediaAcertoSimulados,
+          });
+        }
 
-      // 3. Info do Concurso
-      const workspace = workspaces.find(w => w.id === currentWorkspaceId);
-      if (workspace?.concurso_id) {
-        const { data: c } = await supabase.from('concursos').select('nome').eq('id', workspace.concurso_id).single();
-        setCurrentConcurso(c);
+        // 3. Info do Concurso
+        const workspace = workspaces.find(w => w.id === currentWorkspaceId);
+        if (workspace?.concurso_id) {
+          const { data: c } = await supabase.from('concursos').select('nome').eq('id', workspace.concurso_id).single();
+          setCurrentConcurso(c);
+        }
+      } finally {
+        setLoadingStats(false); // Finish loading
       }
     }
     loadStats();
@@ -216,63 +222,75 @@ export default function DashboardPage() {
 
   const daysToExam = 68;
 
-  if (loading) return (
-    <div className="flex flex-col items-center justify-center py-36 gap-4">
-      <Loader2 className="w-8 h-8 animate-spin text-accent" />
-      <p className="text-sm text-muted">Carregando painel...</p>
-    </div>
-  );
-
-  const totalTopics = subjects.reduce((a, s) => a + s.topicsTotal, 0);
-  const doneTopics  = subjects.reduce((a, s) => a + s.topicsDone, 0);
-
-  const editalData = subjects
-    .filter(s => s.topicsTotal > 0)
-    .map(s => ({
-      id: s.id,
-      name: s.nome,
-      value: s.topicsTotal,
-      color: s.cor,
-      slicePercent: totalTopics > 0 ? Math.round((s.topicsTotal / totalTopics) * 100) : 0,
-    }));
-
-  const alunoData = subjects
-    .filter(s => s.topicsDone > 0)
-    .map(s => ({
-      id: s.id,
-      name: s.nome,
-      value: s.topicsDone,
-      color: s.cor,
-      slicePercent: doneTopics > 0 ? Math.round((s.topicsDone / doneTopics) * 100) : 0,
-    }));
-    
-  const activeSubject = subjects.find(s => s.id === activeSubjectId);
-  const statsCards = [
-    { label: 'Questões Respondidas', value: stats?.total_questoes_respondidas || 0, icon: Target, color: 'text-orange-500', bg: 'bg-orange-500/10' },
-    { label: 'Simulados Feitos', value: stats?.total_simulados_finalizados || 0, icon: CheckCircle2, color: 'text-success', bg: 'bg-success/10' },
-    { label: 'Acerto Médio em Questões', value: stats?.media_acerto_questoes != null ? `${stats.media_acerto_questoes}%` : '--', icon: Icons.Crosshair, color: 'text-accent', bg: 'bg-accent/10' },
-    { label: 'Acerto Médio em Simulados', value: stats?.media_acerto_simulados != null ? `${stats.media_acerto_simulados}%` : '--', icon: TrendingUp, color: 'text-blue-400', bg: 'bg-blue-400/10' },
-  ];
+  const isPageLoading = loading || loadingStats;
 
   return (
-    <motion.div 
-      key="dashboard-page"
-      variants={pageVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      className="pb-16 space-y-8"
-    >
-      {/* ── BENTO GRID ── */}
-      <motion.div 
-        variants={staggerContainer}
-        initial="initial"
-        animate="animate"
-        className="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-4 h-auto md:h-[600px]"
-      >
+    <AnimatePresence mode="wait">
+      {isPageLoading ? (
+        <motion.div 
+          key="dashboard-loader"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="flex flex-col items-center justify-center py-40 gap-4"
+        >
+          <Loader2 className="w-8 h-8 animate-spin text-accent" />
+          <p className="text-sm text-muted">Carregando painel estratégico...</p>
+        </motion.div>
+      ) : (
+        <motion.div 
+          key="dashboard-page"
+          variants={pageVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          className="pb-16 space-y-8"
+        >
+          {/* Cálculo de Dados */}
+          {(() => {
+            const totalTopics = subjects.reduce((a, s) => a + s.topicsTotal, 0);
+            const doneTopics  = subjects.reduce((a, s) => a + s.topicsDone, 0);
+
+            const editalData = subjects
+              .filter(s => s.topicsTotal > 0)
+              .map(s => ({
+                id: s.id,
+                name: s.nome,
+                value: s.topicsTotal,
+                color: s.cor,
+                slicePercent: totalTopics > 0 ? Math.round((s.topicsTotal / totalTopics) * 100) : 0,
+              }));
+
+            const alunoData = subjects
+              .filter(s => s.topicsDone > 0)
+              .map(s => ({
+                id: s.id,
+                name: s.nome,
+                value: s.topicsDone,
+                color: s.cor,
+                slicePercent: doneTopics > 0 ? Math.round((s.topicsDone / doneTopics) * 100) : 0,
+              }));
+              
+            const activeSubject = subjects.find(s => s.id === activeSubjectId);
+            const statsCards = [
+              { label: 'Questões Respondidas', value: stats?.total_questoes_respondidas || 0, icon: Target, color: 'text-orange-500', bg: 'bg-orange-500/10' },
+              { label: 'Simulados Feitos', value: stats?.total_simulados_finalizados || 0, icon: CheckCircle2, color: 'text-success', bg: 'bg-success/10' },
+              { label: 'Acerto Médio em Questões', value: stats?.media_acerto_questoes != null ? `${stats.media_acerto_questoes}%` : '--', icon: Icons.Crosshair, color: 'text-accent', bg: 'bg-accent/10' },
+              { label: 'Acerto Médio em Simulados', value: stats?.media_acerto_simulados != null ? `${stats.media_acerto_simulados}%` : '--', icon: TrendingUp, color: 'text-blue-400', bg: 'bg-blue-400/10' },
+            ];
+
+            return (
+              <>
+                {/* ── BENTO GRID ── */}
+                <motion.div 
+                  variants={staggerContainer}
+                  initial="initial"
+                  animate="animate"
+                  className="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-4 h-auto md:h-[600px]"
+                >
         
         {/* LADO ESQUERDO: Hero + Stats (2x2 total) */}
-        <div className="md:col-span-2 md:row-span-2 grid grid-rows-[1.3fr_0.7fr] gap-4">
+        <motion.div variants={staggerContainer} className="md:col-span-2 md:row-span-2 grid grid-rows-[1.3fr_0.7fr] gap-4">
           {/* Card 1: Hero & Progress */}
           <motion.div 
             variants={staggerItem}
@@ -420,7 +438,7 @@ export default function DashboardPage() {
             </div>
           </motion.div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <motion.div variants={staggerContainer} className="grid grid-cols-2 gap-4">
             {statsCards.map((stat, i) => (
               <motion.div 
                 key={i} 
@@ -436,23 +454,23 @@ export default function DashboardPage() {
                 </div>
               </motion.div>
             ))}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* LADO DIREITO: Calendar + Note + Tasks */}
-        <div className="md:col-span-2 md:row-span-2 grid grid-rows-[0.7fr_1.3fr] gap-4">
+        <motion.div variants={staggerContainer} className="md:col-span-2 md:row-span-2 grid grid-rows-[0.7fr_1.3fr] gap-4">
           <motion.div variants={staggerItem} className="h-full overflow-hidden">
              <SmartCalendar selectedDate={selectedDate} onSelectDate={setSelectedDate} />
           </motion.div>
-          <div className="grid grid-cols-2 gap-4 h-full min-h-0">
+          <motion.div variants={staggerContainer} className="grid grid-cols-2 gap-4 h-full min-h-0">
             <motion.div variants={staggerItem} className="h-full min-h-0">
                <QuickNotes />
             </motion.div>
             <motion.div variants={staggerItem} className="h-full min-h-0">
-               <DailyTopics selectedDate={selectedDate} />
+                <DailyTopics selectedDate={selectedDate} />
             </motion.div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
       </motion.div>
 
@@ -527,7 +545,12 @@ export default function DashboardPage() {
           })}
         </motion.div>
       </section>
-    </motion.div>
+              </>
+            );
+          })()}
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 

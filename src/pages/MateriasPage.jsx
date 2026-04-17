@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Loader2, BookOpen } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -11,21 +11,28 @@ export default function MateriasPage() {
 
   useEffect(() => { fetchSubjects(); }, [fetchSubjects]);
 
-  if (loading) return (
-    <div className="flex flex-col items-center justify-center py-36 gap-4">
-      <Loader2 className="w-8 h-8 animate-spin text-accent" />
-      <p className="text-sm text-muted">Carregando matérias...</p>
-    </div>
-  );
-
   return (
-    <motion.div 
-      variants={pageVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      className="pb-20 space-y-8"
-    >
+    <AnimatePresence mode="wait">
+      {loading ? (
+        <motion.div 
+          key="materias-loader"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="flex flex-col items-center justify-center py-40 gap-4"
+        >
+          <Loader2 className="w-8 h-8 animate-spin text-accent" />
+          <p className="text-sm text-muted">Carregando catálogo de matérias...</p>
+        </motion.div>
+      ) : (
+        <motion.div 
+          key="materias-page-content"
+          variants={pageVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          className="pb-20 space-y-8"
+        >
       <motion.section variants={staggerItem}>
         {/* Header com ícone animável */}
         <div className="flex items-center gap-4 mb-2">
@@ -95,6 +102,8 @@ export default function MateriasPage() {
           </motion.div>
         )}
       </motion.div>
-    </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

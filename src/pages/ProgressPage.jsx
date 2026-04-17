@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { BarChart3, Loader2, Calendar, LayoutGrid, Radar as RadarIcon } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
@@ -287,23 +287,28 @@ export default function ProgressPage() {
       .slice(0, 8);
   }, [subjects]);
 
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center py-36 gap-4">
-        <Loader2 className="w-8 h-8 animate-spin text-accent" />
-        <p className="text-sm text-muted">Processando estatísticas avançadas...</p>
-      </div>
-    );
-  }
-
   return (
-    <motion.div 
-      variants={pageVariants} 
-      initial="initial" 
-      animate="animate" 
-      exit="exit" 
-      className="pb-24 space-y-10"
-    >
+    <AnimatePresence mode="wait">
+      {loading ? (
+        <motion.div 
+          key="progress-loader"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="flex flex-col items-center justify-center py-40 gap-4"
+        >
+          <Loader2 className="w-8 h-8 animate-spin text-accent" />
+          <p className="text-sm text-muted">Processando estatísticas avançadas...</p>
+        </motion.div>
+      ) : (
+        <motion.div 
+          key="progress-page-content"
+          variants={pageVariants} 
+          initial="initial" 
+          animate="animate" 
+          exit="exit" 
+          className="pb-24 space-y-10"
+        >
       <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-10">
         {/* Header with Period Filter */}
         <motion.section variants={staggerItem} className="flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -375,5 +380,7 @@ export default function ProgressPage() {
         <AchievementsGrid conquistas={rawStats.workspace?.conquistas || []} />
       </motion.div>
     </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

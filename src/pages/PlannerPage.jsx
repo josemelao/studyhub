@@ -219,22 +219,28 @@ export default function PlannerPage() {
     }
   };
 
-  if (loading) return (
-    <div className="flex flex-col items-center justify-center py-40 gap-4">
-      <Loader2 className="w-8 h-8 animate-spin text-accent" />
-      <p className="text-sm text-muted">Acessando biblioteca de tópicos...</p>
-    </div>
-  );
-
   return (
-    <motion.div 
-      key="planner-page-content"
-      variants={pageVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      className="pb-20 space-y-10"
-    >
+    <AnimatePresence mode="wait">
+      {loading ? (
+        <motion.div 
+          key="planner-loader"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="flex flex-col items-center justify-center py-40 gap-4"
+        >
+          <Loader2 className="w-8 h-8 animate-spin text-accent" />
+          <p className="text-sm text-muted">Acessando biblioteca de tópicos...</p>
+        </motion.div>
+      ) : (
+        <motion.div 
+          key="planner-page-content"
+          variants={pageVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          className="pb-20 space-y-10"
+        >
       <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-10">
         {/* Header */}
         <motion.div variants={staggerItem} className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
@@ -438,5 +444,7 @@ export default function PlannerPage() {
         confirmText="Sim, limpar tudo"
       />
     </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
