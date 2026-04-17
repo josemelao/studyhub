@@ -55,15 +55,47 @@ export default function ExamSessionPage() {
           .select('id, enunciado, opcoes, explicacao, resposta_correta')
           .in('id', s.questoes);
         if (qE) throw qE;
-        
-        // Manter a ordem especificada na sessão
-        const ordered = s.questoes.map(qid => qData.find(q => q.id === qid));
+
+        // Manter a ordem especificada na sessão, filtrando questões não encontradas
+        const ordered = s.questoes
+          .map(qid => qData.find(q => q.id === qid))
+          .filter(q => q !== undefined); // ← FILTRAR UNDEFINED
+
+        if (ordered.length === 0) {
+          throw new Error('Nenhuma questão válida encontrada para este simulado');
+        }
+
         setQuestions(ordered);
       } catch (err) { console.error(err); }
       finally { setLoading(false); }
     }
     load();
   }, [id, navigate, user, currentWorkspaceId]);
+
+  // 5. Finalizar
+  const finishExam = useCallback(async () => {
+    try {
+      setSubmitting(true);
+      
+      // Calcular resultados antes de salvar
+      const totalQ = questions.length;
+      const correctQ = questions.filter(q => answers[q.id] === q.resposta_correta).length;
+      const score = totalQ > 0 ? Math.round((correctQ / totalQ) * 100) : 0;
+
+      const { error } = await supabase.from('exam_sessions').update({
+        status: 'finalizada',
+        finalizada_em: new Date().toISOString(),
+        tempo_gasto_segundos: session.configuracao.tempo_minutos * 60 - timeLeft,
+        score_percent: score,
+        questions_total: totalQ,
+        questions_correct: correctQ
+      }).eq('id', id).eq('workspace_id', currentWorkspaceId);
+      
+      if (error) throw error;
+      navigate(`/modo-prova/resultado/${id}`);
+    } catch (err) { console.error(err); }
+    finally { setSubmitting(false); }
+  }, [id, timeLeft, session, navigate, questions, answers, currentWorkspaceId]);
 
   // 2. Timer
   useEffect(() => {
@@ -99,30 +131,7 @@ export default function ExamSessionPage() {
       .eq('workspace_id', currentWorkspaceId);
   };
 
-  // 5. Finalizar
-  const finishExam = useCallback(async () => {
-    try {
-      setSubmitting(true);
-      
-      // Calcular resultados antes de salvar
-      const totalQ = questions.length;
-      const correctQ = questions.filter(q => answers[q.id] === q.resposta_correta).length;
-      const score = totalQ > 0 ? Math.round((correctQ / totalQ) * 100) : 0;
 
-      const { error } = await supabase.from('exam_sessions').update({
-        status: 'finalizada',
-        finalizada_em: new Date().toISOString(),
-        tempo_gasto_segundos: session.configuracao.tempo_minutos * 60 - timeLeft,
-        score_percent: score,
-        questions_total: totalQ,
-        questions_correct: correctQ
-      }).eq('id', id).eq('workspace_id', currentWorkspaceId);
-      
-      if (error) throw error;
-      navigate(`/modo-prova/resultado/${id}`);
-    } catch (err) { console.error(err); }
-    finally { setSubmitting(false); }
-  }, [id, timeLeft, session, navigate, questions, answers, currentWorkspaceId]);
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-36 gap-4">
