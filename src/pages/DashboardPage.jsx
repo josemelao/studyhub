@@ -26,6 +26,7 @@ export default function DashboardPage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [loadingStats, setLoadingStats] = useState(true);
   const [stats, setStats] = useState(null);
+  const [isMounted, setIsMounted] = useState(false);
   const [profile, setProfile] = useState(null);
   const [currentConcurso, setCurrentConcurso] = useState(null);
   const [activeSubjectId, setActiveSubjectId] = useState(null);
@@ -221,6 +222,7 @@ export default function DashboardPage() {
       }
     }
     loadStats();
+    setIsMounted(true);
   }, [fetchSubjects, user, currentWorkspaceId, workspaces]);
 
   const daysToExam = 68;
@@ -358,26 +360,28 @@ export default function DashboardPage() {
                       )}
                     </AnimatePresence>
                   </div>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart margin={{ top: 0, right: 15, bottom: 0, left: 15 }}>
-                      <Pie
-                        data={editalData}
-                        shape={renderSyncedSlice}
-                        innerRadius="60%"
-                        outerRadius="82%"
-                        paddingAngle={2}
-                        dataKey="value"
-                        stroke="none"
-                        isAnimationActive={false}
-                        onMouseEnter={(_, index) => handleActivateSubject(editalData, index)}
-                        onMouseLeave={handleClearActiveSubject}
-                      >
-                        {editalData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                    </PieChart>
-                  </ResponsiveContainer>
+                  {isMounted && (
+                    <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+                      <PieChart margin={{ top: 0, right: 15, bottom: 0, left: 15 }} tabIndex={-1}>
+                        <Pie
+                          data={editalData}
+                          shape={renderSyncedSlice}
+                          innerRadius="60%"
+                          outerRadius="82%"
+                          paddingAngle={2}
+                          dataKey="value"
+                          stroke="none"
+                          isAnimationActive={false}
+                          onMouseEnter={(_, index) => handleActivateSubject(editalData, index)}
+                          onMouseLeave={handleClearActiveSubject}
+                        >
+                          {editalData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                      </PieChart>
+                    </ResponsiveContainer>
+                  )}
                 </div>
 
                 {/* Pizza 2: Realidade */}
@@ -416,26 +420,28 @@ export default function DashboardPage() {
                       )}
                     </AnimatePresence>
                   </div>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart margin={{ top: 0, right: 15, bottom: 0, left: 15 }}>
-                      <Pie
-                        data={alunoData}
-                        shape={renderSyncedSlice}
-                        innerRadius="60%"
-                        outerRadius="82%"
-                        paddingAngle={3}
-                        dataKey="value"
-                        stroke="none"
-                        isAnimationActive={false}
-                        onMouseEnter={(_, index) => handleActivateSubject(alunoData, index)}
-                        onMouseLeave={handleClearActiveSubject}
-                      >
-                        {alunoData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} className="drop-shadow-sm" />
-                        ))}
-                      </Pie>
-                    </PieChart>
-                  </ResponsiveContainer>
+                  {isMounted && (
+                    <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+                      <PieChart margin={{ top: 0, right: 15, bottom: 0, left: 15 }} tabIndex={-1}>
+                        <Pie
+                          data={alunoData}
+                          shape={renderSyncedSlice}
+                          innerRadius="60%"
+                          outerRadius="82%"
+                          paddingAngle={3}
+                          dataKey="value"
+                          stroke="none"
+                          isAnimationActive={false}
+                          onMouseEnter={(_, index) => handleActivateSubject(alunoData, index)}
+                          onMouseLeave={handleClearActiveSubject}
+                        >
+                          {alunoData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} className="drop-shadow-sm" />
+                          ))}
+                        </Pie>
+                      </PieChart>
+                    </ResponsiveContainer>
+                  )}
                 </div>
               </div>
             </div>

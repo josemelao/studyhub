@@ -4,9 +4,11 @@ import {
   Tooltip, ResponsiveContainer, Legend 
 } from 'recharts';
 import { staggerItem } from '../../lib/animations';
+import { useContainerSize } from '../../hooks/useContainerSize';
 
 export default function PerformanceEvolutionChart({ data }) {
   const hasData = data && data.length > 0;
+  const { ref, ready } = useContainerSize();
 
   return (
     <motion.div variants={staggerItem} className="glass-card p-6 h-[400px] flex flex-col">
@@ -17,12 +19,12 @@ export default function PerformanceEvolutionChart({ data }) {
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 w-full">
+      <div ref={ref} className="flex-1 min-h-0 w-full">
         {!hasData ? (
           <div className="h-full flex flex-col items-center justify-center text-muted border-2 border-dashed border-white/5 rounded-2xl">
             <p className="text-sm">Sessões insuficientes para visualizar evolução.</p>
           </div>
-        ) : (
+        ) : ready ? (
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
@@ -81,7 +83,7 @@ export default function PerformanceEvolutionChart({ data }) {
               />
             </LineChart>
           </ResponsiveContainer>
-        )}
+        ) : null}
       </div>
     </motion.div>
   );

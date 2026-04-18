@@ -292,6 +292,17 @@
   }
 }
 
+/* ── Recharts: remove outline de foco ao clicar nos gráficos ── */
+/* Recharts define tabIndex=0 internamente, então precisamos de maior especificidade */
+div.recharts-wrapper:focus,
+div.recharts-wrapper:focus-visible,
+div.recharts-wrapper *:focus,
+div.recharts-wrapper *:focus-visible {
+  outline: 0 !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+}
+
 @layer components {
   .glass-card {
     background: var(--card-bg);

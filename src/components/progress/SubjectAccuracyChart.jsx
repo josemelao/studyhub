@@ -5,10 +5,12 @@ import {
 } from 'recharts';
 import { LayoutGrid, Radar as RadarIcon } from 'lucide-react';
 import { staggerItem } from '../../lib/animations';
+import { useContainerSize } from '../../hooks/useContainerSize';
 import SubjectRadarChart from './SubjectRadarChart';
 
 export default function SubjectAccuracyChart({ data, viewMode, setViewMode }) {
   const hasData = data && data.length > 0;
+  const { ref, ready } = useContainerSize();
 
   return (
     <motion.div variants={staggerItem} className="glass-card p-6 h-[400px] flex flex-col relative overflow-hidden">
@@ -49,14 +51,14 @@ export default function SubjectAccuracyChart({ data, viewMode, setViewMode }) {
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 w-full">
+      <div ref={ref} className="flex-1 min-h-0 w-full">
         {!hasData ? (
           <div className="h-full flex flex-col items-center justify-center text-muted border-2 border-dashed border-white/5 rounded-2xl">
             <p className="text-sm">Ainda não há dados suficientes por matéria.</p>
           </div>
         ) : viewMode === 'radar' ? (
           <SubjectRadarChart data={data} />
-        ) : (
+        ) : ready ? (
           <ResponsiveContainer width="100%" height="100%">
             <BarChart 
               data={data} 
@@ -105,7 +107,7 @@ export default function SubjectAccuracyChart({ data, viewMode, setViewMode }) {
               </Bar>
             </BarChart>
           </ResponsiveContainer>
-        )}
+        ) : null}
       </div>
     </motion.div>
   );
