@@ -29,11 +29,11 @@ export default function LoginPage() {
         const { error, data } = await signUp(email, password);
         if (error) throw error;
         
-        // Se o email confirmation estiver ativado, a sessão será null
-        if (data?.user && !data?.session) {
-          setSuccess('Quase lá! Enviamos um link de confirmação para o seu e-mail. Verifique sua caixa de entrada para ativar sua conta.');
+        // Se o email confirmation estiver ativado no Supabase, a sessão será null
+        if (!data?.session) {
+          setSuccess('✅ Conta criada! Mas atenção: enviamos um link de confirmação para o seu e-mail. Você precisa clicar lá para validar sua conta antes de entrar.');
         } else {
-          setSuccess('Conta criada com sucesso!');
+          setSuccess('✅ Conta criada com sucesso! Você já pode entrar.');
         }
         setMode('login');
       }
@@ -41,7 +41,7 @@ export default function LoginPage() {
       // Mapeamento de erros técnicos para mensagens amigáveis em Português
       const errorMap = {
         'Invalid login credentials': 'E-mail ou senha incorretos. Verifique seus dados.',
-        'Email not confirmed': 'Seu e-mail ainda não foi confirmado. Verifique sua caixa de entrada.',
+        'Email not confirmed': '⚠️ Seu e-mail ainda não foi validado. Por favor, clique no link que enviamos para sua caixa de entrada.',
         'User not found': 'Não encontramos nenhuma conta com este e-mail.',
         'User already registered': 'Este e-mail já está sendo usado por outra conta.',
         'Password should be at least 6 characters': 'A senha deve ter pelo menos 6 caracteres.',
