@@ -201,6 +201,25 @@ export default function FeedbackInboxPage() {
 
   useEffect(() => { loadFeedbacks(); }, [filter, typeFilter]);
 
+  // Sincronização em Tempo Real (Realtime)
+  useEffect(() => {
+    const channel = supabase
+      .channel('feedback_updates')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'feedbacks' },
+        () => {
+          // Pequeno delay para garantir que o banco processou a mudança antes de buscarmos
+          setTimeout(() => loadFeedbacks(), 500);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [filter, typeFilter]); // Re-inscrever se filtros mudarem para garantir consistência
+
   const handleStatusChange = (id, newStatus) => {
     setFeedbacks(prev => prev.map(f => f.id === id ? { ...f, status: newStatus } : f));
   };

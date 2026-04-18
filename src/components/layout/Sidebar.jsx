@@ -54,7 +54,9 @@ export default function Sidebar() {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'feedbacks' },
-        () => fetchCount()
+        () => {
+          setTimeout(() => fetchCount(), 500);
+        }
       )
       .subscribe();
 
