@@ -69,13 +69,10 @@ export default function UserDropdown({ profile, onOpenSettings }) {
                 <h3 className="text-lg font-bold text-primary mb-1 tracking-tight">{displayName}</h3>
                 <p className="text-xs font-medium text-muted mb-4 truncate w-full px-4">{user?.email}</p>
                 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center">
                   <span className="px-3 py-1 rounded-lg bg-primary border border-default text-[10px] font-black text-muted uppercase tracking-widest">
                     Free
                   </span>
-                  <button className="text-xs font-bold text-accent hover:opacity-80 transition-opacity">
-                    Fazer Upgrade
-                  </button>
                 </div>
               </div>
             </div>
