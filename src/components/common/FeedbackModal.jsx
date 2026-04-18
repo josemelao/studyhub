@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Bug, Lightbulb, HelpCircle, Send, CheckCircle, AlertCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
+import { useWorkspace } from '../../contexts/WorkspaceContext';
 
 const TYPES = [
   {
@@ -37,6 +38,7 @@ const TYPES = [
 
 export default function FeedbackModal({ isOpen, onClose }) {
   const { user } = useAuth();
+  const { currentConcursoId, currentWorkspaceId } = useWorkspace();
   const [selectedType, setSelectedType] = useState('bug');
   const [message, setMessage] = useState('');
   const [status, setStatus] = useState('idle'); // idle | loading | success | error
@@ -79,6 +81,8 @@ export default function FeedbackModal({ isOpen, onClose }) {
     const { error } = await supabase.from('feedbacks').insert({
       user_id: user?.id ?? null,
       user_email: user?.email ?? null,
+      concurso_id: currentConcursoId ?? null,
+      workspace_id: currentWorkspaceId ?? null,
       type: selectedType,
       message: message.trim(),
     });

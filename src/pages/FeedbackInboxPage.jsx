@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
-import { Inbox, Bug, Lightbulb, HelpCircle, Clock, CheckCircle, RefreshCw, Loader2, ChevronDown, ChevronUp, User } from 'lucide-react';
+import { Inbox, Bug, Lightbulb, HelpCircle, Clock, CheckCircle, RefreshCw, Loader2, ChevronDown, ChevronUp, User, Trophy, LayoutDashboard } from 'lucide-react';
 
 const TYPE_CONFIG = {
   bug: { label: 'Problema', icon: Bug, color: 'var(--error)', bg: 'rgba(var(--error-rgb), 0.08)', border: 'rgba(var(--error-rgb), 0.2)' },
@@ -87,12 +87,29 @@ function FeedbackCard({ item, onStatusChange }) {
             <span className="text-xs text-muted">{formatDate(item.created_at)}</span>
           </div>
           <p className="text-sm text-primary font-medium mt-0.5 truncate">{item.message}</p>
-          {item.user_email && (
-            <div className="flex items-center gap-1 mt-1">
-              <User className="w-3 h-3 text-muted" />
-              <span className="text-[10px] text-muted">{item.user_email}</span>
-            </div>
-          )}
+          <div className="flex items-center gap-4 mt-1">
+            {item.user_email && (
+              <div className="flex items-center gap-1">
+                <User className="w-3 h-3 text-muted" />
+                <span className="text-[10px] text-muted">{item.user_email}</span>
+              </div>
+            )}
+            {item.concursos?.nome ? (
+              <div className="flex items-center gap-1">
+                <Trophy className="w-3 h-3 text-accent" />
+                <span className="text-[10px] font-bold text-accent uppercase tracking-wider">{item.concursos.nome}</span>
+              </div>
+            ) : item.workspaces?.name ? (
+              <div className="flex items-center gap-1">
+                <LayoutDashboard className="w-4 h-4 text-accent/70" />
+                <span className="text-[10px] font-bold text-primary/80 uppercase tracking-wider">{item.workspaces.name}</span>
+              </div>
+            ) : item.concurso_id || item.workspace_id ? (
+              <div className="flex items-center gap-1 opacity-50">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted italic">ID Contexto: {(item.concurso_id || item.workspace_id).slice(0,8)}...</span>
+              </div>
+            ) : null}
+          </div>
         </div>
 
         {/* Status badge */}
@@ -171,7 +188,7 @@ export default function FeedbackInboxPage() {
     setLoading(true);
     let query = supabase
       .from('feedbacks')
-      .select('*')
+      .select('*, concursos(nome), workspaces(name)')
       .order('created_at', { ascending: false });
 
     if (filter !== 'all') query = query.eq('status', filter);
@@ -277,7 +294,7 @@ export default function FeedbackInboxPage() {
         </div>
       ) : (
         <div className="space-y-3">
-          <AnimatePresence>
+          <AnimatePresence mode="popLayout">
             {feedbacks.map((item) => (
               <FeedbackCard key={item.id} item={item} onStatusChange={handleStatusChange} />
             ))}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { 
@@ -9,7 +9,7 @@ import {
 import { useAuth } from '../../hooks/useAuth';
 import { useIsAdmin } from '../../hooks/useIsAdmin';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import StreakWidget from '../ui/StreakWidget';
 
 const navItems = [
@@ -28,6 +28,8 @@ export default function Sidebar() {
   const isAdmin = useIsAdmin();
   const { workspaces, currentWorkspaceId, setWorkspace } = useWorkspace();
   const [pendingFeedbackCount, setPendingFeedbackCount] = useState(0);
+  const [isWorkspaceOpen, setIsWorkspaceOpen] = useState(false);
+  const workspaceRef = useRef(null);
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -59,6 +61,19 @@ export default function Sidebar() {
     };
   }, [isAdmin]);
 
+  // Fechar dropdown ao clicar fora
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (workspaceRef.current && !workspaceRef.current.contains(event.target)) {
+        setIsWorkspaceOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const currentWorkspace = workspaces.find(ws => ws.id === currentWorkspaceId);
+
   return (
     <aside className="w-64 border-r border-default h-full bg-secondary/50 backdrop-blur-xl flex flex-col fixed left-0 top-0 overflow-y-auto z-[120]">
       <Link 
@@ -75,22 +90,52 @@ export default function Sidebar() {
       </Link>
 
       {workspaces.length > 0 && (
-        <div className="px-6 mb-6">
-          <div className="relative group">
-            <select
-              value={currentWorkspaceId || ''}
-              onChange={(e) => setWorkspace(e.target.value)}
-              className="w-full appearance-none bg-white/[0.05] hover:bg-white/[0.08] border border-white/10 text-primary text-sm font-bold rounded-xl px-4 py-2.5 outline-none transition-all cursor-pointer shadow-sm truncate pr-10"
+        <div className="px-6 mb-6" ref={workspaceRef}>
+          <div className="relative">
+            {/* Custom Trigger */}
+            <button
+              onClick={() => setIsWorkspaceOpen(!isWorkspaceOpen)}
+              className={`w-full flex items-center justify-between gap-3 bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 rounded-2xl px-4 py-3 transition-all duration-200 group ${
+                isWorkspaceOpen ? 'border-accent/40 bg-white/[0.08] shadow-glow-accent/10' : ''
+              }`}
             >
-              {workspaces.map(ws => (
-                <option key={ws.id} value={ws.id} className="bg-[#0f0f1a] text-primary">
-                  {ws.name}
-                </option>
-              ))}
-            </select>
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted group-hover:text-primary transition-colors">
-              <ChevronDown className="w-4 h-4" />
-            </div>
+              <span className="text-sm font-bold text-primary truncate">
+                {currentWorkspace?.name || 'Selecionar Edital'}
+              </span>
+              <ChevronDown className={`w-4 h-4 text-muted group-hover:text-primary transition-transform duration-300 ${isWorkspaceOpen ? 'rotate-180 text-accent' : ''}`} />
+            </button>
+
+            {/* Custom Dropdown List */}
+            <AnimatePresence>
+              {isWorkspaceOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  className="absolute left-0 right-0 mt-2 p-2 bg-[#12121a] border border-white/10 rounded-2xl shadow-2xl z-[130] backdrop-blur-xl"
+                >
+                  <div className="max-h-60 overflow-y-auto custom-scrollbar space-y-1">
+                    {workspaces.map(ws => (
+                      <button
+                        key={ws.id}
+                        onClick={() => {
+                          setWorkspace(ws.id);
+                          setIsWorkspaceOpen(false);
+                        }}
+                        className={`w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                          ws.id === currentWorkspaceId
+                            ? 'bg-accent/10 text-accent'
+                            : 'text-muted hover:bg-white/5 hover:text-primary'
+                        }`}
+                      >
+                        {ws.name}
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       )}
