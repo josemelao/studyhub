@@ -14,6 +14,12 @@ export function useContainerSize() {
     const el = ref.current;
     if (!el) return;
 
+    // Check initial size immediately
+    const rect = el.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0) {
+      setReady(true);
+    }
+
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const { width, height } = entry.contentRect;
