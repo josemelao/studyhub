@@ -55,13 +55,25 @@ export default function Navbar() {
     fetchNotifications();
     
     const channel = supabase
-      .channel('navbar_notifications')
+      .channel(`notifications_realtime_${user.id}`)
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
-        () => fetchNotifications()
+        { 
+          event: 'INSERT', 
+          schema: 'public', 
+          table: 'notifications', 
+          filter: `user_id=eq.${user.id}` 
+        },
+        () => {
+          // Delay de segurança para commit do banco
+          setTimeout(() => fetchNotifications(), 500);
+        }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('Conectado ao canal de notificações em tempo real!');
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);

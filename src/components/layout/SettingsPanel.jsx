@@ -370,7 +370,7 @@ export default function SettingsPanel({ isOpen, onClose, currentTheme, onThemeCh
                     </p>
 
                     <div className="bg-primary/50 p-4 rounded-xl border border-error/10">
-                      <p className="text-xs font-bold text-muted mb-3">Para prosseguir, digite o nome do seu edital: <span className="text-primary italic">"{currentWorkspaceName}"</span></p>
+                      <p className="text-xs font-bold text-muted mb-3">Para prosseguir, digite o nome do seu edital: <span className="text-primary">"{currentWorkspaceName}"</span></p>
                       <input 
                         type="text" 
                         value={resetConfirmation}
