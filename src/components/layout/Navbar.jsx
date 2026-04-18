@@ -1,16 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Palette, Bell, User, Flame, Zap } from 'lucide-react';
+import { Palette, Bell, User, Flame, Zap, Settings } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { calculateLevel, calculateProgress } from '../../lib/levels';
 import ThemePicker from '../ui/ThemePicker';
+import UserDropdown from './UserDropdown';
+import SettingsPanel from './SettingsPanel';
 
 export default function Navbar() {
   const { user } = useAuth();
   const getThemeKey = (userId) => `studyhub_theme_${userId}`;
   const [theme, setTheme] = useState('luminary');
   const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [streak, setStreak] = useState(0);
   const [xp, setXp] = useState(0);
   const [profile, setProfile] = useState(null);
@@ -134,25 +137,20 @@ export default function Navbar() {
           <Bell className="w-5 h-5" />
         </button>
 
+        <button 
+          onClick={() => setIsSettingsOpen(true)}
+          className="p-2.5 rounded-xl bg-secondary border border-default text-muted hover:text-primary transition-all hover:border-accent/30"
+          title="Configurações"
+        >
+          <Settings className="w-5 h-5" />
+        </button>
+
         <div className="h-8 w-px bg-border-default mx-1" />
 
-        <div className="flex items-center gap-3 pl-2">
-          <div className="text-right hidden sm:block">
-            <p className="text-sm font-bold text-primary leading-none">
-              {profile?.display_name || user?.email?.split('@')[0]}
-            </p>
-            <p className="text-[10px] font-black uppercase tracking-widest text-muted mt-1">
-              Estudante Premium
-            </p>
-          </div>
-          <motion.div 
-            whileHover={{ scale: 1.1 }}
-            className="w-10 h-10 rounded-xl bg-gradient-accent flex items-center justify-center border-2 border-white/10 shadow-lg glow-accent"
-          >
-            <User className="w-5 h-5 text-white" />
-          </motion.div>
-        </div>
+        <UserDropdown profile={profile} onOpenSettings={() => setIsSettingsOpen(true)} />
       </div>
+
+      <SettingsPanel isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
     </header>
   );
 }
