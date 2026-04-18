@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { LogOut, Settings, HelpCircle, ShieldAlert } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
-export default function UserDropdown({ profile, onOpenSettings }) {
+export default function UserDropdown({ profile, onOpenSettings, onOpenFeedback }) {
   const { user, signOut } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -89,7 +89,13 @@ export default function UserDropdown({ profile, onOpenSettings }) {
                 <Settings className="w-5 h-5 text-muted group-hover:text-accent" /> Configurações da Conta
               </button>
               
-              <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-primary hover:bg-accent/10 hover:text-accent transition-colors text-left mt-1">
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  onOpenFeedback?.();
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-primary hover:bg-accent/10 hover:text-accent transition-colors text-left mt-1"
+              >
                 <HelpCircle className="w-5 h-5 text-muted group-hover:text-accent" /> Ajuda e Feedback
               </button>
               

@@ -7,6 +7,7 @@ import { calculateLevel, calculateProgress } from '../../lib/levels';
 import ThemePicker from '../ui/ThemePicker';
 import UserDropdown from './UserDropdown';
 import SettingsPanel from './SettingsPanel';
+import FeedbackModal from '../common/FeedbackModal';
 
 export default function Navbar() {
   const { user, profile } = useAuth();
@@ -14,6 +15,7 @@ export default function Navbar() {
   const [theme, setTheme] = useState('luminary');
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [streak, setStreak] = useState(0);
   const [xp, setXp] = useState(0);
 
@@ -139,7 +141,7 @@ export default function Navbar() {
 
         <div className="h-8 w-px bg-border-default mx-1" />
 
-        <UserDropdown profile={profile} onOpenSettings={() => setIsSettingsOpen(true)} />
+        <UserDropdown profile={profile} onOpenSettings={() => setIsSettingsOpen(true)} onOpenFeedback={() => setIsFeedbackOpen(true)} />
       </div>
 
       <SettingsPanel 
@@ -147,6 +149,10 @@ export default function Navbar() {
         onClose={() => setIsSettingsOpen(false)}
         currentTheme={theme}
         onThemeChange={handleThemeChange}
+      />
+      <FeedbackModal
+        isOpen={isFeedbackOpen}
+        onClose={() => setIsFeedbackOpen(false)}
       />
     </header>
   );
