@@ -58,22 +58,22 @@ export default function UserDropdown({ profile, onOpenSettings }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="absolute right-0 top-full mt-3 w-80 rounded-2xl bg-[#1a1b26] border border-white/10 shadow-2xl overflow-hidden z-[110]"
+            className="absolute right-0 top-full mt-3 w-80 rounded-2xl glass-card border border-default shadow-2xl overflow-hidden z-[110]"
           >
             {/* Header */}
-            <div className="p-6 border-b border-white/5 bg-white/[0.02]">
+            <div className="p-6 border-b border-default bg-secondary">
               <div className="flex flex-col items-center text-center">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-accent flex items-center justify-center shadow-glow-accent mb-4 border border-white/20">
+                <div className="w-16 h-16 rounded-2xl bg-accent flex items-center justify-center shadow-glow-accent mb-4 border border-default">
                   <span className="text-2xl font-black text-white">{initial}</span>
                 </div>
-                <h3 className="text-lg font-bold text-white mb-1 tracking-tight">{displayName}</h3>
+                <h3 className="text-lg font-bold text-primary mb-1 tracking-tight">{displayName}</h3>
                 <p className="text-xs font-medium text-muted mb-4 truncate w-full px-4">{user?.email}</p>
                 
                 <div className="flex items-center gap-3">
-                  <span className="px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-[10px] font-black text-white uppercase tracking-widest">
+                  <span className="px-3 py-1 rounded-lg bg-primary border border-default text-[10px] font-black text-muted uppercase tracking-widest">
                     Free
                   </span>
-                  <button className="text-xs font-bold text-accent hover:text-accent-light transition-colors">
+                  <button className="text-xs font-bold text-accent hover:opacity-80 transition-opacity">
                     Fazer Upgrade
                   </button>
                 </div>
@@ -81,22 +81,22 @@ export default function UserDropdown({ profile, onOpenSettings }) {
             </div>
 
             {/* Ações */}
-            <div className="p-3">
+            <div className="p-3 bg-secondary">
               <button 
                 onClick={() => {
                   setIsOpen(false);
                   onOpenSettings();
                 }}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-primary hover:bg-white/5 transition-colors text-left"
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-primary hover:bg-accent/10 hover:text-accent transition-colors text-left"
               >
-                <Settings className="w-5 h-5 text-muted" /> Configurações da Conta
+                <Settings className="w-5 h-5 text-muted group-hover:text-accent" /> Configurações da Conta
               </button>
               
-              <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-primary hover:bg-white/5 transition-colors text-left mt-1">
-                <HelpCircle className="w-5 h-5 text-muted" /> Ajuda e Feedback
+              <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-primary hover:bg-accent/10 hover:text-accent transition-colors text-left mt-1">
+                <HelpCircle className="w-5 h-5 text-muted group-hover:text-accent" /> Ajuda e Feedback
               </button>
               
-              <div className="h-px bg-white/5 my-2 mx-2" />
+              <div className="h-px bg-border-default/50 my-2 mx-2 border-b border-default" />
 
               <button 
                 onClick={() => signOut()}
