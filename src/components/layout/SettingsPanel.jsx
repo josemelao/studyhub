@@ -144,6 +144,12 @@ export default function SettingsPanel({ isOpen, onClose }) {
           if (e4) throw e4;
 
           resolve();
+          
+          // Força o recarregamento da página para limpar o cache visual do React
+          setTimeout(() => {
+            window.location.reload();
+          }, 1500);
+          
         } catch (err) {
           reject(err);
         }
