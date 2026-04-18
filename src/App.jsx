@@ -27,6 +27,7 @@ import HistoryPage from './pages/HistoryPage';
 import AchievementToast from './components/ui/AchievementToast';
 import PlannerPage from './pages/PlannerPage';
 import ContentAdminPage from './pages/ContentAdminPage';
+import FeedbackInboxPage from './pages/FeedbackInboxPage';
 import OnboardingPage from './pages/OnboardingPage';
 import { Toaster } from 'react-hot-toast';
 
@@ -126,6 +127,7 @@ function AuthenticatedApp() {
             <Route path="/favoritos" element={<FavoritesPage />} />
             <Route path="/historico" element={<HistoryPage />} />
             <Route path="/gerenciar-conteudo" element={isAdmin ? <ContentAdminPage /> : <Navigate to="/dashboard" replace />} />
+            <Route path="/feedback-inbox" element={isAdmin ? <FeedbackInboxPage /> : <Navigate to="/dashboard" replace />} />
             <Route path="/onboarding" element={<OnboardingPage />} />
             
             {/* Redirecionamentos internos se necessário */}

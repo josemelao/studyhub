@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { calculateLevel } from '../lib/levels';
 import { pageVariants, staggerContainer, staggerItem } from '../lib/animations';
+import { useContainerSize } from '../hooks/useContainerSize';
 
 // Bento Components
 import SmartCalendar from '../components/dashboard/SmartCalendar';
@@ -26,7 +27,8 @@ export default function DashboardPage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [loadingStats, setLoadingStats] = useState(true);
   const [stats, setStats] = useState(null);
-  const [isMounted, setIsMounted] = useState(false);
+  const { ref: refEdital, ready: readyEdital } = useContainerSize();
+  const { ref: refAluno, ready: readyAluno } = useContainerSize();
   const [profile, setProfile] = useState(null);
   const [currentConcurso, setCurrentConcurso] = useState(null);
   const [activeSubjectId, setActiveSubjectId] = useState(null);
@@ -222,7 +224,6 @@ export default function DashboardPage() {
       }
     }
     loadStats();
-    setIsMounted(true);
   }, [fetchSubjects, user, currentWorkspaceId, workspaces]);
 
   const daysToExam = 68;
@@ -325,7 +326,7 @@ export default function DashboardPage() {
                 onPointerLeave={handleClearActiveSubject}
               >
                 {/* Pizza 1: Edital */}
-                <div className="relative group h-full" onMouseLeave={handleClearActiveSubject}>
+                <div className="relative group h-full" onMouseLeave={handleClearActiveSubject} ref={refEdital}>
                   <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10 px-2 text-center overflow-hidden">
                     <AnimatePresence mode="wait">
                       {activeSubject ? (
@@ -360,7 +361,7 @@ export default function DashboardPage() {
                       )}
                     </AnimatePresence>
                   </div>
-                  {isMounted && (
+                  {readyEdital && (
                     <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                       <PieChart margin={{ top: 0, right: 15, bottom: 0, left: 15 }} tabIndex={-1}>
                         <Pie
@@ -385,7 +386,7 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Pizza 2: Realidade */}
-                <div className="relative group h-full" onMouseLeave={handleClearActiveSubject}>
+                <div className="relative group h-full" onMouseLeave={handleClearActiveSubject} ref={refAluno}>
                   <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10 px-2 text-center overflow-hidden">
                     <AnimatePresence mode="wait">
                       {activeSubject ? (
@@ -420,7 +421,7 @@ export default function DashboardPage() {
                       )}
                     </AnimatePresence>
                   </div>
-                  {isMounted && (
+                  {readyAluno && (
                     <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                       <PieChart margin={{ top: 0, right: 15, bottom: 0, left: 15 }} tabIndex={-1}>
                         <Pie
