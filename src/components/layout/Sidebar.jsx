@@ -36,12 +36,14 @@ export default function Sidebar() {
 
     // Fetch initial count
     const fetchCount = async () => {
-      const { count } = await supabase
+      const { data, count, error } = await supabase
         .from('feedbacks')
-        .select('*', { count: 'exact', head: true })
+        .select('id', { count: 'exact' })
         .eq('status', 'pending');
       
-      setPendingFeedbackCount(count || 0);
+      if (!error) {
+        setPendingFeedbackCount(count || 0);
+      }
     };
 
     fetchCount();
