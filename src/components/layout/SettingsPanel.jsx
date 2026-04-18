@@ -68,17 +68,19 @@ export default function SettingsPanel({ isOpen, onClose }) {
     if (!user) return;
     setSavingProfile(true);
     try {
-      const { error } = await supabase.from('profiles').update({
+      // O .select().single() força o Supabase a tentar retornar a linha alterada. 
+      // Se o RLS barrar, ele agora dará um erro real em vez de falhar em silêncio.
+      const { data, error } = await supabase.from('profiles').update({
         display_name: displayName,
         bio: bio,
         updated_at: new Date().toISOString()
-      }).eq('id', user.id);
+      }).eq('id', user.id).select().single();
       
       if (error) throw error;
       toast.success('Perfil atualizado!');
     } catch (err) {
-      toast.error('Erro ao salvar perfil.');
-      console.error(err);
+      toast.error('Erro de Permissão: ' + (err.message || 'Falha ao salvar.'));
+      console.error("Erro no Salvador de Perfil:", err);
     } finally {
       setSavingProfile(false);
     }
