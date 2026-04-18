@@ -1,16 +1,62 @@
-# React + Vite
+# 🎓 StudyHub - Plataforma Inteligente para Concurseiros
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+O **StudyHub** é uma aplicação web moderna projetada para centralizar e otimizar a rotina de estudos para concursos públicos. Com foco em visualização de progresso e produtividade, a plataforma oferece ferramentas estratégicas para estudantes e administradores.
 
-Currently, two official plugins are available:
+![StudyHub Dashboard Preview](src/assets/preview.png) *(Nota: Adicione seu screenshot aqui posteriormente)*
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🚀 Funcionalidades Principais
 
-## React Compiler
+### Para o Estudante
+- **Dashboard Estratégico**: Visualização bento-style com progresso do edital vs. realidade de estudo.
+- **Gerenciamento de Matérias**: Acompanhamento detalhado de tópicos concluídos e aproveitamento.
+- **Planejador Dinâmico**: Organização de cronograma semanal.
+- **Modo Praticar**: Resolução de questões e acompanhamento de desempenho por matéria.
+- **Inbox de Favoritos & Histórico**: Acesso rápido a conteúdos salvos e acompanhamento de evolução.
+- **Central de Ajuda & Feedback**: Sistema integrado para reporte de bugs e sugestões.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Para o Admin
+- **Gerenciador de Conteúdo**: Ferramenta robusta para importação de arquivos Word (.docx) e criação de apostilas em Markdown.
+- **Feedback Inbox**: Painel centralizado para gerenciar solicitações de usuários com filtros por status e tipo.
 
-## Expanding the ESLint configuration
+## 🛠️ Tech Stack
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- **Frontend**: React.js + Vite
+- **Estilização**: CSS Moderno (Variáveis, Glassmorphism, Design Responsivo)
+- **Animações**: Framer Motion
+- **Gráficos**: Recharts (Otimizados para performance e acessibilidade)
+- **Backend & Auth**: Supabase
+- **Ícones**: Lucide React
+
+## 📦 Instalação e Setup
+
+1. **Clone o repositório:**
+   ```bash
+   git clone https://github.com/josemelao/studyhub.git
+   ```
+
+2. **Instale as dependências:**
+   ```bash
+   npm install
+   ```
+
+3. **Configure as variáveis de ambiente:**
+   Crie um arquivo `.env` na raiz com as credenciais do seu projeto Supabase:
+   ```env
+   VITE_SUPABASE_URL=sua_url_aqui
+   VITE_SUPABASE_ANON_KEY=sua_key_aqui
+   ```
+
+4. **Inicie o servidor de desenvolvimento:**
+   ```bash
+   npm run dev
+   ```
+
+## 📈 Melhorias Recentes (V4)
+
+- **Correção Visual Recharts**: Remoção de outlines indesejados e alertas de dimensão via ResizeObserver hooks.
+- **Suporte Sólido**: Transição de elementos glassmorphism para cores sólidas em cards críticos para melhor legibilidade.
+- **Sistema de Feedback**: Implementação de formulário global com portal e banco de dados Supabase dedicado.
+- **Otimização de Performance**: Lazy loading de componentes e cache de dados do edital.
+
+---
+Desenvolvido com ❤️ para transformar a jornada de aprovação.
