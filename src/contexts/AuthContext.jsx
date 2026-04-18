@@ -18,11 +18,13 @@ export function AuthProvider({ children }) {
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .maybeSingle();
+        .limit(1);
       
       if (error) throw error;
-      setProfile(data);
-      return data;
+      
+      const profileData = data?.[0] || null;
+      setProfile(profileData);
+      return profileData;
     } catch (err) {
       console.error('Erro ao buscar perfil:', err);
       setProfile(null);

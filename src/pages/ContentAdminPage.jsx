@@ -127,14 +127,14 @@ export default function ContentAdminPage() {
       }
 
       setFetching(true);
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('contents')
         .select('*')
         .eq('topic_id', selectedTopic)
         .eq('tipo', contentType)
-        .single();
+        .limit(1);
 
-      setContent(data?.conteudo || '');
+      setContent(data?.[0]?.conteudo || '');
       setFetching(false);
     }
 
