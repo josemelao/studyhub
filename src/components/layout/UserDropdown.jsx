@@ -13,6 +13,8 @@ export default function UserDropdown({ profile, onOpenSettings, onOpenFeedback }
   const initial = displayName.charAt(0).toUpperCase();
   const location = useLocation();
 
+  const roleLabel = profile?.role === 'admin' ? 'Admin' : 'Free';
+
   // Fechar ao mudar de aba/rota
   useEffect(() => {
     setIsOpen(false);
@@ -40,8 +42,8 @@ export default function UserDropdown({ profile, onOpenSettings, onOpenFeedback }
           <p className="text-sm font-bold text-primary leading-none group-hover:text-accent transition-colors">
             {displayName}
           </p>
-          <p className="text-[10px] font-black uppercase tracking-widest text-muted mt-1">
-            Estudante Premium
+          <p className="text-[10px] font-black uppercase tracking-widest text-muted mt-1 text-right">
+            {roleLabel}
           </p>
         </div>
         <motion.div 
@@ -78,7 +80,7 @@ export default function UserDropdown({ profile, onOpenSettings, onOpenFeedback }
                 
                 <div className="flex items-center">
                   <span className="px-3 py-1 rounded-lg bg-primary border border-default text-[10px] font-black text-muted uppercase tracking-widest">
-                    Free
+                    {roleLabel}
                   </span>
                 </div>
               </div>

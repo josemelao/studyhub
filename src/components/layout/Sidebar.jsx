@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { 
   LayoutDashboard, BookOpen, Target, 
@@ -61,18 +61,21 @@ export default function Sidebar() {
 
   return (
     <aside className="w-64 border-r border-default h-full bg-secondary/50 backdrop-blur-xl flex flex-col fixed left-0 top-0 overflow-y-auto z-[120]">
-      <div className="p-6 pb-4 flex items-center gap-3">
+      <Link 
+        to="/dashboard" 
+        className="p-6 pb-8 flex items-center gap-4 group cursor-pointer transition-all active:scale-95"
+      >
         <motion.div 
           whileHover={{ rotate: 10, scale: 1.1 }}
-          className="w-8 h-8 rounded-lg bg-gradient-accent flex items-center justify-center shadow-glow-accent glow-accent shrink-0"
+          className="w-10 h-10 rounded-xl bg-gradient-accent flex items-center justify-center shadow-glow-accent glow-accent shrink-0 group-hover:shadow-glow-accent/50 transition-all"
         >
-          <Trophy className="w-5 h-5 text-white" />
+          <Trophy className="w-6 h-6 text-white" />
         </motion.div>
-        <span className="text-xl font-black italic tracking-tighter gradient-text truncate">StudyHub</span>
-      </div>
+        <span className="text-2xl font-black italic tracking-tighter gradient-text truncate">StudyHub</span>
+      </Link>
 
       {workspaces.length > 0 && (
-        <div className="px-6 mb-4">
+        <div className="px-6 mb-6">
           <div className="relative group">
             <select
               value={currentWorkspaceId || ''}

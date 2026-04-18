@@ -69,11 +69,7 @@ export default function Navbar() {
           setTimeout(() => fetchNotifications(), 500);
         }
       )
-      .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          console.log('Conectado ao canal de notificações em tempo real!');
-        }
-      });
+      .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
