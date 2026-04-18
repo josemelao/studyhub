@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Palette, Bell, User, Flame, Zap, Settings } from 'lucide-react';
@@ -21,6 +22,32 @@ export default function Navbar() {
   const [notifications, setNotifications] = useState([]);
   const [streak, setStreak] = useState(0);
   const [xp, setXp] = useState(0);
+
+  const location = useLocation();
+  const themeRef = useRef(null);
+  const notifyRef = useRef(null);
+
+  // Close everything on route change
+  useEffect(() => {
+    setIsPickerOpen(false);
+    setIsNotificationsOpen(false);
+    setIsSettingsOpen(false);
+    setIsFeedbackOpen(false);
+  }, [location.pathname]);
+
+  // Close on click outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (themeRef.current && !themeRef.current.contains(event.target)) {
+        setIsPickerOpen(false);
+      }
+      if (notifyRef.current && !notifyRef.current.contains(event.target)) {
+        setIsNotificationsOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -144,7 +171,7 @@ export default function Navbar() {
 
       <div className="flex items-center gap-4">
         {/* Theme Selector Popover */}
-        <div className="relative">
+        <div className="relative" ref={themeRef}>
           <button
             onClick={() => setIsPickerOpen(!isPickerOpen)}
             className={`p-2.5 rounded-xl border transition-all group relative ${isPickerOpen ? 'bg-accent text-white border-accent shadow-glow-accent' : 'bg-secondary border-default text-muted hover:text-accent hover:border-accent/30'}`}
@@ -162,10 +189,10 @@ export default function Navbar() {
           />
         </div>
 
-        <div className="relative">
+        <div className="relative" ref={notifyRef}>
           <button 
             onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-            className={`p-2.5 rounded-xl border transition-all ${isNotificationsOpen ? 'bg-primary/5 border-primary/20 text-primary' : 'bg-secondary border-default text-muted hover:text-primary hover:border-accent/30'}`}
+            className={`p-2.5 rounded-xl border transition-all group relative ${isNotificationsOpen ? 'bg-accent text-white border-accent shadow-glow-accent' : 'bg-secondary border-default text-muted hover:text-primary hover:border-accent/30'}`}
             title="Notificações"
           >
             <Bell className="w-5 h-5" />

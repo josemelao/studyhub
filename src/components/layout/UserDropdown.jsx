@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LogOut, Settings, HelpCircle, ShieldAlert } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
@@ -10,6 +11,12 @@ export default function UserDropdown({ profile, onOpenSettings, onOpenFeedback }
 
   const displayName = profile?.display_name || user?.email?.split('@')[0] || 'Aluno';
   const initial = displayName.charAt(0).toUpperCase();
+  const location = useLocation();
+
+  // Fechar ao mudar de aba/rota
+  useEffect(() => {
+    setIsOpen(false);
+  }, [location.pathname]);
 
   // Fechar ao clicar fora
   useEffect(() => {

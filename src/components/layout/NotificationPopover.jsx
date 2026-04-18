@@ -26,13 +26,22 @@ export default function NotificationPopover({ isOpen, onClose, notifications, se
     const unreadIds = notifications.filter(n => !n.read).map(n => n.id);
     if (unreadIds.length === 0) return;
 
+    // Optimistic UI: mark all as read locally
+    if (setNotifications) {
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    }
+
     const { error } = await supabase
       .from('notifications')
       .update({ read: true })
       .in('id', unreadIds);
     
-    if (error) toast.error('Erro ao marcar todas como lidas');
-    else toast.success('Todas as notificações foram lidas!');
+    if (error) {
+      toast.error('Erro ao marcar todas como lidas');
+      if (onRefresh) onRefresh(); // Refresh to restore real state if error
+    } else {
+      toast.success('Todas as notificações foram lidas!');
+    }
   };
 
   const handleDelete = async (id, e) => {
@@ -71,10 +80,10 @@ export default function NotificationPopover({ isOpen, onClose, notifications, se
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 10, scale: 0.95 }}
           transition={{ duration: 0.2 }}
-          className="absolute top-16 right-16 w-80 max-h-[26rem] flex flex-col bg-secondary border border-default rounded-2xl shadow-2xl overflow-hidden z-[150]"
+          className="absolute top-full right-0 mt-3 w-80 max-h-[28rem] flex flex-col bg-secondary border border-default rounded-2xl shadow-2xl overflow-hidden z-[150] origin-top-right"
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-default bg-white/5">
+          <div className="flex items-center justify-between p-4 border-b border-default bg-[var(--bg-primary)]">
             <div className="flex items-center gap-2">
               <Bell className="w-4 h-4 text-primary" />
               <h3 className="text-sm font-black text-primary tracking-tight">Notificações</h3>

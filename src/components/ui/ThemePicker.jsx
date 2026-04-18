@@ -44,16 +44,6 @@ export default function ThemePicker({ currentTheme, onThemeChange, isOpen, onClo
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop para fechar ao clicar fora */}
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
-            onClick={onClose}
-            className="fixed inset-0 z-40"
-          />
-
           <motion.div
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
