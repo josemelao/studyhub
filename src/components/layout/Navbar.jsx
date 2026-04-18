@@ -9,14 +9,13 @@ import UserDropdown from './UserDropdown';
 import SettingsPanel from './SettingsPanel';
 
 export default function Navbar() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const getThemeKey = (userId) => `studyhub_theme_${userId}`;
   const [theme, setTheme] = useState('luminary');
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [streak, setStreak] = useState(0);
   const [xp, setXp] = useState(0);
-  const [profile, setProfile] = useState(null);
 
   useEffect(() => {
     if (!user) return;
@@ -37,25 +36,15 @@ export default function Navbar() {
     async function fetchStats() {
       if (!user) return;
       
-      const [statsRes, profileRes] = await Promise.all([
-        supabase
-          .from('user_stats')
-          .select('streak_atual, pontos_xp')
-          .eq('user_id', user.id)
-          .maybeSingle(),
-        supabase
-          .from('profiles')
-          .select('display_name')
-          .eq('id', user.id)
-          .maybeSingle()
-      ]);
+      const { data, error } = await supabase
+        .from('user_stats')
+        .select('streak_atual, pontos_xp')
+        .eq('user_id', user.id)
+        .maybeSingle();
       
-      if (statsRes.data) {
-        setStreak(statsRes.data.streak_atual || 0);
-        setXp(statsRes.data.pontos_xp || 0);
-      }
-      if (profileRes.data) {
-        setProfile(profileRes.data);
+      if (data) {
+        setStreak(data.streak_atual || 0);
+        setXp(data.pontos_xp || 0);
       }
     }
     fetchStats();
