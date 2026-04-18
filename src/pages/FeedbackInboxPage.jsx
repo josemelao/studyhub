@@ -201,16 +201,47 @@ export default function FeedbackInboxPage() {
 
   useEffect(() => { loadFeedbacks(); }, [filter, typeFilter]);
 
-  // Sincronização em Tempo Real (Realtime)
+  // Sincronização Granular em Tempo Real (Realtime Patching)
   useEffect(() => {
     const channel = supabase
-      .channel('feedback_updates')
+      .channel('feedback_granular_updates')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'feedbacks' },
-        () => {
-          // Pequeno delay para garantir que o banco processou a mudança antes de buscarmos
-          setTimeout(() => loadFeedbacks(), 500);
+        async (payload) => {
+          if (payload.eventType === 'INSERT') {
+            // Verificar se o novo item bate com os filtros atuais antes de adicionar
+            if (filter !== 'all' && payload.new.status !== filter) return;
+            if (typeFilter !== 'all' && payload.new.type !== typeFilter) return;
+
+            // Busca os dados completos (com joins) apenas deste novo item
+            const { data } = await supabase
+              .from('feedbacks')
+              .select('*, concursos(nome), workspaces(name)')
+              .eq('id', payload.new.id)
+              .single();
+            
+            if (data) {
+              setFeedbacks(prev => [data, ...prev]);
+            }
+          } 
+          else if (payload.eventType === 'UPDATE') {
+            setFeedbacks(prev => prev.map(item => {
+              if (item.id === payload.new.id) {
+                // Preserva os nomes de join (concursos/workspaces) que não vêm no payload raw
+                return { ...item, ...payload.new };
+              }
+              return item;
+            }));
+
+            // Se o item não bate mais com o filtro após o update, removemos da lista
+            if (filter !== 'all' && payload.new.status !== filter) {
+              setFeedbacks(prev => prev.filter(f => f.id !== payload.new.id));
+            }
+          } 
+          else if (payload.eventType === 'DELETE') {
+            setFeedbacks(prev => prev.filter(f => f.id !== payload.old.id));
+          }
         }
       )
       .subscribe();
@@ -218,7 +249,7 @@ export default function FeedbackInboxPage() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [filter, typeFilter]); // Re-inscrever se filtros mudarem para garantir consistência
+  }, [filter, typeFilter]);
 
   const handleStatusChange = (id, newStatus) => {
     setFeedbacks(prev => prev.map(f => f.id === id ? { ...f, status: newStatus } : f));
