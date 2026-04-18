@@ -22,13 +22,16 @@ export default function Navbar() {
     if (!user) return;
     const savedTheme = localStorage.getItem(getThemeKey(user.id)) || 'luminary';
     setTheme(savedTheme);
+    document.body.setAttribute('data-theme', savedTheme);
   }, [user]);
 
-  useEffect(() => {
-    if (!user) return;
-    document.body.setAttribute('data-theme', theme);
-    localStorage.setItem(getThemeKey(user.id), theme);
-  }, [theme, user]);
+  const handleThemeChange = (newTheme) => {
+    setTheme(newTheme);
+    document.body.setAttribute('data-theme', newTheme);
+    if (user) {
+      localStorage.setItem(getThemeKey(user.id), newTheme);
+    }
+  };
 
   useEffect(() => {
     async function fetchStats() {
@@ -127,7 +130,7 @@ export default function Navbar() {
 
           <ThemePicker 
             currentTheme={theme}
-            onThemeChange={setTheme}
+            onThemeChange={handleThemeChange}
             isOpen={isPickerOpen}
             onClose={() => setIsPickerOpen(false)}
           />
@@ -150,7 +153,12 @@ export default function Navbar() {
         <UserDropdown profile={profile} onOpenSettings={() => setIsSettingsOpen(true)} />
       </div>
 
-      <SettingsPanel isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+      <SettingsPanel 
+        isOpen={isSettingsOpen} 
+        onClose={() => setIsSettingsOpen(false)}
+        currentTheme={theme}
+        onThemeChange={handleThemeChange}
+      />
     </header>
   );
 }

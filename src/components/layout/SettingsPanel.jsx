@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, User, Shield, Palette, AlertTriangle, Save, Loader2, LogOut } from 'lucide-react';
+import { X, User, Shield, Palette, AlertTriangle, Save, Loader2, LogOut, Check, Sun, Moon, Terminal, Zap, Leaf } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
@@ -15,15 +15,14 @@ const TABS = [
 ];
 
 const THEMES = [
-  { id: 'luminary', name: 'Luminary', color: '#7c5cfc' },
-  { id: 'abyssal', name: 'Abyssal', color: '#10b981' },
-  { id: 'dracula', name: 'Dracula', color: '#ff79c6' },
-  { id: 'nord', name: 'Nord', color: '#88c0d0' },
-  { id: 'coffee', name: 'Coffee', color: '#d2b48c' },
-  { id: 'oceanic', name: 'Oceanic', color: '#0ea5e9' }
+  { id: 'luminary', name: 'Luminary', description: 'Roxo Vibrante (Dark)', icon: Zap, colors: ['#07080f', '#7c5cfc', '#c471ed'] },
+  { id: 'amber', name: 'Amber', description: 'Âmbar Quente (Dark)', icon: Moon, colors: ['#0a0805', '#f5a623', '#ff6b6b'] },
+  { id: 'gravity', name: 'Gravity', description: 'Grafite CLI (Slate)', icon: Terminal, colors: ['#0f1117', '#38bdf8', '#818cf8'] },
+  { id: 'autumn', name: 'Autumn', description: 'Terra & Âmbar (Light)', icon: Leaf, colors: ['#E8E3D9', '#688C35', '#F59445'] },
+  { id: 'clean', name: 'Clean', description: 'Modern SaaS (Light)', icon: Sun, colors: ['#E5E7F0', '#4338E8', '#059669'] }
 ];
 
-export default function SettingsPanel({ isOpen, onClose }) {
+export default function SettingsPanel({ isOpen, onClose, currentTheme, onThemeChange }) {
   const { user } = useAuth();
   const { currentWorkspaceId, workspaces } = useWorkspace();
   const currentWorkspaceName = workspaces?.find(w => w.id === currentWorkspaceId)?.name;
@@ -40,9 +39,6 @@ export default function SettingsPanel({ isOpen, onClose }) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [savingPassword, setSavingPassword] = useState(false);
 
-  // Tema State
-  const [currentTheme, setCurrentTheme] = useState('luminary');
-
   // Danger Zone State
   const [resetConfirmation, setResetConfirmation] = useState('');
   const [isResetting, setIsResetting] = useState(false);
@@ -56,8 +52,6 @@ export default function SettingsPanel({ isOpen, onClose }) {
           setDisplayName(data.display_name || '');
           setBio(data.bio || '');
         }
-        const savedTheme = localStorage.getItem(`studyhub_theme_${user.id}`) || 'luminary';
-        setCurrentTheme(savedTheme);
       };
       loadProfile();
     }
@@ -109,9 +103,12 @@ export default function SettingsPanel({ isOpen, onClose }) {
   };
 
   const handleChangeTheme = (themeId) => {
-    setCurrentTheme(themeId);
-    document.body.setAttribute('data-theme', themeId);
-    localStorage.setItem(`studyhub_theme_${user?.id}`, themeId);
+    if (onThemeChange) {
+      onThemeChange(themeId);
+    } else {
+      document.body.setAttribute('data-theme', themeId);
+      if (user) localStorage.setItem(`studyhub_theme_${user.id}`, themeId);
+    }
   };
 
   const handleResetData = async () => {
@@ -174,7 +171,7 @@ export default function SettingsPanel({ isOpen, onClose }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-primary/80 backdrop-blur-sm z-[150]"
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[150]"
           />
 
           {/* Drawer */}
@@ -310,26 +307,53 @@ export default function SettingsPanel({ isOpen, onClose }) {
               {activeTab === 'theme' && (
                 <div className="space-y-6">
                   <h3 className="text-sm font-bold text-primary mb-1">Personalização Visual</h3>
-                  <p className="text-xs text-muted mb-6">Escolha a cor de destaque principal do StudyHub.</p>
+                  <p className="text-xs text-muted mb-6">Escolha o ambiente ideal para o seu foco no StudyHub.</p>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    {THEMES.map(theme => (
-                      <button
-                        key={theme.id}
-                        onClick={() => handleChangeTheme(theme.id)}
-                        className={`p-4 rounded-2xl border-2 flex items-center gap-3 transition-all ${
-                          currentTheme === theme.id 
-                            ? 'border-accent bg-accent/5' 
-                            : 'border-default bg-primary hover:border-white/20'
-                        }`}
-                      >
-                        <div 
-                          className="w-5 h-5 shrink-0 rounded-full shadow-lg" 
-                          style={{ backgroundColor: theme.color }}
-                        />
-                        <span className="text-sm font-bold text-primary">{theme.name}</span>
-                      </button>
-                    ))}
+                  <div className="space-y-2">
+                    {THEMES.map(theme => {
+                      const isActive = currentTheme === theme.id;
+                      const Icon = theme.icon;
+
+                      return (
+                        <button
+                          key={theme.id}
+                          onClick={() => handleChangeTheme(theme.id)}
+                          className={`
+                            w-full flex items-center gap-4 p-4 rounded-2xl transition-all group border
+                            ${isActive 
+                              ? 'bg-accent/10 border-accent/20 shadow-sm' 
+                              : 'bg-transparent border-transparent hover:bg-accent/5 hover:border-accent/10'}
+                          `}
+                        >
+                          {/* Preview Circles */}
+                          <div className="flex -space-x-3 shrink-0">
+                            {theme.colors.map((c, i) => (
+                              <div 
+                                key={i} 
+                                className="w-6 h-6 rounded-full border-2 border-secondary shadow-sm transition-transform group-hover:scale-105"
+                                style={{ backgroundColor: c, zIndex: 3 - i }}
+                              />
+                            ))}
+                          </div>
+
+                          <div className="flex-1 text-left">
+                            <div className="flex items-center gap-2">
+                              <span className={`text-sm font-black tracking-tight ${isActive ? 'text-accent' : 'text-primary'}`}>
+                                {theme.name}
+                              </span>
+                              {isActive && <Check size={14} className="text-accent" />}
+                            </div>
+                            <p className="text-[10px] font-bold text-muted uppercase tracking-widest opacity-80 mt-0.5">
+                              {theme.description}
+                            </p>
+                          </div>
+
+                          <div className={`p-2.5 rounded-xl transition-colors ${isActive ? 'bg-accent/20 text-accent' : 'bg-primary/10 text-muted group-hover:text-accent group-hover:bg-accent/10'}`}>
+                            <Icon size={18} />
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               )}
