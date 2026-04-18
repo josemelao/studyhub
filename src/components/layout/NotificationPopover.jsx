@@ -11,6 +11,11 @@ const ICON_CONFIG = {
 
 export default function NotificationPopover({ isOpen, onClose, notifications, setNotifications, onRefresh }) {
   const handleMarkAsRead = async (id) => {
+    // Optimistic UI: mark as read locally
+    if (setNotifications) {
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+    }
+
     const { error } = await supabase
       .from('notifications')
       .update({ read: true })
@@ -19,6 +24,7 @@ export default function NotificationPopover({ isOpen, onClose, notifications, se
     if (error) {
       console.error(error);
       toast.error('Erro ao marcar como lida');
+      if (onRefresh) onRefresh(); // Restore real state if error
     }
   };
 
