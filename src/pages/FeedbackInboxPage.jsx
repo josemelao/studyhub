@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
-import { Inbox, Bug, Lightbulb, HelpCircle, Clock, CheckCircle, RefreshCw, Loader2, ChevronDown, ChevronUp, User, Trophy, LayoutDashboard } from 'lucide-react';
+import { Inbox, Bug, Lightbulb, HelpCircle, Clock, CheckCircle, RefreshCw, Loader2, ChevronDown, ChevronUp, User, Trophy, LayoutDashboard, Trash2 } from 'lucide-react';
 
 const TYPE_CONFIG = {
   bug: { label: 'Problema', icon: Bug, color: 'var(--error)', bg: 'rgba(var(--error-rgb), 0.08)', border: 'rgba(var(--error-rgb), 0.2)' },
@@ -31,7 +31,6 @@ function FeedbackCard({ item, onStatusChange }) {
       .eq('id', item.id);
     
     if (!error) {
-      // Create notification for the user if applicable
       if (item.user_id && newStatus !== 'pending') {
         const title = newStatus === 'resolved' ? 'Feedback Resolvido' : 'Feedback Revisado';
         const message = newStatus === 'resolved' 
@@ -50,6 +49,21 @@ function FeedbackCard({ item, onStatusChange }) {
     setUpdating(false);
   };
 
+  const handleDelete = async () => {
+    if (!window.confirm('Tem certeza que deseja excluir este feedback permanentemente?')) return;
+    
+    setUpdating(true);
+    const { error } = await supabase
+      .from('feedbacks')
+      .delete()
+      .eq('id', item.id);
+    
+    if (error) {
+      alert('Erro ao excluir: ' + error.message);
+      setUpdating(false);
+    }
+  };
+
   const formatDate = (dateStr) => {
     return new Intl.DateTimeFormat('pt-BR', {
       day: '2-digit', month: '2-digit', year: 'numeric',
@@ -64,12 +78,10 @@ function FeedbackCard({ item, onStatusChange }) {
       animate={{ opacity: 1, y: 0 }}
       className="glass-card overflow-hidden"
     >
-      {/* Card Header */}
       <button
         onClick={() => setExpanded(!expanded)}
         className="w-full flex items-center gap-4 p-5 text-left hover:bg-white/[0.02] transition-colors"
       >
-        {/* Type badge */}
         <div
           className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
           style={{ background: type.bg, border: `1px solid ${type.border}` }}
@@ -77,7 +89,6 @@ function FeedbackCard({ item, onStatusChange }) {
           <TypeIcon className="w-4 h-4" style={{ color: type.color }} />
         </div>
 
-        {/* Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs font-bold uppercase tracking-widest" style={{ color: type.color }}>
@@ -104,15 +115,10 @@ function FeedbackCard({ item, onStatusChange }) {
                 <LayoutDashboard className="w-4 h-4 text-accent/70" />
                 <span className="text-[10px] font-bold text-primary/80 uppercase tracking-wider">{item.workspaces.name}</span>
               </div>
-            ) : item.concurso_id || item.workspace_id ? (
-              <div className="flex items-center gap-1 opacity-50">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted italic">ID Contexto: {(item.concurso_id || item.workspace_id).slice(0,8)}...</span>
-              </div>
             ) : null}
           </div>
         </div>
 
-        {/* Status badge */}
         <div
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold flex-shrink-0"
           style={{ background: status.bg, color: status.color }}
@@ -121,13 +127,11 @@ function FeedbackCard({ item, onStatusChange }) {
           {status.label}
         </div>
 
-        {/* Expand icon */}
         <div className="text-muted flex-shrink-0">
           {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </div>
       </button>
 
-      {/* Expanded Content */}
       <AnimatePresence>
         {expanded && (
           <motion.div
@@ -138,7 +142,6 @@ function FeedbackCard({ item, onStatusChange }) {
             className="overflow-hidden"
           >
             <div className="px-5 pb-5 border-t border-default pt-4 space-y-4">
-              {/* Full message */}
               <div
                 className="rounded-xl p-4 text-sm text-primary whitespace-pre-wrap leading-relaxed"
                 style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)' }}
@@ -146,7 +149,6 @@ function FeedbackCard({ item, onStatusChange }) {
                 {item.message}
               </div>
 
-              {/* Status actions */}
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted font-bold uppercase tracking-widest mr-1">Atualizar status:</span>
                 {Object.entries(STATUS_CONFIG).map(([key, cfg]) => {
@@ -169,6 +171,15 @@ function FeedbackCard({ item, onStatusChange }) {
                     </button>
                   );
                 })}
+                <div className="flex-1" />
+                <button
+                  disabled={updating}
+                  onClick={handleDelete}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-error border border-error/20 hover:bg-error/10 transition-all disabled:opacity-50"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Excluir
+                </button>
               </div>
             </div>
           </motion.div>
@@ -181,27 +192,22 @@ function FeedbackCard({ item, onStatusChange }) {
 export default function FeedbackInboxPage() {
   const [feedbacks, setFeedbacks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all'); // all | pending | reviewed | resolved
-  const [typeFilter, setTypeFilter] = useState('all'); // all | bug | suggestion | help
+  const [filter, setFilter] = useState('all');
+  const [typeFilter, setTypeFilter] = useState('all');
 
   const loadFeedbacks = async () => {
     setLoading(true);
-    let query = supabase
+    const { data } = await supabase
       .from('feedbacks')
       .select('*, concursos(nome), workspaces(name)')
       .order('created_at', { ascending: false });
 
-    if (filter !== 'all') query = query.eq('status', filter);
-    if (typeFilter !== 'all') query = query.eq('type', typeFilter);
-
-    const { data } = await query;
     setFeedbacks(data ?? []);
     setLoading(false);
   };
 
-  useEffect(() => { loadFeedbacks(); }, [filter, typeFilter]);
+  useEffect(() => { loadFeedbacks(); }, []);
 
-  // Sincronização Granular em Tempo Real (Realtime Patching)
   useEffect(() => {
     const channel = supabase
       .channel('feedback_granular_updates')
@@ -210,34 +216,18 @@ export default function FeedbackInboxPage() {
         { event: '*', schema: 'public', table: 'feedbacks' },
         async (payload) => {
           if (payload.eventType === 'INSERT') {
-            // Verificar se o novo item bate com os filtros atuais antes de adicionar
-            if (filter !== 'all' && payload.new.status !== filter) return;
-            if (typeFilter !== 'all' && payload.new.type !== typeFilter) return;
-
-            // Busca os dados completos (com joins) apenas deste novo item
             const { data } = await supabase
               .from('feedbacks')
               .select('*, concursos(nome), workspaces(name)')
               .eq('id', payload.new.id)
               .single();
             
-            if (data) {
-              setFeedbacks(prev => [data, ...prev]);
-            }
+            if (data) setFeedbacks(prev => [data, ...prev]);
           } 
           else if (payload.eventType === 'UPDATE') {
-            setFeedbacks(prev => prev.map(item => {
-              if (item.id === payload.new.id) {
-                // Preserva os nomes de join (concursos/workspaces) que não vêm no payload raw
-                return { ...item, ...payload.new };
-              }
-              return item;
-            }));
-
-            // Se o item não bate mais com o filtro após o update, removemos da lista
-            if (filter !== 'all' && payload.new.status !== filter) {
-              setFeedbacks(prev => prev.filter(f => f.id !== payload.new.id));
-            }
+            setFeedbacks(prev => prev.map(item => 
+              item.id === payload.new.id ? { ...item, ...payload.new } : item
+            ));
           } 
           else if (payload.eventType === 'DELETE') {
             setFeedbacks(prev => prev.filter(f => f.id !== payload.old.id));
@@ -246,10 +236,8 @@ export default function FeedbackInboxPage() {
       )
       .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [filter, typeFilter]);
+    return () => { supabase.removeChannel(channel); };
+  }, []);
 
   const handleStatusChange = (id, newStatus) => {
     setFeedbacks(prev => prev.map(f => f.id === id ? { ...f, status: newStatus } : f));
@@ -262,9 +250,14 @@ export default function FeedbackInboxPage() {
     resolved: feedbacks.filter(f => f.status === 'resolved').length,
   };
 
+  const filteredFeedbacks = feedbacks.filter(f => {
+    const matchesStatus = filter === 'all' || f.status === filter;
+    const matchesType = typeFilter === 'all' || f.type === typeFilter;
+    return matchesStatus && matchesType;
+  });
+
   return (
     <div className="w-full space-y-8 pb-12">
-      {/* Header */}
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-black text-primary tracking-tighter italic flex items-center gap-3">
@@ -285,9 +278,7 @@ export default function FeedbackInboxPage() {
         </button>
       </header>
 
-      {/* Filters */}
       <div className="flex flex-wrap gap-3">
-        {/* Status filter */}
         <div className="flex bg-white/5 border border-default rounded-xl p-1 gap-1">
           {[
             { key: 'all', label: 'Todos' },
@@ -304,12 +295,11 @@ export default function FeedbackInboxPage() {
                 color: filter === key ? 'white' : 'var(--text-muted)',
               }}
             >
-              {label} {key === 'all' ? `(${feedbacks.length})` : `(${counts[key]})`}
+              {label} ({counts[key]})
             </button>
           ))}
         </div>
 
-        {/* Type filter */}
         <div className="flex bg-white/5 border border-default rounded-xl p-1 gap-1">
           {[{ key: 'all', label: 'Tipo: Todos' }, ...Object.entries(TYPE_CONFIG).map(([key, cfg]) => ({ key, label: cfg.label }))].map(({ key, label }) => (
             <button
@@ -327,12 +317,11 @@ export default function FeedbackInboxPage() {
         </div>
       </div>
 
-      {/* Content */}
       {loading ? (
         <div className="flex items-center justify-center py-24">
           <Loader2 className="w-8 h-8 animate-spin text-accent" />
         </div>
-      ) : feedbacks.length === 0 ? (
+      ) : filteredFeedbacks.length === 0 ? (
         <div className="glass-card flex flex-col items-center justify-center py-24 text-center gap-3">
           <Inbox className="w-12 h-12 text-muted/40" />
           <p className="text-primary font-bold">Nenhum feedback encontrado</p>
@@ -345,7 +334,7 @@ export default function FeedbackInboxPage() {
       ) : (
         <div className="space-y-3">
           <AnimatePresence mode="popLayout">
-            {feedbacks.map((item) => (
+            {filteredFeedbacks.map((item) => (
               <FeedbackCard key={item.id} item={item} onStatusChange={handleStatusChange} />
             ))}
           </AnimatePresence>
