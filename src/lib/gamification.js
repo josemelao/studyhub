@@ -31,7 +31,17 @@ export async function updateUserStats(supabase, userId, workspaceId, metrics = {
       ultimo_estudo_dia: today,
       pontos_xp: xpToAdd,
     };
-    await supabase.from('user_stats').insert(globalStats);
+    
+    // Usamos upsert com onConflict para garantir que, se outro processo criou a linha 
+    // entre nosso fetch e este insert, não tenhamos erro 409.
+    const { data: upsertData, error: uError } = await supabase
+      .from('user_stats')
+      .upsert(globalStats, { onConflict: 'user_id' })
+      .select()
+      .maybeSingle();
+
+    if (uError) throw uError;
+    globalStats = upsertData;
   } else {
     // Cálculo de Streak Global
     let newStreak = globalStats.streak_atual;
@@ -50,7 +60,7 @@ export async function updateUserStats(supabase, userId, workspaceId, metrics = {
     }
     newMax = Math.max(newStreak, newMax);
 
-    const { data: updatedGlobal } = await supabase
+    const { data: updatedGlobal, error: updateError } = await supabase
       .from('user_stats')
       .update({
         streak_atual: newStreak,
@@ -62,6 +72,8 @@ export async function updateUserStats(supabase, userId, workspaceId, metrics = {
       .eq('user_id', userId)
       .select()
       .single();
+    
+    if (updateError) throw updateError;
     globalStats = updatedGlobal;
   }
 
@@ -84,9 +96,17 @@ export async function updateUserStats(supabase, userId, workspaceId, metrics = {
         total_acertos: metrics.acertos || 0,
         conquistas: []
       };
-      await supabase.from('workspace_stats').insert(localStats);
+      
+      const { data: upsertLocal, error: ulError } = await supabase
+        .from('workspace_stats')
+        .upsert(localStats, { onConflict: 'user_id, workspace_id' })
+        .select()
+        .maybeSingle();
+
+      if (ulError) throw ulError;
+      localStats = upsertLocal;
     } else {
-      const { data: updatedLocal } = await supabase
+      const { data: updatedLocal, error: updateLocalError } = await supabase
         .from('workspace_stats')
         .update({
           total_questoes_respondidas: localStats.total_questoes_respondidas + (metrics.questoes || 0),
@@ -97,6 +117,8 @@ export async function updateUserStats(supabase, userId, workspaceId, metrics = {
         .eq('workspace_id', workspaceId)
         .select()
         .maybeSingle();
+
+      if (updateLocalError) throw updateLocalError;
       localStats = updatedLocal;
     }
 

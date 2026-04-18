@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -25,6 +25,7 @@ export default function ExamResultPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [openQ, setOpenQ] = useState(null);
+  const hasProcessed = useRef(false);
 
   useEffect(() => {
     async function load() {
@@ -51,7 +52,9 @@ export default function ExamResultPage() {
         setQuestions(ordered);
 
         // ── ATUALIZAR GAMIFICAÇÃO UTILIZANDO O HOOK CENTRALIZADO ──
-        if (s.status === 'finalizada' && s.questoes.length > 0 && user) {
+        // Usamos hasProcessed para evitar chamadas duplas (comum em React.StrictMode)
+        if (s.status === 'finalizada' && s.questoes.length > 0 && user && !hasProcessed.current) {
+          hasProcessed.current = true;
           const totalQ = s.questoes.length;
           const totalC = ordered.filter(q => s.respostas[q.id] === q.resposta_correta).length;
           
@@ -67,7 +70,8 @@ export default function ExamResultPage() {
       finally { setLoading(false); }
     }
     load();
-  }, [id, user, currentWorkspaceId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, user?.id, currentWorkspaceId]);
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-36 gap-4">

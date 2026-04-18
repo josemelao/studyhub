@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './useAuth';
 import { useWorkspace } from '../contexts/WorkspaceContext';
@@ -12,7 +13,7 @@ export function useGamification() {
   const { user } = useAuth();
   const { currentWorkspaceId } = useWorkspace();
 
-  const processActivity = async (metrics = {}) => {
+  const processActivity = useCallback(async (metrics = {}) => {
     if (!user) {
       console.warn('[useGamification] Usuário não autenticado. Ignorando atualização.');
       return null;
@@ -37,7 +38,7 @@ export function useGamification() {
       console.error('[useGamification] Erro ao processar atividade:', err);
       return null;
     }
-  };
+  }, [user, currentWorkspaceId]);
 
   return { processActivity };
 }

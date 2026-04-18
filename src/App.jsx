@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Trophy, Zap } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useLayoutEffect } from 'react';
 
 // Contexts & Layouts
 import { AuthProvider } from './contexts/AuthContext';
@@ -43,8 +43,8 @@ function AuthenticatedApp() {
   const isAdmin = useIsAdmin();
   const { user } = useAuth();
 
-  // Garante que o tema padrão seja aplicado globalmente e isolado por usuário
-  useEffect(() => {
+  // Garante que o tema padrão seja aplicado globalmente e isolado por usuário sem flicker
+  useLayoutEffect(() => {
     if (user) {
       const savedTheme = localStorage.getItem(`studyhub_theme_${user.id}`) || 'luminary';
       document.body.setAttribute('data-theme', savedTheme);
