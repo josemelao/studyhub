@@ -1,4 +1,6 @@
+import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
+import { supabase } from '../../lib/supabase';
 import { 
   LayoutDashboard, BookOpen, Target, 
   BarChart3, Star, LogOut, Trophy, History, Calendar,
@@ -25,6 +27,37 @@ export default function Sidebar() {
   const { signOut } = useAuth();
   const isAdmin = useIsAdmin();
   const { workspaces, currentWorkspaceId, setWorkspace } = useWorkspace();
+  const [pendingFeedbackCount, setPendingFeedbackCount] = useState(0);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    // Fetch initial count
+    const fetchCount = async () => {
+      const { count } = await supabase
+        .from('feedbacks')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'pending');
+      
+      setPendingFeedbackCount(count || 0);
+    };
+
+    fetchCount();
+
+    // Subscribe to realtime changes
+    const channel = supabase
+      .channel('feedbacks_sidebar')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'feedbacks' },
+        () => fetchCount()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [isAdmin]);
 
   return (
     <aside className="w-64 border-r border-default h-full bg-secondary/50 backdrop-blur-xl flex flex-col fixed left-0 top-0 overflow-y-auto z-[120]">
@@ -95,14 +128,22 @@ export default function Sidebar() {
             <NavLink
               to="/feedback-inbox"
               className={({ isActive }) => `
-                flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group
+                flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-300 group relative
                 ${isActive 
                   ? 'bg-accent/10 text-accent font-bold border border-accent/20 shadow-accent' 
                   : 'text-muted hover:text-primary hover:bg-white/[0.04] border border-transparent'}
               `}
             >
-              <Inbox className="w-5 h-5 transition-transform group-hover:scale-110" />
-              <span className="text-sm tracking-tight">Inbox Feedbacks</span>
+              <div className="flex items-center gap-3">
+                <Inbox className="w-5 h-5 transition-transform group-hover:scale-110" />
+                <span className="text-sm tracking-tight">Inbox Feedbacks</span>
+              </div>
+              
+              {pendingFeedbackCount > 0 && (
+                <span className="flex h-5 items-center justify-center rounded-md bg-[var(--error)] px-2 text-[10px] font-black text-white shadow-sm ring-1 ring-[var(--error-border)]">
+                  {pendingFeedbackCount}
+                </span>
+              )}
             </NavLink>
           </>
         )}

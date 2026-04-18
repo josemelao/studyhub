@@ -8,6 +8,7 @@ import ThemePicker from '../ui/ThemePicker';
 import UserDropdown from './UserDropdown';
 import SettingsPanel from './SettingsPanel';
 import FeedbackModal from '../common/FeedbackModal';
+import NotificationPopover from './NotificationPopover';
 
 export default function Navbar() {
   const { user, profile } = useAuth();
@@ -16,8 +17,42 @@ export default function Navbar() {
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
   const [streak, setStreak] = useState(0);
   const [xp, setXp] = useState(0);
+
+  useEffect(() => {
+    if (!user) return;
+    
+    fetchNotifications();
+    
+    const channel = supabase
+      .channel('navbar_notifications')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
+        () => fetchNotifications()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
+  const fetchNotifications = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+    
+    setNotifications(data || []);
+  };
+
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   useEffect(() => {
     if (!user) return;
@@ -127,9 +162,28 @@ export default function Navbar() {
           />
         </div>
 
-        <button className="p-2.5 rounded-xl bg-secondary border border-default text-muted hover:text-primary transition-all">
-          <Bell className="w-5 h-5" />
-        </button>
+        <div className="relative">
+          <button 
+            onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+            className={`p-2.5 rounded-xl border transition-all ${isNotificationsOpen ? 'bg-primary/5 border-primary/20 text-primary' : 'bg-secondary border-default text-muted hover:text-primary hover:border-accent/30'}`}
+            title="Notificações"
+          >
+            <Bell className="w-5 h-5" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--error)] text-[9px] font-black text-white shadow-sm ring-2 ring-[var(--bg-default)]">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
+          </button>
+          
+          <NotificationPopover 
+            isOpen={isNotificationsOpen} 
+            onClose={() => setIsNotificationsOpen(false)} 
+            notifications={notifications} 
+            setNotifications={setNotifications}
+            onRefresh={fetchNotifications}
+          />
+        </div>
 
         <button 
           onClick={() => setIsSettingsOpen(true)}

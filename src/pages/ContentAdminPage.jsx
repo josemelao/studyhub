@@ -19,6 +19,7 @@ import {
   FileText,
   UploadCloud,
   ShieldCheck,
+  Megaphone,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
@@ -50,6 +51,11 @@ export default function ContentAdminPage() {
   const [newSubject, setNewSubject] = useState({ nome: '', categoria: 'Geral' });
   const [newSubSubjectName, setNewSubSubjectName] = useState('');
   const [newTopicName, setNewTopicName] = useState('');
+
+  const [isNotifyModalOpen, setIsNotifyModalOpen] = useState(false);
+  const [notifyTitle, setNotifyTitle] = useState('');
+  const [notifyMessage, setNotifyMessage] = useState('');
+  const [isNotifying, setIsNotifying] = useState(false);
 
   const loadSubjects = async () => {
     if (!currentConcursoId) return;
@@ -270,6 +276,30 @@ export default function ContentAdminPage() {
     }
   };
 
+  const handleSendGlobalNotification = async (e) => {
+    e.preventDefault();
+    if (!currentConcursoId || !notifyTitle || !notifyMessage) return;
+    
+    setIsNotifying(true);
+    const { error } = await supabase.rpc('notify_edital_users', {
+      p_concurso_id: currentConcursoId,
+      p_title: notifyTitle,
+      p_message: notifyMessage,
+      p_type: 'info'
+    });
+    setIsNotifying(false);
+
+    if (error) {
+      console.error(error);
+      toast.error('Erro ao enviar notificação');
+    } else {
+      toast.success('Alunos notificados com sucesso!');
+      setIsNotifyModalOpen(false);
+      setNotifyTitle('');
+      setNotifyMessage('');
+    }
+  };
+
   const handleWordImport = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -398,6 +428,14 @@ export default function ContentAdminPage() {
             <ShieldCheck className="w-3.5 h-3.5" />
             Admin · {currentWorkspace?.name || 'Workspace'}
           </div>
+
+          <button
+            onClick={() => setIsNotifyModalOpen(true)}
+            className="flex items-center gap-2 px-6 py-3 bg-white/5 text-primary border border-white/10 font-black rounded-xl hover:bg-white/10 transition-all uppercase tracking-widest text-[10px]"
+          >
+            <Megaphone className="w-4 h-4 text-warning" />
+            Notificar
+          </button>
 
           <button
             onClick={() => fileInputRef.current?.click()}
@@ -699,6 +737,85 @@ export default function ContentAdminPage() {
           </div>
         </div>
       </div>
+
+      <AnimatePresence>
+        {isNotifyModalOpen && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-secondary/80 backdrop-blur-sm"
+              onClick={() => setIsNotifyModalOpen(false)}
+            />
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="relative w-full max-w-lg bg-[var(--bg-elevated)] border border-default rounded-3xl p-6 shadow-2xl"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-warning/10 border border-warning/20 flex items-center justify-center">
+                    <Megaphone className="w-5 h-5 text-warning" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-black text-primary tracking-tighter">Anúncio Global</h3>
+                    <p className="text-xs text-muted font-bold uppercase tracking-widest">Aviso para toda a turma</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsNotifyModalOpen(false)}
+                  className="p-2 text-muted hover:text-primary transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSendGlobalNotification} className="space-y-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-muted ml-1">Título do Anúncio</label>
+                  <input
+                    type="text"
+                    required
+                    value={notifyTitle}
+                    onChange={(e) => setNotifyTitle(e.target.value)}
+                    placeholder="Ex: Novos conteúdos adicionados!"
+                    className="w-full bg-secondary border border-default rounded-xl px-4 py-3 text-sm font-medium text-primary placeholder:text-muted/50 outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-muted ml-1">Mensagem</label>
+                  <textarea
+                    required
+                    value={notifyMessage}
+                    onChange={(e) => setNotifyMessage(e.target.value)}
+                    placeholder="Ex: Foram incluídos 5 tópicos e 20 questões em Direito Constitucional..."
+                    className="w-full h-32 bg-secondary border border-default rounded-xl px-4 py-3 text-sm font-medium text-primary placeholder:text-muted/50 outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all resize-none"
+                  />
+                </div>
+                <div className="pt-2 flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsNotifyModalOpen(false)}
+                    className="px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest text-muted hover:bg-white/5 transition-all"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isNotifying}
+                    className="px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest bg-warning text-white shadow-glow-warning hover:opacity-90 disabled:opacity-50 transition-all flex items-center gap-2"
+                  >
+                    {isNotifying ? <Loader2 className="w-4 h-4 animate-spin" /> : <Megaphone className="w-4 h-4" />}
+                    Disparar
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

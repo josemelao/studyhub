@@ -30,7 +30,23 @@ function FeedbackCard({ item, onStatusChange }) {
       .update({ status: newStatus })
       .eq('id', item.id);
     
-    if (!error) onStatusChange(item.id, newStatus);
+    if (!error) {
+      // Create notification for the user if applicable
+      if (item.user_id && newStatus !== 'pending') {
+        const title = newStatus === 'resolved' ? 'Feedback Resolvido' : 'Feedback Revisado';
+        const message = newStatus === 'resolved' 
+          ? `Sua solicitação de ${type.label.toLowerCase()} foi resolvida pela equipe.` 
+          : `Sua solicitação de ${type.label.toLowerCase()} foi revisada no sistema.`;
+        
+        await supabase.from('notifications').insert({
+          user_id: item.user_id,
+          title,
+          message,
+          type: newStatus === 'resolved' ? 'success' : 'info'
+        });
+      }
+      onStatusChange(item.id, newStatus);
+    }
     setUpdating(false);
   };
 
