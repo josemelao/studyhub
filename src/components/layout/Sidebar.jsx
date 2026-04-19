@@ -200,7 +200,7 @@ export default function Sidebar() {
           </>
         )}
 
-      <div className="p-6 border-t border-default/50">
+      <div className="px-6 py-8">
         <p className="text-[10px] font-black uppercase tracking-[0.25em] text-muted opacity-40 leading-relaxed">
           Studyhub v1.0 — 2026<br />
           por: José Tadeu
