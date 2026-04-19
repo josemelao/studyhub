@@ -60,12 +60,11 @@ export default function ExamConfigPage() {
     try {
       setCreating(true);
       
-      // 1. Buscar questões das matérias selecionadas
       const { data: questionsData, error: qError } = await supabase
         .from('questions')
-        .select('id, topic_id(subject_id)')
-        .filter('topic_id.subject_id', 'in', `(${selectedSubjects.join(',')})`)
-        .limit(numQuestions * 2);
+        .select('id, topic_id!inner(subject_id)')
+        .in('topic_id.subject_id', selectedSubjects)
+        .limit(numQuestions * 5); // Aumentado o limit para garantir que teremos o suficiente após o shuffle
 
       if (qError) throw qError;
       if (!questionsData?.length) {
