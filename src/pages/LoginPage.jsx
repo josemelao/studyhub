@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Zap, Mail, Lock, Loader2, AlertCircle, Eye, EyeOff, Gavel } from 'lucide-react';
+import { Mail, Lock, Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { pageVariants, scaleIn, staggerItem, staggerContainer } from '../lib/animations';
+import { pageVariants, staggerItem, staggerContainer } from '../lib/animations';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -29,7 +29,6 @@ export default function LoginPage() {
         const { error, data } = await signUp(email, password);
         if (error) throw error;
         
-        // Se o email confirmation estiver ativado no Supabase, a sessão será null
         if (!data?.session) {
           setSuccess('✅ Conta criada! Mas atenção: enviamos um link de confirmação para o seu e-mail. Você precisa clicar lá para validar sua conta antes de entrar.');
         } else {
@@ -42,7 +41,6 @@ export default function LoginPage() {
         setSuccess('✅ Link enviado! Verifique sua caixa de entrada (e o spam) para redefinir sua senha.');
       }
     } catch (err) {
-      // Mapeamento de erros técnicos para mensagens amigáveis em Português
       const errorMap = {
         'Invalid login credentials': 'E-mail ou senha incorretos. Verifique seus dados.',
         'Email not confirmed': '⚠️ Seu e-mail ainda não foi validado. Por favor, clique no link que enviamos para sua caixa de entrada.',
@@ -51,24 +49,14 @@ export default function LoginPage() {
         'Password should be at least 6 characters': 'A senha deve ter pelo menos 6 caracteres.',
         'Too many attempts': 'Muitas tentativas. Por segurança, tente novamente em alguns minutos.',
         'rate limit exceeded': 'Limite de envios atingido. Por segurança, tente novamente em uma hora.',
-        'Signup is disabled': 'O cadastro de novos usuários está temporariamente desativado.',
-        'Auth session missing!': 'Sua sessão expirou. Faça login novamente.'
       };
 
       let friendlyMessage = err.message;
-      
-      // Procura se alguma chave do mapa está contida na mensagem de erro (case insensitive)
       const matchingKey = Object.keys(errorMap).find(key => 
         err.message?.toLowerCase().includes(key.toLowerCase())
       );
 
-      if (matchingKey) {
-        friendlyMessage = errorMap[matchingKey];
-      } else {
-        // Fallback genérico para erros desconhecidos em português
-        friendlyMessage = 'Ocorreu um erro inesperado. Verifique sua conexão e tente novamente.';
-      }
-      
+      if (matchingKey) friendlyMessage = errorMap[matchingKey];
       setError(friendlyMessage);
     } finally {
       setLoading(false);
@@ -95,9 +83,9 @@ export default function LoginPage() {
           <motion.div variants={staggerItem} className="flex flex-col items-center mb-12">
             <motion.div 
               whileHover={{ scale: 1.1, rotate: 10 }}
-              className="w-16 h-16 rounded-3xl flex items-center justify-center mb-5 bg-gradient-accent shadow-glow-accent glow-accent"
+              className="w-16 h-16 rounded-3xl overflow-hidden mb-5 shadow-glow-accent glow-accent border border-white/10"
             >
-              <Zap className="w-8 h-8 text-white fill-current" />
+              <img src="/favicon.png" alt="StudyHub Logo" className="w-full h-full object-cover" />
             </motion.div>
             <h1 className="text-4xl font-black mb-2 gradient-text tracking-tighter italic pr-2">StudyHub AI</h1>
             <p className="text-sm font-bold text-muted uppercase tracking-widest text-center">

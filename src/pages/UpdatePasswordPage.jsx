@@ -70,9 +70,9 @@ export default function UpdatePasswordPage() {
           <motion.div variants={staggerItem} className="flex flex-col items-center mb-12">
             <motion.div 
               whileHover={{ scale: 1.1, rotate: 10 }}
-              className="w-16 h-16 rounded-3xl flex items-center justify-center mb-5 bg-gradient-accent shadow-glow-accent glow-accent"
+              className="w-16 h-16 rounded-3xl overflow-hidden mb-5 shadow-glow-accent glow-accent"
             >
-              <Zap className="w-8 h-8 text-white fill-current" />
+              <img src="/favicon.png" alt="StudyHub Logo" className="w-full h-full object-cover" />
             </motion.div>
             <h1 className="text-4xl font-black mb-2 gradient-text tracking-tighter italic pr-2">Nova Senha</h1>
             <p className="text-sm font-bold text-muted uppercase tracking-widest text-center">

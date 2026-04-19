@@ -86,9 +86,9 @@ export default function Sidebar() {
       >
         <motion.div 
           whileHover={{ rotate: 10, scale: 1.1 }}
-          className="w-10 h-10 rounded-xl bg-gradient-accent flex items-center justify-center shadow-glow-accent glow-accent shrink-0 group-hover:shadow-glow-accent/50 transition-all"
+          className="w-10 h-10 rounded-xl overflow-hidden shadow-glow-accent glow-accent shrink-0 group-hover:shadow-glow-accent/50 transition-all"
         >
-          <Trophy className="w-6 h-6 text-white" />
+          <img src="/favicon.png" alt="StudyHub Logo" className="w-full h-full object-cover scale-110" />
         </motion.div>
         <span className="text-2xl font-black italic tracking-tighter gradient-text truncate">StudyHub</span>
       </Link>
