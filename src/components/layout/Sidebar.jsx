@@ -200,13 +200,12 @@ export default function Sidebar() {
           </>
         )}
 
-        <button
-          onClick={signOut}
-          className="w-full flex items-center gap-3 px-4 py-3 text-muted hover:text-error hover:bg-error/10 rounded-xl transition-all font-bold text-sm"
-        >
-          <LogOut className="w-5 h-5" />
-          Sair
-        </button>
+      <div className="p-6 border-t border-default/50">
+        <p className="text-[10px] font-black uppercase tracking-[0.25em] text-muted opacity-40 leading-relaxed">
+          Studyhub v1.0 — 2026<br />
+          por: José Tadeu
+        </p>
+      </div>
       </div>
     </aside>
   );
