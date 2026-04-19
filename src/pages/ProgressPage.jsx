@@ -25,6 +25,7 @@ export default function ProgressPage() {
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState('30d'); // 7d, 30d, 90d, all
   const [viewMode, setViewMode] = useState('bar'); // bar, radar
+  const [volumeMode, setVolumeMode] = useState('all'); // all, quiz, exam
   
   const [rawStats, setRawStats] = useState({
     global: null,
@@ -210,20 +211,31 @@ export default function ProgressPage() {
   const practiceVolume = useMemo(() => {
     const dailyVolume = {};
     
-    filteredStats.quizzes.forEach(q => {
-      const date = new Date(q.completed_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-      if (!dailyVolume[date]) dailyVolume[date] = { date, count: 0 };
-      dailyVolume[date].count += (q.questions_total || 0);
-    });
+    // Add Quizzes if mode is 'all' or 'quiz'
+    if (volumeMode === 'all' || volumeMode === 'quiz') {
+      filteredStats.quizzes.forEach(q => {
+        const date = new Date(q.completed_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+        if (!dailyVolume[date]) dailyVolume[date] = { date, count: 0 };
+        dailyVolume[date].count += (q.questions_total || 0);
+      });
+    }
 
-    filteredStats.exams.forEach(e => {
-      const date = new Date(e.finalizada_em).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-      if (!dailyVolume[date]) dailyVolume[date] = { date, count: 0 };
-      dailyVolume[date].count += (e.questions_total || e.questoes?.length || 0);
-    });
+    // Add Exams if mode is 'all' or 'exam'
+    if (volumeMode === 'all' || volumeMode === 'exam') {
+      filteredStats.exams.forEach(e => {
+        const date = new Date(e.finalizada_em).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+        if (!dailyVolume[date]) dailyVolume[date] = { date, count: 0 };
+        dailyVolume[date].count += (e.questions_total || e.questoes?.length || 0);
+      });
+    }
 
-    return Object.values(dailyVolume);
-  }, [filteredStats]);
+    // Sort by date to ensure proper chart display
+    return Object.values(dailyVolume).sort((a,b) => {
+      const [dA, mA] = a.date.split('/');
+      const [dB, mB] = b.date.split('/');
+      return new Date(2026, mA-1, dA) - new Date(2026, mB-1, dB);
+    });
+  }, [filteredStats, volumeMode]);
 
   // 4. Exam Performance (Bar Chart - Individual Side-by-Side)
   const examPerformance = useMemo(() => {
@@ -355,7 +367,11 @@ export default function ProgressPage() {
         {/* 3. Volume & Exams Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <motion.div variants={staggerItem}>
-            <PracticeVolumeChart data={practiceVolume} />
+            <PracticeVolumeChart 
+              data={practiceVolume} 
+              volumeMode={volumeMode}
+              setVolumeMode={setVolumeMode}
+            />
           </motion.div>
           <motion.div variants={staggerItem}>
             <ExamPerformanceChart data={examPerformance} />

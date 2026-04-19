@@ -6,15 +6,37 @@ import {
 import { staggerItem } from '../../lib/animations';
 import { useContainerSize } from '../../hooks/useContainerSize';
 
-export default function PracticeVolumeChart({ data }) {
+export default function PracticeVolumeChart({ data, volumeMode, setVolumeMode }) {
   const hasData = data && data.length > 0;
   const { ref, ready } = useContainerSize();
 
   return (
     <motion.div variants={staggerItem} className="glass-card p-6 h-[350px] flex flex-col">
-      <div className="mb-6">
-        <h3 className="text-lg font-bold text-primary">Volume de Prática</h3>
-        <p className="text-xs text-muted">Intensidade de resolução de questões.</p>
+      <div className="flex items-start justify-between mb-6">
+        <div>
+          <h3 className="text-lg font-bold text-primary">Volume de Prática</h3>
+          <p className="text-xs text-muted">Intensidade de resolução de questões.</p>
+        </div>
+
+        <div className="flex bg-bg-main/50 backdrop-blur-sm border border-white/5 p-1 rounded-xl">
+          {[
+            { id: 'all', label: 'Todas' },
+            { id: 'quiz', label: 'Prática' },
+            { id: 'exam', label: 'Simulados' }
+          ].map(m => (
+            <button
+              key={m.id}
+              onClick={() => setVolumeMode(m.id)}
+              className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${
+                volumeMode === m.id 
+                ? 'bg-accent text-white shadow-lg' 
+                : 'text-muted hover:text-primary'
+              }`}
+            >
+              {m.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div ref={ref} className="flex-1 min-h-0 w-full">
