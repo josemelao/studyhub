@@ -32,6 +32,7 @@ export default function ContentAdminPage() {
   const { currentConcursoId, currentWorkspace } = useWorkspace();
   const { invalidateCache } = useSubjectsContext();
   const fileInputRef = useRef(null);
+  const questionImportInputRef = useRef(null);
 
   const [subjects, setSubjects] = useState([]);
   const [subSubjects, setSubSubjects] = useState([]);
@@ -43,6 +44,7 @@ export default function ContentAdminPage() {
   const [contentType, setContentType] = useState('resumo');
   const [loading, setLoading] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [importingQuestions, setImportingQuestions] = useState(false);
   const [fetching, setFetching] = useState(false);
 
   const [isAddingSubject, setIsAddingSubject] = useState(false);
@@ -53,9 +55,98 @@ export default function ContentAdminPage() {
   const [newTopicName, setNewTopicName] = useState('');
 
   const [isNotifyModalOpen, setIsNotifyModalOpen] = useState(false);
+  const [isQuestionImportModalOpen, setIsQuestionImportModalOpen] = useState(false);
   const [notifyTitle, setNotifyTitle] = useState('');
   const [notifyMessage, setNotifyMessage] = useState('');
   const [isNotifying, setIsNotifying] = useState(false);
+  const [questionImportFile, setQuestionImportFile] = useState(null);
+
+  const normalizeImportKey = (value) => String(value || '').trim().toLocaleLowerCase('pt-BR');
+  const normalizeImportText = (value) => String(value || '').trim();
+
+  const closeQuestionImportModal = () => {
+    setIsQuestionImportModalOpen(false);
+    setQuestionImportFile(null);
+    if (questionImportInputRef.current) questionImportInputRef.current.value = '';
+  };
+
+  const chunkArray = (items, size) => {
+    const chunks = [];
+
+    for (let i = 0; i < items.length; i += size) {
+      chunks.push(items.slice(i, i + size));
+    }
+
+    return chunks;
+  };
+
+  const readJsonFile = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (event) => resolve(event.target?.result || '');
+      reader.onerror = () => reject(new Error('Nao foi possivel ler o arquivo selecionado.'));
+      reader.readAsText(file, 'utf-8');
+    });
+
+  const validateImportPayload = (payload) => {
+    if (!Array.isArray(payload) || payload.length === 0) {
+      throw new Error('O JSON deve ser um array com pelo menos um grupo de questoes.');
+    }
+
+    payload.forEach((group, groupIndex) => {
+      const subjectName = normalizeImportText(group?.subject_name);
+      const topicName = normalizeImportText(group?.topic_name);
+
+      if (!subjectName) {
+        throw new Error(`Grupo ${groupIndex + 1}: "subject_name" e obrigatorio.`);
+      }
+
+      if (!topicName) {
+        throw new Error(`Grupo ${groupIndex + 1}: "topic_name" e obrigatorio.`);
+      }
+
+      if (!Array.isArray(group?.questions) || group.questions.length === 0) {
+        throw new Error(`Grupo ${groupIndex + 1}: "questions" deve conter ao menos uma questao.`);
+      }
+
+      group.questions.forEach((question, questionIndex) => {
+        const statement = normalizeImportText(question?.enunciado);
+        const correctAnswer = normalizeImportText(question?.resposta_correta).toUpperCase();
+
+        if (!statement) {
+          throw new Error(`Grupo ${groupIndex + 1}, questao ${questionIndex + 1}: "enunciado" e obrigatorio.`);
+        }
+
+        if (!Array.isArray(question?.opcoes) || question.opcoes.length < 2) {
+          throw new Error(`Grupo ${groupIndex + 1}, questao ${questionIndex + 1}: "opcoes" deve ter pelo menos 2 itens.`);
+        }
+
+        const optionLetters = question.opcoes.map((option, optionIndex) => {
+          const letter = normalizeImportText(option?.letra).toUpperCase();
+          const text = normalizeImportText(option?.texto);
+
+          if (!letter || !text) {
+            throw new Error(`Grupo ${groupIndex + 1}, questao ${questionIndex + 1}, opcao ${optionIndex + 1}: "letra" e "texto" sao obrigatorios.`);
+          }
+
+          return letter;
+        });
+
+        if (!correctAnswer) {
+          throw new Error(`Grupo ${groupIndex + 1}, questao ${questionIndex + 1}: "resposta_correta" e obrigatoria.`);
+        }
+
+        if (!optionLetters.includes(correctAnswer)) {
+          throw new Error(`Grupo ${groupIndex + 1}, questao ${questionIndex + 1}: a resposta correta "${correctAnswer}" nao existe em "opcoes".`);
+        }
+      });
+    });
+  };
+
+  const handleQuestionFileChange = (e) => {
+    const file = e.target.files?.[0] || null;
+    setQuestionImportFile(file);
+  };
 
   const loadSubjects = async () => {
     if (!currentConcursoId) return;
@@ -133,7 +224,7 @@ export default function ContentAdminPage() {
       }
 
       setFetching(true);
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('contents')
         .select('*')
         .eq('topic_id', selectedTopic)
@@ -404,6 +495,224 @@ export default function ContentAdminPage() {
     }
   };
 
+  const handleQuestionImport = async () => {
+    if (!currentConcursoId) {
+      toast.error('Nenhum concurso ativo foi encontrado para a importacao.');
+      return;
+    }
+
+    if (!questionImportFile) {
+      toast.error('Selecione um arquivo JSON antes de importar.');
+      return;
+    }
+
+    setImportingQuestions(true);
+
+    try {
+      const rawText = await readJsonFile(questionImportFile);
+      let payload;
+
+      try {
+        payload = JSON.parse(rawText);
+      } catch {
+        throw new Error('O arquivo selecionado nao contem um JSON valido.');
+      }
+
+      validateImportPayload(payload);
+
+      const [{ data: subjectRows, error: subjectError }, { data: subSubjectRows, error: subSubjectError }, { data: topicRows, error: topicError }] = await Promise.all([
+        supabase.from('subjects').select('id, nome, ordem').eq('concurso_id', currentConcursoId).order('ordem'),
+        supabase.from('sub_subjects').select('id, subject_id, nome, ordem').eq('concurso_id', currentConcursoId).order('ordem'),
+        supabase.from('topics').select('id, subject_id, sub_subject_id, nome, ordem').eq('concurso_id', currentConcursoId).order('ordem'),
+      ]);
+
+      if (subjectError) throw subjectError;
+      if (subSubjectError) throw subSubjectError;
+      if (topicError) throw topicError;
+
+      const subjectMap = new Map((subjectRows || []).map((subject) => [normalizeImportKey(subject.nome), subject]));
+      const subSubjectMap = new Map(
+        (subSubjectRows || []).map((subSubject) => [
+          `${subSubject.subject_id}::${normalizeImportKey(subSubject.nome)}`,
+          subSubject,
+        ]),
+      );
+      const topicMap = new Map(
+        (topicRows || []).map((topic) => [
+          `${topic.subject_id}::${topic.sub_subject_id || 'direct'}::${normalizeImportKey(topic.nome)}`,
+          topic,
+        ]),
+      );
+
+      let nextSubjectOrder = (subjectRows || []).reduce((max, item) => Math.max(max, item.ordem || 0), 0) + 1;
+      const nextSubSubjectOrderBySubject = new Map();
+      const nextTopicOrderByParent = new Map();
+
+      (subjectRows || []).forEach((subject) => {
+        const maxSubOrder = (subSubjectRows || [])
+          .filter((subSubject) => subSubject.subject_id === subject.id)
+          .reduce((max, item) => Math.max(max, item.ordem || 0), 0);
+        nextSubSubjectOrderBySubject.set(subject.id, maxSubOrder + 1);
+
+        const directKey = `${subject.id}::direct`;
+        const maxDirectTopicOrder = (topicRows || [])
+          .filter((topic) => topic.subject_id === subject.id && !topic.sub_subject_id)
+          .reduce((max, item) => Math.max(max, item.ordem || 0), 0);
+        nextTopicOrderByParent.set(directKey, maxDirectTopicOrder + 1);
+      });
+
+      (subSubjectRows || []).forEach((subSubject) => {
+        const parentKey = `${subSubject.subject_id}::${subSubject.id}`;
+        const maxTopicOrder = (topicRows || [])
+          .filter((topic) => topic.subject_id === subSubject.subject_id && topic.sub_subject_id === subSubject.id)
+          .reduce((max, item) => Math.max(max, item.ordem || 0), 0);
+        nextTopicOrderByParent.set(parentKey, maxTopicOrder + 1);
+      });
+
+      let importedQuestionCount = 0;
+      let createdSubjectsCount = 0;
+      let createdSubSubjectsCount = 0;
+      let createdTopicsCount = 0;
+      const questionRowsToInsert = [];
+      let lastImportedContext = null;
+
+      for (const group of payload) {
+        const subjectName = normalizeImportText(group.subject_name);
+        const moduleName = normalizeImportText(group.module_name);
+        const topicName = normalizeImportText(group.topic_name);
+        const subjectKey = normalizeImportKey(subjectName);
+        let subject = subjectMap.get(subjectKey);
+
+        if (!subject) {
+          const { data, error } = await supabase
+            .from('subjects')
+            .insert({
+              concurso_id: currentConcursoId,
+              nome: subjectName,
+              categoria: 'Geral',
+              icone: 'Book',
+              cor: '#7C5CFC',
+              ordem: nextSubjectOrder++,
+            })
+            .select('id, nome, ordem')
+            .single();
+
+          if (error) throw error;
+
+          subject = data;
+          subjectMap.set(subjectKey, subject);
+          nextSubSubjectOrderBySubject.set(subject.id, 1);
+          nextTopicOrderByParent.set(`${subject.id}::direct`, 1);
+          createdSubjectsCount += 1;
+        }
+
+        let subSubjectId = null;
+
+        if (moduleName) {
+          const subSubjectKey = `${subject.id}::${normalizeImportKey(moduleName)}`;
+          let subSubject = subSubjectMap.get(subSubjectKey) || null;
+
+          if (!subSubject) {
+            const nextOrder = nextSubSubjectOrderBySubject.get(subject.id) || 1;
+            const { data, error } = await supabase
+              .from('sub_subjects')
+              .insert({
+                concurso_id: currentConcursoId,
+                subject_id: subject.id,
+                nome: moduleName,
+                ordem: nextOrder,
+              })
+              .select('id, subject_id, nome, ordem')
+              .single();
+
+            if (error) throw error;
+
+            subSubject = data;
+            subSubjectMap.set(subSubjectKey, subSubject);
+            nextSubSubjectOrderBySubject.set(subject.id, nextOrder + 1);
+            nextTopicOrderByParent.set(`${subject.id}::${subSubject.id}`, 1);
+            createdSubSubjectsCount += 1;
+          }
+
+          subSubjectId = subSubject.id;
+        }
+
+        const topicKey = `${subject.id}::${subSubjectId || 'direct'}::${normalizeImportKey(topicName)}`;
+        let topic = topicMap.get(topicKey);
+
+        if (!topic) {
+          const topicParentKey = `${subject.id}::${subSubjectId || 'direct'}`;
+          const nextOrder = nextTopicOrderByParent.get(topicParentKey) || 1;
+          const { data, error } = await supabase
+            .from('topics')
+            .insert({
+              concurso_id: currentConcursoId,
+              subject_id: subject.id,
+              sub_subject_id: subSubjectId,
+              nome: topicName,
+              ordem: nextOrder,
+            })
+            .select('id, subject_id, sub_subject_id, nome, ordem')
+            .single();
+
+          if (error) throw error;
+
+          topic = data;
+          topicMap.set(topicKey, topic);
+          nextTopicOrderByParent.set(topicParentKey, nextOrder + 1);
+          createdTopicsCount += 1;
+        }
+
+        group.questions.forEach((question) => {
+          const normalizedLevel = normalizeImportKey(question.nivel);
+
+          questionRowsToInsert.push({
+            topic_id: topic.id,
+            enunciado: normalizeImportText(question.enunciado),
+            opcoes: question.opcoes.map((option) => ({
+              letra: normalizeImportText(option.letra).toUpperCase(),
+              texto: normalizeImportText(option.texto),
+            })),
+            resposta_correta: normalizeImportText(question.resposta_correta).toUpperCase(),
+            explicacao: normalizeImportText(question.explicacao) || null,
+            nivel: ['facil', 'medio', 'dificil'].includes(normalizedLevel) ? normalizedLevel : 'medio',
+          });
+        });
+
+        importedQuestionCount += group.questions.length;
+        lastImportedContext = {
+          subjectId: subject.id,
+          subSubjectId,
+          topicId: topic.id,
+        };
+      }
+
+      for (const batch of chunkArray(questionRowsToInsert, 200)) {
+        const { error } = await supabase.from('questions').insert(batch);
+        if (error) throw error;
+      }
+
+      await loadSubjects();
+
+      if (lastImportedContext) {
+        setSelectedSubject(lastImportedContext.subjectId);
+        setSelectedSubSubject(lastImportedContext.subSubjectId || '');
+        setSelectedTopic(lastImportedContext.topicId);
+      }
+
+      invalidateCache();
+      closeQuestionImportModal();
+      toast.success(
+        `${importedQuestionCount} questoes importadas. ${createdSubjectsCount} materias, ${createdSubSubjectsCount} modulos e ${createdTopicsCount} topicos criados.`,
+        { duration: 5000 },
+      );
+    } catch (err) {
+      toast.error(`Falha ao importar questoes: ${err.message}`);
+    } finally {
+      setImportingQuestions(false);
+    }
+  };
+
   const contentTypes = [
     { id: 'resumo', label: 'Resumo / Apostila', Icon: BookOpen },
     { id: 'video', label: 'Videoaulas', Icon: Eye },
@@ -413,6 +722,7 @@ export default function ContentAdminPage() {
   return (
     <div className="w-full space-y-8 pb-12 relative">
       <input type="file" ref={fileInputRef} onChange={handleWordImport} accept=".docx" className="hidden" />
+      <input type="file" ref={questionImportInputRef} onChange={handleQuestionFileChange} accept=".json,application/json" className="hidden" />
 
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -438,8 +748,17 @@ export default function ContentAdminPage() {
           </button>
 
           <button
+            onClick={() => setIsQuestionImportModalOpen(true)}
+            disabled={importingQuestions || importing}
+            className="flex items-center gap-2 px-6 py-3 bg-white/5 text-primary border border-white/10 font-black rounded-xl hover:bg-white/10 transition-all uppercase tracking-widest text-[10px] disabled:opacity-30"
+          >
+            {importingQuestions ? <Loader2 className="w-4 h-4 animate-spin" /> : <UploadCloud className="w-4 h-4 text-accent" />}
+            Importar Questoes JSON
+          </button>
+
+          <button
             onClick={() => fileInputRef.current?.click()}
-            disabled={importing || !selectedTopic}
+            disabled={importing || importingQuestions || !selectedTopic}
             className="flex items-center gap-2 px-6 py-3 bg-white/5 text-primary border border-white/10 font-black rounded-xl hover:bg-white/10 transition-all uppercase tracking-widest text-[10px] disabled:opacity-30"
           >
             {importing ? <Loader2 className="w-4 h-4 animate-spin" /> : <UploadCloud className="w-4 h-4 text-accent" />}
@@ -739,6 +1058,108 @@ export default function ContentAdminPage() {
       </div>
 
       <AnimatePresence>
+        {isQuestionImportModalOpen && (
+          <div className="fixed inset-0 z-[210] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-secondary/80 backdrop-blur-sm"
+              onClick={() => !importingQuestions && closeQuestionImportModal()}
+            />
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="relative w-full max-w-2xl bg-[var(--bg-elevated)] border border-default rounded-3xl p-6 shadow-2xl"
+            >
+              <div className="flex items-start justify-between gap-4 mb-6">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center shrink-0">
+                    <UploadCloud className="w-5 h-5 text-accent" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-black text-primary tracking-tighter">Importar Questoes em Lote</h3>
+                    <p className="text-xs text-muted font-bold uppercase tracking-widest">JSON com materia, modulo opcional, topico e lista de questoes</p>
+                  </div>
+                </div>
+                <button
+                  onClick={closeQuestionImportModal}
+                  disabled={importingQuestions}
+                  className="p-2 text-muted hover:text-primary transition-colors disabled:opacity-30"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="space-y-5">
+                <div className="rounded-2xl border border-accent/15 bg-accent/5 p-4 text-sm text-secondary leading-relaxed">
+                  <p className="font-bold text-primary mb-2">Como o importador funciona</p>
+                  <p>Ele aceita o formato do exemplo em <code className="text-primary">docs/questions/example-question.json</code>, cria materia, modulo e topico ausentes dentro do concurso atual e insere todas as questoes em lote.</p>
+                  <p className="mt-2">Para topicos sem modulo, use <code className="text-primary">"module_name": ""</code>.</p>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-muted ml-1">Arquivo JSON</label>
+                  <button
+                    type="button"
+                    onClick={() => questionImportInputRef.current?.click()}
+                    disabled={importingQuestions}
+                    className="w-full rounded-xl border border-default bg-secondary px-4 py-3 text-left text-sm text-primary hover:border-accent/40 transition-all disabled:opacity-30"
+                  >
+                    {questionImportFile ? questionImportFile.name : 'Selecionar arquivo .json'}
+                  </button>
+                  <p className="text-xs text-muted">Nenhum limite especial foi imposto na UI. O envio e feito em lotes de 200 questoes por vez.</p>
+                </div>
+
+                <div className="rounded-2xl border border-white/10 bg-secondary/60 p-4">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-muted mb-3">Estrutura esperada</p>
+                  <pre className="overflow-x-auto text-[11px] leading-relaxed text-secondary whitespace-pre-wrap">
+{`[
+  {
+    "subject_name": "Direito Constitucional",
+    "module_name": "",
+    "topic_name": "Princípios Fundamentais",
+    "questions": [
+      {
+        "enunciado": "...",
+        "opcoes": [
+          { "letra": "A", "texto": "..." },
+          { "letra": "B", "texto": "..." }
+        ],
+        "resposta_correta": "A",
+        "explicacao": "..."
+      }
+    ]
+  }
+]`}
+                  </pre>
+                </div>
+
+                <div className="pt-2 flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={closeQuestionImportModal}
+                    disabled={importingQuestions}
+                    className="px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest text-muted hover:bg-white/5 transition-all disabled:opacity-30"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleQuestionImport}
+                    disabled={!questionImportFile || importingQuestions}
+                    className="px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest bg-accent text-white shadow-glow-accent hover:opacity-90 disabled:opacity-50 transition-all flex items-center gap-2"
+                  >
+                    {importingQuestions ? <Loader2 className="w-4 h-4 animate-spin" /> : <UploadCloud className="w-4 h-4" />}
+                    Importar
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
         {isNotifyModalOpen && (
           <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
             <motion.div

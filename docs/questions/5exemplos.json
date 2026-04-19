@@ -1,0 +1,175 @@
+[
+  {
+    "subject_name": "Direito Constitucional",
+    "module_name": "Fundamentos da Republica",
+    "topic_name": "Principios Fundamentais",
+    "questions": [
+      {
+        "enunciado": "De acordo com a Constituicao Federal, qual dos itens abaixo e fundamento da Republica Federativa do Brasil?",
+        "opcoes": [
+          {
+            "letra": "A",
+            "texto": "Soberania"
+          },
+          {
+            "letra": "B",
+            "texto": "Censura previa"
+          },
+          {
+            "letra": "C",
+            "texto": "Poder moderador"
+          },
+          {
+            "letra": "D",
+            "texto": "Voto restrito"
+          }
+        ],
+        "resposta_correta": "A",
+        "explicacao": "A soberania aparece no art. 1 da Constituicao como fundamento da Republica."
+      },
+      {
+        "enunciado": "Entre os objetivos fundamentais da Republica Federativa do Brasil, encontra-se:",
+        "opcoes": [
+          {
+            "letra": "A",
+            "texto": "Garantir o desenvolvimento nacional"
+          },
+          {
+            "letra": "B",
+            "texto": "Instituir censura administrativa"
+          },
+          {
+            "letra": "C",
+            "texto": "Restringir o acesso a educacao"
+          },
+          {
+            "letra": "D",
+            "texto": "Eliminar a autonomia federativa"
+          }
+        ],
+        "resposta_correta": "A",
+        "explicacao": "O art. 3 da Constituicao traz como objetivo fundamental garantir o desenvolvimento nacional."
+      }
+    ]
+  },
+  {
+    "subject_name": "Direito Administrativo",
+    "module_name": "",
+    "topic_name": "Atos Administrativos",
+    "questions": [
+      {
+        "enunciado": "Qual atributo permite a execucao direta de determinados atos administrativos sem necessidade de ordem judicial previa?",
+        "opcoes": [
+          {
+            "letra": "A",
+            "texto": "Imperatividade"
+          },
+          {
+            "letra": "B",
+            "texto": "Autoexecutoriedade"
+          },
+          {
+            "letra": "C",
+            "texto": "Tipicidade"
+          },
+          {
+            "letra": "D",
+            "texto": "Motivacao"
+          }
+        ],
+        "resposta_correta": "B",
+        "explicacao": "A autoexecutoriedade permite a execucao direta do ato em situacoes previstas em lei."
+      }
+    ]
+  },
+  {
+    "subject_name": "Portugues",
+    "module_name": "Sintaxe",
+    "topic_name": "Concordancia Verbal",
+    "questions": [
+      {
+        "enunciado": "Assinale a alternativa em que a concordancia verbal esta correta.",
+        "opcoes": [
+          {
+            "letra": "A",
+            "texto": "Houveram muitos recursos contra a decisao."
+          },
+          {
+            "letra": "B",
+            "texto": "Existe bons argumentos no parecer."
+          },
+          {
+            "letra": "C",
+            "texto": "Faltaram documentos na instrucao do processo."
+          },
+          {
+            "letra": "D",
+            "texto": "Fazem dois anos que ele tomou posse."
+          }
+        ],
+        "resposta_correta": "C",
+        "explicacao": "O verbo faltar concorda com o sujeito documentos, ficando no plural."
+      }
+    ]
+  },
+  {
+    "subject_name": "Raciocinio Logico",
+    "module_name": "",
+    "topic_name": "Proposicoes",
+    "questions": [
+      {
+        "enunciado": "A frase 'Feche a porta.' e classificada, em logica proposicional, como:",
+        "opcoes": [
+          {
+            "letra": "A",
+            "texto": "Proposicao simples"
+          },
+          {
+            "letra": "B",
+            "texto": "Proposicao composta"
+          },
+          {
+            "letra": "C",
+            "texto": "Sentenca aberta"
+          },
+          {
+            "letra": "D",
+            "texto": "Nao proposicao"
+          }
+        ],
+        "resposta_correta": "D",
+        "explicacao": "Frases imperativas nao possuem valor logico verdadeiro ou falso, portanto nao sao proposicoes."
+      }
+    ]
+  },
+  {
+    "subject_name": "Informatica",
+    "module_name": "Seguranca da Informacao",
+    "topic_name": "Malware",
+    "questions": [
+      {
+        "enunciado": "Qual tipo de malware tem como caracteristica aparentar ser legitimo para induzir o usuario a executa-lo?",
+        "opcoes": [
+          {
+            "letra": "A",
+            "texto": "Worm"
+          },
+          {
+            "letra": "B",
+            "texto": "Trojan"
+          },
+          {
+            "letra": "C",
+            "texto": "Spyware"
+          },
+          {
+            "letra": "D",
+            "texto": "Rootkit"
+          }
+        ],
+        "resposta_correta": "B",
+        "explicacao": "O trojan se disfarca de arquivo ou programa legitimo para enganar o usuario."
+      }
+    ]
+  }
+]
