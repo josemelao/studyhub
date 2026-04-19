@@ -7,9 +7,9 @@ import { pageVariants, scaleIn, staggerItem, staggerContainer } from '../lib/ani
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, resetPassword } = useAuth();
 
-  const [mode, setMode] = useState('login');
+  const [mode, setMode] = useState('login'); // login | register | forgot_password
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -25,7 +25,7 @@ export default function LoginPage() {
         const { error } = await signIn(email, password);
         if (error) throw error;
         navigate('/dashboard');
-      } else {
+      } else if (mode === 'register') {
         const { error, data } = await signUp(email, password);
         if (error) throw error;
         
@@ -36,6 +36,10 @@ export default function LoginPage() {
           setSuccess('✅ Conta criada com sucesso! Você já pode entrar.');
         }
         setMode('login');
+      } else if (mode === 'forgot_password') {
+        const { error } = await resetPassword(email);
+        if (error) throw error;
+        setSuccess('✅ Link enviado! Verifique sua caixa de entrada (e o spam) para redefinir sua senha.');
       }
     } catch (err) {
       // Mapeamento de erros técnicos para mensagens amigáveis em Português
@@ -96,8 +100,10 @@ export default function LoginPage() {
               <Zap className="w-8 h-8 text-white fill-current" />
             </motion.div>
             <h1 className="text-4xl font-black mb-2 gradient-text tracking-tighter italic pr-2">StudyHub AI</h1>
-            <p className="text-sm font-bold text-muted uppercase tracking-widest">
-              {mode === 'login' ? 'Inteligência para sua Aprovação' : 'Junte-se a milhares de concurseiros'}
+            <p className="text-sm font-bold text-muted uppercase tracking-widest text-center">
+              {mode === 'login' ? 'Inteligência para sua Aprovação' : 
+               mode === 'register' ? 'Junte-se a milhares de concurseiros' : 
+               'Recuperar Acesso ao Hub'}
             </p>
           </motion.div>
 
@@ -110,7 +116,7 @@ export default function LoginPage() {
                   key={m}
                   onClick={() => { setMode(m); setError(''); setSuccess(''); }}
                   className={`flex-1 py-3 text-xs font-black uppercase tracking-widest rounded-xl transition-all ${
-                    mode === m
+                    (mode === m || (mode === 'forgot_password' && m === 'login'))
                       ? 'bg-gradient-accent text-white shadow-lg'
                       : 'text-muted hover:text-secondary hover:bg-white/[0.03]'
                   }`}
@@ -146,29 +152,42 @@ export default function LoginPage() {
                   </div>
                 </div>
 
-                {/* Password */}
-                <div>
-                  <label className="block text-[10px] font-black uppercase tracking-[0.2em] mb-2 px-1 text-muted">Senha</label>
-                  <div className="relative group">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted group-focus-within:text-accent transition-colors" />
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      value={password}
-                      onChange={e => setPassword(e.target.value)}
-                      placeholder="••••••••"
-                      required
-                      minLength={6}
-                      className="w-full pl-11 pr-12 py-3.5 rounded-2xl text-sm bg-secondary border border-default text-primary placeholder:text-muted outline-none focus:border-accent focus:ring-4 focus:ring-accent/10 transition-all font-medium"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(p => !p)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-muted hover:text-primary transition-colors"
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
+                {/* Password (only for login/register) */}
+                {mode !== 'forgot_password' && (
+                  <div>
+                    <div className="flex items-center justify-between mb-2 px-1">
+                      <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted">Senha</label>
+                      {mode === 'login' && (
+                        <button 
+                          type="button"
+                          onClick={() => { setMode('forgot_password'); setError(''); setSuccess(''); }}
+                          className="text-[10px] font-bold text-accent hover:text-accent/80 transition-colors uppercase tracking-widest"
+                        >
+                          Esqueci minha senha
+                        </button>
+                      )}
+                    </div>
+                    <div className="relative group">
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted group-focus-within:text-accent transition-colors" />
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        value={password}
+                        onChange={e => setPassword(e.target.value)}
+                        placeholder="••••••••"
+                        required
+                        minLength={6}
+                        className="w-full pl-11 pr-12 py-3.5 rounded-2xl text-sm bg-secondary border border-default text-primary placeholder:text-muted outline-none focus:border-accent focus:ring-4 focus:ring-accent/10 transition-all font-medium"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(p => !p)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-muted hover:text-primary transition-colors"
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Feedback Error/Success */}
                 <AnimatePresence mode="wait">
@@ -191,21 +210,33 @@ export default function LoginPage() {
                 </AnimatePresence>
 
                 {/* Submit */}
-                <motion.button
-                  type="submit"
-                  disabled={loading}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full py-4 rounded-2xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 bg-gradient-accent text-white shadow-glow-accent hover:opacity-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed mt-4 shadow-xl"
-                >
-                  {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                  {mode === 'login' ? 'Entrar no Hub' : 'Criar Minha Conta'}
-                </motion.button>
+                <div className="space-y-3 pt-2">
+                  <motion.button
+                    type="submit"
+                    disabled={loading}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="w-full py-4 rounded-2xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 bg-gradient-accent text-white shadow-glow-accent hover:opacity-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed shadow-xl"
+                  >
+                    {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                    {mode === 'login' ? 'Entrar no Hub' : mode === 'register' ? 'Criar Minha Conta' : 'Enviar Link de Recuperação'}
+                  </motion.button>
+
+                  {mode === 'forgot_password' && (
+                    <button
+                      type="button"
+                      onClick={() => { setMode('login'); setError(''); setSuccess(''); }}
+                      className="w-full text-center text-[10px] font-black uppercase tracking-widest text-muted hover:text-primary transition-colors"
+                    >
+                      Voltar para o Login
+                    </button>
+                  )}
+                </div>
               </motion.form>
             </AnimatePresence>
           </motion.div>
 
-          <motion.p variants={staggerItem} className="text-center text-[10px] font-bold uppercase tracking-[0.2em] mt-8 text-muted opacity-50">
+          <motion.p variants={staggerItem} className="text-center text-[10px] font-bold uppercase tracking-[0.2em] mt-8 text-muted opacity-50 text-wrap px-4">
             Transforme seu estudo em resultados reais.
           </motion.p>
         </motion.div>

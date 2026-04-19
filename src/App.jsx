@@ -29,6 +29,7 @@ import PlannerPage from './pages/PlannerPage';
 import ContentAdminPage from './pages/ContentAdminPage';
 import FeedbackInboxPage from './pages/FeedbackInboxPage';
 import OnboardingPage from './pages/OnboardingPage';
+import UpdatePasswordPage from './pages/UpdatePasswordPage';
 import { Toaster } from 'react-hot-toast';
 
 import { useAuth } from './hooks/useAuth';
@@ -148,6 +149,12 @@ function AppContent() {
       <Route path="/login" element={
         <AnimatePresence mode="wait">
           <LoginPage />
+        </AnimatePresence>
+      } />
+
+      <Route path="/update-password" element={
+        <AnimatePresence mode="wait">
+          <UpdatePasswordPage />
         </AnimatePresence>
       } />
 
