@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import { Inbox, Bug, Lightbulb, HelpCircle, Clock, CheckCircle, RefreshCw, Loader2, ChevronDown, ChevronUp, User, Trophy, LayoutDashboard, Trash2 } from 'lucide-react';
 
@@ -72,12 +71,7 @@ function FeedbackCard({ item, onStatusChange }) {
   };
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="glass-card overflow-hidden"
-    >
+    <div className="glass-card overflow-hidden">
       <button
         onClick={() => setExpanded(!expanded)}
         className="w-full flex items-center gap-4 p-5 text-left hover:bg-white/[0.02] transition-colors"
@@ -132,15 +126,8 @@ function FeedbackCard({ item, onStatusChange }) {
         </div>
       </button>
 
-      <AnimatePresence>
-        {expanded && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="overflow-hidden"
-          >
+      {expanded && (
+        <div className="overflow-hidden">
             <div className="px-5 pb-5 border-t border-default pt-4 space-y-4">
               <div
                 className="rounded-xl p-4 text-sm text-primary whitespace-pre-wrap leading-relaxed"
@@ -182,10 +169,9 @@ function FeedbackCard({ item, onStatusChange }) {
                 </button>
               </div>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -255,6 +241,10 @@ export default function FeedbackInboxPage() {
     const matchesType = typeFilter === 'all' || f.type === typeFilter;
     return matchesStatus && matchesType;
   });
+
+  // Divisão manual em 2 colunas para independência de altura (Masonry)
+  const leftColumn = filteredFeedbacks.filter((_, i) => i % 2 === 0);
+  const rightColumn = filteredFeedbacks.filter((_, i) => i % 2 !== 0);
 
   return (
     <div className="w-full space-y-8 pb-12">
@@ -332,12 +322,22 @@ export default function FeedbackInboxPage() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <AnimatePresence mode="popLayout">
-            {filteredFeedbacks.map((item) => (
+        <div className="flex flex-col lg:flex-row gap-4 items-start">
+          {/* Coluna Esquerda */}
+          <div className="flex-1 w-full space-y-4">
+            {leftColumn.map((item) => (
               <FeedbackCard key={item.id} item={item} onStatusChange={handleStatusChange} />
             ))}
-          </AnimatePresence>
+          </div>
+          
+          {/* Coluna Direita (oculta se vazia ou em mobile se preferir, mas aqui mantido responsivo) */}
+          {rightColumn.length > 0 && (
+            <div className="flex-1 w-full space-y-4">
+              {rightColumn.map((item) => (
+                <FeedbackCard key={item.id} item={item} onStatusChange={handleStatusChange} />
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
